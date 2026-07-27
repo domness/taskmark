@@ -91,13 +91,13 @@ import Testing
     #expect(!rendered.contains("completed_at:"))
 }
 
-private func fixture(named name: String) throws -> String {
+func fixture(named name: String) throws -> String {
     guard let url = Bundle.module.url(forResource: name, withExtension: "md") else {
         throw FixtureError.missing(name)
     }
     return try String(contentsOf: url, encoding: .utf8)
 }
 
-private enum FixtureError: Error {
+enum FixtureError: Error {
     case missing(String)
 }

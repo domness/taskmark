@@ -5,7 +5,7 @@ public struct MarkdownDocument {
     private let bodySeparator: String
     private let lineEnding: MarkdownSections.LineEnding
 
-    public let body: String
+    public private(set) var body: String
 
     public static func parse(_ source: String) throws -> Self {
         let sections = try MarkdownSections.parse(source)
@@ -35,7 +35,7 @@ public struct MarkdownDocument {
     }
 
     public func string(forKey key: String) -> String? {
-        frontmatter[key]?.string
+        frontmatter[key]?.scalar?.string
     }
 
     public func strings(forKey key: String) -> [String]? {
@@ -52,6 +52,10 @@ public struct MarkdownDocument {
 
         mapping[key.rawValue] = node(for: update)
         frontmatter = .mapping(mapping)
+    }
+
+    public mutating func setBody(_ body: String) {
+        self.body = body
     }
 
     public func rendered() throws -> String {
@@ -85,5 +89,26 @@ public struct MarkdownDocument {
         case .lineFeed: .ln
         case .carriageReturnLineFeed: .crln
         }
+    }
+
+    func node(forKey key: String) -> Node? {
+        frontmatter[key]
+    }
+
+    mutating func setNode(_ node: Node?, forKey key: String) {
+        guard case var .mapping(mapping) = frontmatter else {
+            return
+        }
+        mapping[key] = node
+        frontmatter = .mapping(mapping)
+    }
+
+    static func create(fields: [(String, Node)], body: String) -> Self {
+        Self(
+            frontmatter: Node(fields.map { (Node($0.0, Tag(.str)), $0.1) }),
+            bodySeparator: "\n",
+            lineEnding: .lineFeed,
+            body: body
+        )
     }
 }
