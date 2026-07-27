@@ -19,27 +19,32 @@ struct TaskInspectorView: View {
                 Text("None").tag(TaskPriority?.none)
                 ForEach(TaskPriority.allCases, id: \.self) { Text($0.rawValue.uppercased()).tag(Optional($0)) }
             }
-            CalendarDateField(
-                label: "Scheduled",
-                text: $draft.scheduled,
-                calendar: model.vaultCalendar,
-                onCalendarChange: {
-                    model.changeDraft(
-                        draft,
-                        keyPath: \.scheduled,
-                        to: $0,
-                        actionName: "Change Scheduled Date"
-                    )
-                }
-            )
-            CalendarDateField(
-                label: "Deadline",
-                text: $draft.deadline,
-                calendar: model.vaultCalendar,
-                onCalendarChange: {
-                    model.changeDraft(draft, keyPath: \.deadline, to: $0, actionName: "Change Deadline")
-                }
-            )
+            HStack {
+                CalendarDateField(
+                    label: "Scheduled",
+                    systemImage: "calendar",
+                    text: draft.scheduled,
+                    calendar: model.vaultCalendar,
+                    onCalendarChange: {
+                        model.changeDraft(
+                            draft,
+                            keyPath: \.scheduled,
+                            to: $0,
+                            actionName: "Change Scheduled Date"
+                        )
+                    }
+                )
+                CalendarDateField(
+                    label: "Deadline",
+                    systemImage: "flag",
+                    text: draft.deadline,
+                    calendar: model.vaultCalendar,
+                    onCalendarChange: {
+                        model.changeDraft(draft, keyPath: \.deadline, to: $0, actionName: "Change Deadline")
+                    }
+                )
+                Spacer()
+            }
             DisclosureGroup("Organize") {
                 TextField("Project path", text: $draft.project)
                 TextField("Area path", text: $draft.area)
