@@ -1,38 +1,57 @@
 ---
 name: local-todo
-description: Manage a Local Todo Markdown vault through the localtodo CLI. Use when an agent needs to inspect, create, update, complete, search, organize, or validate Local Todo tasks, projects, areas, tags, priorities, scheduled dates, deadlines, and recurrence without editing frontmatter directly.
+description: Manage a Local Todo Markdown vault through the localtodo CLI. Use when an agent needs to inspect, create, update, complete, search, organize, move, or validate Local Todo tasks, projects, areas, tags, priorities, dates, deadlines, and recurrence without editing frontmatter directly.
 ---
 
 # Local Todo
 
-Use `localtodo` as the only mutation interface. Markdown is user-owned, path identity is significant, and direct YAML edits can break references or discard unknown fields.
+Use `localtodo` for mutations. Markdown is user-owned, exact path identity is significant, and direct YAML edits can break references or discard unknown fields.
 
 ## Establish Context
 
 1. Run `localtodo --version` and `localtodo --help`.
-2. Locate the vault from an explicit user path, the current directory, or documented CLI configuration. Never search unrelated home-directory content for a vault.
+2. Use an explicit user-provided vault with `--vault PATH`, or run inside a vault so the CLI resolves the nearest ancestor containing `.localtodo/config.yml`. Never search unrelated home-directory content.
 3. Run `localtodo schema --json` before relying on field or status values.
-4. Prefer `--json` for reads and parse the documented response rather than terminal formatting.
+4. Run `localtodo doctor --vault PATH --json` before broad changes. Exit status 10 means diagnostics were found.
+5. Preserve every returned vault-relative path exactly, including case.
 
-The scaffold currently supports schema introspection only. If a requested mutation command is absent from `--help`, report that limitation and do not fall back to direct frontmatter editing.
+## Read
 
-## Read Operations
+Prefer JSON for reads:
 
-When available, use CLI list, show, search, and doctor commands with `--json`. Pass filters explicitly and preserve returned vault-relative paths exactly, including case.
+```bash
+localtodo list --vault PATH --json
+localtodo show --vault PATH --json "Tasks/Exact Name.md"
+localtodo search --vault PATH --json "launch"
+localtodo doctor --vault PATH --json
+```
 
-Do not infer that a missing task is deleted. Distinguish no matches, an invalid vault, malformed files, broken references, and I/O failures from exit codes and JSON error kinds.
+Combine `list` and `search` filters as needed: `--view inbox|next|today`, repeated `--status`, `--project`, `--area`, repeated `--tag`, repeated `--priority` including `none`, `--scheduled-on`, `--scheduled-from`, `--scheduled-through`, `--deadline-on`, `--deadline-from`, and `--deadline-through`. Add `--all` only when completed and canceled tasks should be included.
 
-## Mutation Operations
+Do not treat an empty result as deletion. Distinguish no matches from invalid vaults, malformed files, unresolved references, conflicts, and I/O failures. Vault command JSON responses use `api_version: 1` and `ok`; failures include `error.kind` and `error.message` and return a nonzero status. `schema --json` returns the schema summary directly.
 
-When mutation commands become available:
+## Mutate
 
-1. Resolve a target by its exact vault-relative path. Ask when multiple matches remain.
-2. Run the command with `--dry-run --json`.
-3. Inspect all field, path, and reference changes.
-4. Execute without `--dry-run` only when the requested intent and preview agree.
-5. Read the changed entity back and report the resulting path and status.
+For each mutation:
 
-Never auto-confirm destructive or bulk changes. Never move a project or area with filesystem tools; the CLI must update references atomically.
+1. Resolve targets to exact paths. Ask when ambiguity remains.
+2. Run the requested command with `--dry-run --json`.
+3. Verify the resulting entity or source and destination paths.
+4. Repeat without `--dry-run` only when the preview matches the request.
+5. Read the changed entity back with `show --json` and report its exact path and status.
+
+Examples:
+
+```bash
+localtodo add --vault PATH --dry-run --json "Tasks/Review.md" --title "Review" --status next
+localtodo edit --vault PATH --dry-run --json "Tasks/Review.md" --priority p1 --scheduled 2026-08-01
+localtodo complete --vault PATH --dry-run --json "Tasks/Review.md"
+localtodo move --vault PATH --dry-run --json "Projects/App.md" "Projects/Local Todo.md"
+```
+
+Use repeated `--tag` to replace tags. Use explicit `--clear-priority`, `--clear-scheduled`, `--clear-deadline`, `--clear-project`, `--clear-area`, `--clear-tags`, or `--clear-recurrence` when clearing values. Never move projects or areas with filesystem tools; `localtodo move` updates known references atomically.
+
+Never auto-confirm destructive or broad changes. Run `doctor` again after a sequence of related mutations.
 
 ## Domain Rules
 
@@ -42,13 +61,15 @@ Never auto-confirm destructive or bulk changes. Never move a project or area wit
 - Today includes incomplete tasks scheduled or due on or before the vault's current date.
 - Projects and areas are Markdown entities referenced by exact vault-relative path.
 - Checklists live in task bodies and do not have independent task metadata.
-- Completing a task updates it in place.
+- Fixed recurrence uses `--repeat-rule`, for example `FREQ=WEEKLY;BYDAY=MO,WE,FR`.
+- After-completion recurrence uses `--repeat-after` with `P1D`, `P2W`, `P3M`, or `P1Y` forms.
+- Completing a recurring task rolls its dates forward in the same file rather than marking it done.
 
 ## Safety
 
-- Never modify `.localtodo/cache/` as if it were canonical data.
-- Never edit YAML directly when a CLI operation exists.
+- Never modify `.localtodo/cache/` as canonical data.
+- Never edit frontmatter directly when a CLI operation exists.
 - Never invent UUIDs; identity is the path.
 - Never normalize unknown frontmatter on the agent's own initiative.
 - Never claim synchronization succeeded; report only local CLI results and surfaced conflicts.
-- Use `localtodo doctor` before and after bulk operations when that command is available.
+- Never silently repair malformed files or unresolved references.

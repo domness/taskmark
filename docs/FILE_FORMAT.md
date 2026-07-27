@@ -121,9 +121,9 @@ Area status is `active` or `archived`.
 
 ## Recurrence
 
-V1 supports fixed calendar recurrence and intervals after completion. The exact rule grammar remains provisional until recurrence contract tests land; do not persist recurrence from production clients before that milestone.
+V1 supports fixed calendar recurrence and intervals after completion.
 
-Proposed fixed form:
+Fixed form:
 
 ```yaml
 recurrence:
@@ -131,7 +131,7 @@ recurrence:
   rule: FREQ=WEEKLY;BYDAY=MO,WE,FR
 ```
 
-Proposed after-completion form:
+After-completion form:
 
 ```yaml
 recurrence:
@@ -139,7 +139,14 @@ recurrence:
   interval: P3D
 ```
 
-Fixed rules use an RFC 5545 recurrence rule subset. After-completion intervals use ISO 8601 durations.
+Fixed rules use a strict RFC 5545 subset:
+
+- `FREQ` is required and is `DAILY`, `WEEKLY`, `MONTHLY`, or `YEARLY`.
+- `INTERVAL` is optional, defaults to 1, and is an integer from 1 through 999.
+- `BYDAY` is optional and valid only with `WEEKLY`; values are unique `MO`, `TU`, `WE`, `TH`, `FR`, `SA`, or `SU` entries.
+- No other rule fields are accepted.
+
+After-completion intervals use exactly `P<n>D`, `P<n>W`, `P<n>M`, or `P<n>Y`, where `<n>` is from 1 through 999. Completing a recurring task keeps the same path and advances its scheduled date, deadline, or both according to the rule.
 
 ## Mutation Guarantees
 

@@ -16,7 +16,7 @@ make bootstrap
 make check
 ```
 
-`make bootstrap` resolves Swift packages, generates `LocalTodo.xcodeproj`, and opts this clone into the repository's Git hooks.
+`make bootstrap` resolves Swift packages, generates `LocalTodo.xcodeproj`, and opts this clone into the repository's Git hooks. `make check` runs package and macOS app tests in addition to linting and an unsigned app build.
 
 ## Changes
 
@@ -24,6 +24,7 @@ make check
 - Respect the package boundaries in `docs/ARCHITECTURE.md`.
 - Update `docs/FILE_FORMAT.md` and fixtures before changing persisted semantics.
 - Include tests for behavior changes and regressions.
+- Add app behavior tests under `Apps/LocalTodoApp/Tests`; keep domain, storage, and CLI tests under `Tests/`.
 - Run `make format` before `make check`.
 
 ## Commits

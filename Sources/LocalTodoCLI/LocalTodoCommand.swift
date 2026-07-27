@@ -22,4 +22,21 @@ struct LocalTodoCommand: AsyncParsableCommand {
             SchemaCommand.self,
         ]
     )
+
+    static func main() async {
+        do {
+            var command = try await asyncParseAsRoot(nil)
+            if var asyncCommand = command as? AsyncParsableCommand {
+                try await asyncCommand.run()
+            } else {
+                try command.run()
+            }
+        } catch {
+            let arguments = Array(CommandLine.arguments.dropFirst())
+            if arguments.contains("--json"), !(error is CleanExit), !(error is ExitCode) {
+                CLIErrorRenderer.write(error, arguments: arguments)
+            }
+            exit(withError: error)
+        }
+    }
 }

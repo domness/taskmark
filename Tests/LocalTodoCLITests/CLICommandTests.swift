@@ -80,3 +80,21 @@ import Testing
     let taskPath = try VaultPath("Tasks/Ship.md")
     #expect(snapshot.tasks[taskPath]?.value.project?.value == "Projects/Renamed.md")
 }
+
+@Test func jsonErrorsUseStableEnvelope() throws {
+    let path = try VaultPath("Tasks/Changed.md")
+    let data = try CLIErrorRenderer.data(
+        for: VaultStoreError.conflict(path),
+        command: "edit",
+        dryRun: true
+    )
+    let json = try #require(JSONSerialization.jsonObject(with: data) as? [String: Any])
+    let detail = try #require(json["error"] as? [String: Any])
+
+    #expect(json["api_version"] as? Int == 1)
+    #expect(json["ok"] as? Bool == false)
+    #expect(json["command"] as? String == "edit")
+    #expect(json["dry_run"] as? Bool == true)
+    #expect(detail["kind"] as? String == "conflict")
+    #expect((detail["message"] as? String)?.contains(path.value) == true)
+}
