@@ -25,7 +25,7 @@ struct LocalTodoCommand: AsyncParsableCommand {
 
     static func main() async {
         do {
-            var command = try await asyncParseAsRoot(nil)
+            var command = try parseAsRoot()
             if var asyncCommand = command as? AsyncParsableCommand {
                 try await asyncCommand.run()
             } else {
