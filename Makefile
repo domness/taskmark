@@ -15,8 +15,9 @@ lint:
 	swiftformat Apps Sources Tests Package.swift --lint
 	swiftlint lint --strict
 
-test:
+test: generate
 	swift test
+	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoApp -configuration Debug test CODE_SIGNING_ALLOWED=NO
 
 build: generate
 	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoApp -configuration Debug build CODE_SIGNING_ALLOWED=NO

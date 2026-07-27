@@ -25,6 +25,41 @@ import Testing
     }
 }
 
+@Test func storeCreatesMissingParentDirectories() async throws {
+    let root = try makeTestVault()
+    defer { removeTestVault(root) }
+    let store = VaultStore(root: root)
+    let task = try testTask(path: "Tasks/Planning/Test.md")
+
+    _ = try await store.create(.task(task))
+
+    #expect(FileManager.default.fileExists(atPath: root.appendingPathComponent(task.path.value).path))
+}
+
+@Test func failedCreateRemovesNewParentDirectories() async throws {
+    let root = try makeTestVault()
+    defer { removeTestVault(root) }
+    let base = FoundationVaultFileSystem()
+    let store = VaultStore(root: root, fileSystem: FailingWriteFileSystem(base: base, failureWrite: 1))
+    let task = try testTask(path: "Drafts/Nested/Test.md")
+
+    do {
+        _ = try await store.create(.task(task))
+        Issue.record("Expected create failure")
+    } catch {
+        #expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent("Drafts").path))
+    }
+}
+
+@Test func storeErrorsDescribeActionableConflicts() throws {
+    let path = try VaultPath("Tasks/Test.md")
+
+    #expect(
+        VaultStoreError.conflict(path).localizedDescription
+            == "The file changed outside Local Todo: Tasks/Test.md. Reload it before saving."
+    )
+}
+
 @Test func movingProjectUpdatesTaskReferences() async throws {
     let root = try makeTestVault()
     defer { removeTestVault(root) }

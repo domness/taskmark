@@ -22,12 +22,20 @@ public actor VaultStore {
         guard !fileSystem.exists(at: url) else {
             throw VaultStoreError.destinationExists(entity.path)
         }
-        guard fileSystem.exists(at: url.deletingLastPathComponent()) else {
-            throw VaultStoreError.invalidVault("Parent directory does not exist")
-        }
         let document = try EntityDocumentCodec.encode(entity)
         let data = try renderedData(document)
-        try performIO { try fileSystem.writeAtomically(data, to: url) }
+        let missingDirectories = missingDirectories(endingAt: url.deletingLastPathComponent())
+        do {
+            if !missingDirectories.isEmpty {
+                try performIO { try fileSystem.createDirectory(at: url.deletingLastPathComponent()) }
+            }
+            try performIO { try fileSystem.writeAtomically(data, to: url) }
+        } catch {
+            for directory in missingDirectories {
+                try? fileSystem.remove(at: directory)
+            }
+            throw error
+        }
         return VaultRecord(value: entity, revision: FileRevision(data: data))
     }
 
@@ -142,6 +150,16 @@ public actor VaultStore {
 
     private func fileURL(for path: VaultPath) -> URL {
         root.appendingPathComponent(path.value)
+    }
+
+    private func missingDirectories(endingAt directory: URL) -> [URL] {
+        var result = [URL]()
+        var current = directory.standardizedFileURL
+        while current.path != root.path, !fileSystem.exists(at: current) {
+            result.append(current)
+            current.deleteLastPathComponent()
+        }
+        return result
     }
 
     private func sameKind(_ lhs: LocalTodoEntity, _ rhs: LocalTodoEntity) -> Bool {

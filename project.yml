@@ -13,7 +13,7 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
-    ENABLE_USER_SCRIPT_SANDBOXING: YES
+    ENABLE_USER_SCRIPT_SANDBOXING: NO
 
 targets:
   LocalTodoApp:
@@ -31,10 +31,25 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.domness.localtodo
         PRODUCT_NAME: Local Todo
+        PRODUCT_MODULE_NAME: LocalTodoApp
         GENERATE_INFOPLIST_FILE: YES
         INFOPLIST_KEY_CFBundleDisplayName: Local Todo
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
         CODE_SIGN_STYLE: Automatic
+        CODE_SIGN_ENTITLEMENTS: Apps/LocalTodoApp/LocalTodoApp.entitlements
+  LocalTodoAppTests:
+    type: bundle.unit-test
+    platform: macOS
+    deploymentTarget: "15.0"
+    sources:
+      - path: Apps/LocalTodoApp/Tests
+    dependencies:
+      - target: LocalTodoApp
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.domness.localtodo.tests
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Local Todo.app/Contents/MacOS/Local Todo"
+        BUNDLE_LOADER: "$(TEST_HOST)"
 
 schemes:
   LocalTodoApp:
@@ -43,5 +58,9 @@ schemes:
         LocalTodoApp: all
     run:
       config: Debug
+    test:
+      config: Debug
+      targets:
+        - LocalTodoAppTests
     archive:
       config: Release
