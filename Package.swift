@@ -39,7 +39,8 @@ let package = Package(
         ),
         .testTarget(
             name: "LocalTodoMarkdownTests",
-            dependencies: ["LocalTodoMarkdown"]
+            dependencies: ["LocalTodoMarkdown"],
+            resources: [.process("Fixtures")]
         ),
     ]
 )
