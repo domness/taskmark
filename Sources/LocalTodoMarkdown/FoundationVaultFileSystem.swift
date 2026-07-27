@@ -1,7 +1,16 @@
+import Darwin
 import Foundation
 
 public struct FoundationVaultFileSystem: VaultFileSystem {
     public init() {}
+
+    public func contentsOfDirectory(at url: URL) throws -> [URL] {
+        try FileManager.default.contentsOfDirectory(
+            at: url,
+            includingPropertiesForKeys: nil,
+            options: []
+        )
+    }
 
     public func createDirectory(at url: URL) throws {
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
@@ -52,27 +61,75 @@ public struct FoundationVaultFileSystem: VaultFileSystem {
         try FileManager.default.removeItem(at: url)
     }
 
-    public func writeAtomically(_ data: Data, to url: URL) throws {
-        let temporaryURL = url.deletingLastPathComponent()
-            .appendingPathComponent(".localtodo-write-\(UUID().uuidString).tmp")
-        guard FileManager.default.createFile(atPath: temporaryURL.path, contents: nil) else {
-            throw VaultStoreError.inputOutput("Unable to create temporary file")
+    public func removeEmptyDirectory(at url: URL) throws {
+        let result = url.withUnsafeFileSystemRepresentation { path in
+            guard let path else { return Int32(-1) }
+            return rmdir(path)
         }
+        if result != 0 {
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        }
+    }
+
+    public func writeAtomically(_ data: Data, to url: URL) throws {
+        let temporaryURL = try writeTemporaryFile(data, beside: url)
 
         do {
-            let handle = try FileHandle(forWritingTo: temporaryURL)
-            try handle.write(contentsOf: data)
-            try handle.synchronize()
-            try handle.close()
-
             if exists(at: url) {
                 _ = try FileManager.default.replaceItemAt(url, withItemAt: temporaryURL)
             } else {
                 try FileManager.default.moveItem(at: temporaryURL, to: url)
             }
         } catch {
-            try? FileManager.default.removeItem(at: temporaryURL)
+            unlinkFile(at: temporaryURL)
             throw error
+        }
+    }
+
+    public func writeExclusively(_ data: Data, to url: URL) throws {
+        let temporaryURL = try writeTemporaryFile(data, beside: url)
+        let result = temporaryURL.withUnsafeFileSystemRepresentation { sourcePath in
+            url.withUnsafeFileSystemRepresentation { destinationPath in
+                guard let sourcePath, let destinationPath else { return Int32(-1) }
+                return renameatx_np(
+                    AT_FDCWD,
+                    sourcePath,
+                    AT_FDCWD,
+                    destinationPath,
+                    UInt32(RENAME_EXCL)
+                )
+            }
+        }
+        if result != 0 {
+            let error = POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+            unlinkFile(at: temporaryURL)
+            throw error
+        }
+    }
+
+    private func writeTemporaryFile(_ data: Data, beside url: URL) throws -> URL {
+        let temporaryURL = url.deletingLastPathComponent()
+            .appendingPathComponent(".localtodo-write-\(UUID().uuidString).tmp")
+        guard FileManager.default.createFile(atPath: temporaryURL.path, contents: nil) else {
+            throw VaultStoreError.inputOutput("Unable to create temporary file")
+        }
+        do {
+            let handle = try FileHandle(forWritingTo: temporaryURL)
+            try handle.write(contentsOf: data)
+            try handle.synchronize()
+            try handle.close()
+            return temporaryURL
+        } catch {
+            unlinkFile(at: temporaryURL)
+            throw error
+        }
+    }
+
+    private func unlinkFile(at url: URL) {
+        url.withUnsafeFileSystemRepresentation { path in
+            if let path {
+                _ = unlink(path)
+            }
         }
     }
 

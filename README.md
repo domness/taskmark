@@ -28,7 +28,7 @@ swift run localtodo add --vault "$HOME/Local Todo" \
 swift run localtodo list --vault "$HOME/Local Todo" --view next
 ```
 
-Open `LocalTodo.xcodeproj`, run the `LocalTodoApp` scheme, and choose the vault. The app stores a security-scoped bookmark so it can restore that selection on later launches.
+Open `LocalTodo.xcodeproj` and run the `LocalTodoApp` scheme. Create a new vault from the first-run screen, or open an existing vault containing `.localtodo/config.yml`. The app stores a security-scoped bookmark so it can restore that selection on later launches.
 
 ## CLI
 

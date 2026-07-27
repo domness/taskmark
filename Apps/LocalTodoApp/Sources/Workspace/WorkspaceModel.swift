@@ -20,10 +20,18 @@ final class WorkspaceModel {
     @ObservationIgnored var store: VaultStore?
     @ObservationIgnored private var scopedVault: SecurityScopedVault?
     @ObservationIgnored private var refreshLoop: Task<Void, Never>?
-    @ObservationIgnored private let bookmarks = VaultBookmarkStore()
+    @ObservationIgnored private let bookmarks: VaultBookmarkStore
     @ObservationIgnored private(set) var vaultSession = UUID()
     @ObservationIgnored private var openRequest = UUID()
     @ObservationIgnored private var taskDrafts = [VaultPath: TaskDraft]()
+
+    init(bookmarks: VaultBookmarkStore = VaultBookmarkStore()) {
+        self.bookmarks = bookmarks
+    }
+
+    deinit {
+        refreshLoop?.cancel()
+    }
 
     var vaultName: String? {
         scopedVault?.url.lastPathComponent
@@ -46,19 +54,31 @@ final class WorkspaceModel {
     }
 
     func chooseVault() async {
-        guard !isLoading else { return }
-        guard !taskDrafts.values.contains(where: \.isDirty) else {
-            errorMessage = "Save or revert task changes before switching vaults."
-            return
-        }
-        guard !isQuickCapturePresented else {
-            errorMessage = "Finish or cancel quick capture before switching vaults."
-            return
-        }
-        guard let url = await VaultPicker.chooseDirectory() else {
+        guard canChangeVault(), let url = await VaultPicker.chooseExistingVault() else {
             return
         }
         do {
+            if try await openVault(url) {
+                try bookmarks.save(url)
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func createVault() async {
+        guard canChangeVault(), let url = await VaultPicker.chooseNewVaultDirectory() else {
+            return
+        }
+        await createVault(at: url)
+    }
+
+    func createVault(at url: URL) async {
+        guard !isLoading else { return }
+        let access = SecurityScopedVault(url: url)
+        defer { _ = access }
+        do {
+            try VaultInitializer.initialize(at: url)
             if try await openVault(url) {
                 try bookmarks.save(url)
             }
@@ -112,6 +132,19 @@ final class WorkspaceModel {
                 selectedTaskPath = nil
             }
         }
+    }
+
+    private func canChangeVault() -> Bool {
+        guard !isLoading else { return false }
+        guard !taskDrafts.values.contains(where: \.isDirty) else {
+            errorMessage = "Save or discard task changes before switching vaults."
+            return false
+        }
+        guard !isQuickCapturePresented else {
+            errorMessage = "Finish or cancel quick capture before switching vaults."
+            return false
+        }
+        return true
     }
 
     private func openVault(_ url: URL) async throws -> Bool {

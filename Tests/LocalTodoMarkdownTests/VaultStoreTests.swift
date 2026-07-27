@@ -119,6 +119,10 @@ private final class FailingWriteFileSystem: VaultFileSystem, @unchecked Sendable
         self.failureWrite = failureWrite
     }
 
+    func contentsOfDirectory(at url: URL) throws -> [URL] {
+        try base.contentsOfDirectory(at: url)
+    }
+
     func createDirectory(at url: URL) throws {
         try base.createDirectory(at: url)
     }
@@ -143,6 +147,10 @@ private final class FailingWriteFileSystem: VaultFileSystem, @unchecked Sendable
         try base.remove(at: url)
     }
 
+    func removeEmptyDirectory(at url: URL) throws {
+        try base.removeEmptyDirectory(at: url)
+    }
+
     func writeAtomically(_ data: Data, to url: URL) throws {
         lock.lock()
         writeCount += 1
@@ -152,6 +160,10 @@ private final class FailingWriteFileSystem: VaultFileSystem, @unchecked Sendable
             throw TestFileSystemError.injectedFailure
         }
         try base.writeAtomically(data, to: url)
+    }
+
+    func writeExclusively(_ data: Data, to url: URL) throws {
+        try base.writeExclusively(data, to: url)
     }
 }
 

@@ -2,14 +2,19 @@ import Foundation
 
 struct VaultBookmarkStore {
     private let key = "LocalTodoVaultBookmark"
+    private let defaults: UserDefaults
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
 
     func save(_ url: URL) throws {
         let data = try url.bookmarkData(options: .withSecurityScope, includingResourceValuesForKeys: nil)
-        UserDefaults.standard.set(data, forKey: key)
+        defaults.set(data, forKey: key)
     }
 
     func restore() throws -> URL? {
-        guard let data = UserDefaults.standard.data(forKey: key) else {
+        guard let data = defaults.data(forKey: key) else {
             return nil
         }
         var isStale = false

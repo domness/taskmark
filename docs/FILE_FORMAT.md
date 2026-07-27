@@ -13,6 +13,8 @@ timezone: Europe/London
 
 `timezone` is optional. When omitted, Today uses the current system timezone. The app may store disposable indexes under `.localtodo/cache/`; cache content is never canonical and must be safe to delete.
 
+Creating a vault requires an empty directory. Opening an existing vault requires a valid manifest and never reinitializes the folder.
+
 Typed Markdown files may live anywhere below the vault except `.localtodo/`. Folder names do not define workflow semantics.
 
 ## Identity And References

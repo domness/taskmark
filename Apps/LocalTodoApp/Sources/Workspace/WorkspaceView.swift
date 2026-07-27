@@ -8,12 +8,17 @@ struct WorkspaceView: View {
         Group {
             if model.snapshot == nil {
                 ContentUnavailableView {
-                    Label("Choose a Vault", systemImage: "folder")
+                    Label("Start with a Vault", systemImage: "folder")
                 } description: {
-                    Text("Open a folder containing .localtodo/config.yml.")
+                    Text("Create a new folder-backed task vault, or open one you already use.")
                 } actions: {
-                    Button("Choose Vault") { Task { await model.chooseVault() } }
+                    Button("Create New Vault") { Task { await model.createVault() } }
                         .keyboardShortcut(.defaultAction)
+                    Button("Open Existing Vault") { Task { await model.chooseVault() } }
+                    if model.isLoading {
+                        ProgressView()
+                            .controlSize(.small)
+                    }
                 }
             } else {
                 NavigationSplitView {
