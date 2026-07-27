@@ -44,7 +44,7 @@ enum RecurrenceDocumentCodec {
         }
     }
 
-    private static func parseFixed(_ value: String) throws -> FixedRecurrenceRule {
+    static func parseFixed(_ value: String) throws -> FixedRecurrenceRule {
         var fields = [String: String]()
         for component in value.split(separator: ";") {
             let pair = component.split(separator: "=", maxSplits: 1)
@@ -79,7 +79,7 @@ enum RecurrenceDocumentCodec {
         }
     }
 
-    private static func parseInterval(_ value: String) throws -> RecurrenceInterval {
+    static func parseInterval(_ value: String) throws -> RecurrenceInterval {
         guard value.hasPrefix("P"), value.count >= 3, let unitValue = value.last else {
             throw EntityDocumentError.invalidField(FrontmatterKey.recurrence.rawValue)
         }
