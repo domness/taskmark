@@ -2,13 +2,53 @@
 
 ## Start Here
 
-Read these files before changing code or product behavior:
+At the start of every session, read these files after this guide and before making changes or recommendations:
 
-1. `PRODUCT.md` for users, purpose, and product principles.
-2. `DESIGN.md` for visual and interaction direction.
-3. `docs/FILE_FORMAT.md` before reading or writing vault files.
-4. `docs/ARCHITECTURE.md` before changing target boundaries.
-5. `docs/ROADMAP.md` before expanding scope.
+1. `MEMORY.md` for project decisions and prior session summaries.
+2. `ERRORS.md` for approaches that previously required repeated attempts.
+3. `PRODUCT.md` for users, purpose, and product principles.
+4. `DESIGN.md` for visual and interaction direction.
+5. `docs/FILE_FORMAT.md` before reading or writing vault files.
+6. `docs/ARCHITECTURE.md` before changing target boundaries.
+7. `docs/ROADMAP.md` before expanding scope.
+
+## Session Memory And Error Logs
+
+Maintain `MEMORY.md` as the project decision log. After any significant decision, add an entry with:
+
+- What was decided
+- Why
+- What was rejected and why
+
+Never contradict a logged decision without flagging the conflict first and explaining why the prior decision may no longer apply.
+
+When the user says "session end", "wrapping up", or "let's stop here", write a session summary to `MEMORY.md` before stopping. Include:
+
+- Worked on
+- Completed
+- In progress
+- Decisions made
+- Next session priorities
+
+Maintain `ERRORS.md` as the repeated-attempts log. When an approach takes more than 2 attempts to work, add an entry with:
+
+- What did not work
+- What worked instead
+- Note for next time
+
+Check `ERRORS.md` before suggesting approaches to similar tasks.
+
+## Permanent Project Facts
+
+These facts are always true for this project. Apply them to every session without exception. If a task conflicts with one of these facts, flag the conflict before proceeding.
+
+- This is Local Todo, an Apple-native, macOS-first, local-first task manager and CLI built with Swift 6.
+- Follow the repository as it exists today. Do not invent missing layers, directories, or tooling because older docs, templates, or examples imply they should exist.
+- `AGENTS.md`, `MEMORY.md`, `ERRORS.md`, `docs/ARCHITECTURE.md`, and `docs/FILE_FORMAT.md` are load-bearing project guidance. Read and follow them before changing code.
+- `docs/ARCHITECTURE.md` is the source of truth for target boundaries, dependency direction, data flow, concurrency, and storage safety.
+- `docs/FILE_FORMAT.md` is the source of truth for the vault contract, entity identity, references, schema, and mutation guarantees.
+- Markdown files are canonical. Any index or cache must remain derived, disposable, and rebuildable.
+- Do not contradict a recorded decision in `MEMORY.md` without flagging it first.
 
 ## Non-Negotiable Contracts
 
