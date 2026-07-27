@@ -54,6 +54,9 @@ cyclomatic_complexity:
   warning: 10
   error: 15
 
+trailing_comma:
+  mandatory_comma: true
+
 identifier_name:
   min_length: 2
   excluded:

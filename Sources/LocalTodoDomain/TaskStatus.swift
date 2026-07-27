@@ -5,4 +5,8 @@ public enum TaskStatus: String, Codable, CaseIterable, Sendable {
     case someday
     case done
     case canceled
+
+    public var isComplete: Bool {
+        self == .done || self == .canceled
+    }
 }

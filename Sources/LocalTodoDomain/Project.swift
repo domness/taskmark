@@ -1,16 +1,11 @@
 import Foundation
 
-public struct TodoTask: Equatable, Sendable {
+public struct Project: Equatable, Sendable {
     public let path: VaultPath
     public let title: String
-    public let status: TaskStatus
-    public let priority: TaskPriority?
-    public let scheduled: CalendarDate?
-    public let deadline: CalendarDate?
-    public let project: VaultPath?
+    public let status: ProjectStatus
     public let area: VaultPath?
     public let tags: [String]
-    public let recurrence: TaskRecurrence?
     public let body: String
     public let createdAt: Date
     public let updatedAt: Date
@@ -19,14 +14,9 @@ public struct TodoTask: Equatable, Sendable {
     public init(
         path: VaultPath,
         title: String,
-        status: TaskStatus,
-        priority: TaskPriority? = nil,
-        scheduled: CalendarDate? = nil,
-        deadline: CalendarDate? = nil,
-        project: VaultPath? = nil,
+        status: ProjectStatus,
         area: VaultPath? = nil,
         tags: [String] = [],
-        recurrence: TaskRecurrence? = nil,
         body: String = "",
         createdAt: Date,
         updatedAt: Date,
@@ -46,13 +36,8 @@ public struct TodoTask: Equatable, Sendable {
         self.path = path
         self.title = normalizedTitle
         self.status = status
-        self.priority = priority
-        self.scheduled = scheduled
-        self.deadline = deadline
-        self.project = project
         self.area = area
         self.tags = tags
-        self.recurrence = recurrence
         self.body = body
         self.createdAt = createdAt
         self.updatedAt = updatedAt

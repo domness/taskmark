@@ -54,6 +54,30 @@ public struct CalendarDate: Codable, Comparable, Hashable, Sendable {
         }
         return lhs.day < rhs.day
     }
+
+    public func date(in calendar: Calendar) throws -> Date {
+        let components = DateComponents(year: year, month: month, day: day, hour: 12)
+        guard let date = calendar.date(from: components) else {
+            throw DomainValidationError.invalidCalendarDate
+        }
+        return date
+    }
+
+    public func adding(_ components: DateComponents, calendar: Calendar) throws -> Self {
+        let date = try date(in: calendar)
+        guard let result = calendar.date(byAdding: components, to: date) else {
+            throw DomainValidationError.invalidCalendarDate
+        }
+        let resultComponents = calendar.dateComponents([.year, .month, .day], from: result)
+        guard
+            let year = resultComponents.year,
+            let month = resultComponents.month,
+            let day = resultComponents.day
+        else {
+            throw DomainValidationError.invalidCalendarDate
+        }
+        return try Self(year: year, month: month, day: day)
+    }
 }
 
 extension CalendarDate: CustomStringConvertible {
