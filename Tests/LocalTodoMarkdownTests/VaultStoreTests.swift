@@ -25,6 +25,37 @@ import Testing
     }
 }
 
+@Test func storeUpdatePreservesUnknownFrontmatterAndBodyBytes() async throws {
+    let root = try makeTestVault()
+    defer { removeTestVault(root) }
+    let path = try VaultPath("Tasks/Test.md")
+    let timestamp = Date(timeIntervalSince1970: 1_774_608_000)
+    let task = try TodoTask(
+        path: path,
+        title: "Original",
+        status: .next,
+        body: "Line one\r\nLine two\r\n",
+        createdAt: timestamp,
+        updatedAt: timestamp
+    )
+    let store = VaultStore(root: root)
+    _ = try await store.create(.task(task))
+    let url = root.appendingPathComponent(path.value)
+    let createdSource = try String(contentsOf: url, encoding: .utf8)
+    let source = createdSource.replacingOccurrences(of: "type: task\n", with: "type: task\ncustom: keep\n")
+    try Data(source.utf8).write(to: url)
+    let current = try #require(try await store.snapshot().tasks[path])
+    var patch = TaskPatch()
+    patch.title = .set("Updated")
+    let updated = try patch.applying(to: current.value, now: Date(timeIntervalSince1970: 1_774_608_060))
+
+    _ = try await store.update(.task(updated), expectedRevision: current.revision)
+
+    let saved = try String(contentsOf: url, encoding: .utf8)
+    #expect(saved.contains("custom: keep"))
+    #expect(saved.hasSuffix("Line one\r\nLine two\r\n"))
+}
+
 @Test func storeCreatesMissingParentDirectories() async throws {
     let root = try makeTestVault()
     defer { removeTestVault(root) }
@@ -34,6 +65,95 @@ import Testing
     _ = try await store.create(.task(task))
 
     #expect(FileManager.default.fileExists(atPath: root.appendingPathComponent(task.path.value).path))
+}
+
+@Test func storeCreateDoesNotReplaceAnExistingEntity() async throws {
+    let root = try makeTestVault()
+    defer { removeTestVault(root) }
+    let store = VaultStore(root: root)
+    let original = try testTask(path: "Tasks/Test.md")
+    _ = try await store.create(.task(original))
+    var patch = TaskPatch()
+    patch.title = .set("Replacement")
+    let replacement = try patch.applying(to: original, now: Date())
+
+    await #expect(throws: VaultStoreError.destinationExists(original.path)) {
+        try await store.create(.task(replacement))
+    }
+
+    #expect(try await store.snapshot().tasks[original.path]?.value.title == original.title)
+}
+
+@Test func storeDeletesOnlyTheExpectedRevision() async throws {
+    let root = try makeTestVault()
+    defer { removeTestVault(root) }
+    let store = VaultStore(root: root)
+    let task = try testTask(path: "Tasks/Test.md")
+    let created = try await store.create(.task(task))
+
+    let deleted = try await store.delete(at: task.path, expectedRevision: created.revision)
+
+    #expect(deleted == .task(task))
+    #expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent(task.path.value).path))
+    await #expect(throws: VaultStoreError.notFound(task.path)) {
+        try await store.delete(at: task.path, expectedRevision: created.revision)
+    }
+}
+
+@Test func storeRejectsDeleteWithAStaleRevision() async throws {
+    let root = try makeTestVault()
+    defer { removeTestVault(root) }
+    let store = VaultStore(root: root)
+    let task = try testTask(path: "Tasks/Test.md")
+    let created = try await store.create(.task(task))
+    var patch = TaskPatch()
+    patch.title = .set("Updated")
+    let updated = try patch.applying(to: task, now: Date())
+    _ = try await store.update(.task(updated), expectedRevision: created.revision)
+
+    await #expect(throws: VaultStoreError.conflict(task.path)) {
+        try await store.delete(at: task.path, expectedRevision: created.revision)
+    }
+    #expect(FileManager.default.fileExists(atPath: root.appendingPathComponent(task.path.value).path))
+}
+
+@Test func storeRejectsAFileCoordinatorIdentityRemap() async throws {
+    let root = try makeTestVault()
+    defer { removeTestVault(root) }
+    let base = FoundationVaultFileSystem()
+    let setupStore = VaultStore(root: root, fileSystem: base)
+    let task = try testTask(path: "Tasks/Test.md")
+    let created = try await setupStore.create(.task(task))
+    let remappedURL = root.appendingPathComponent("Tasks/Moved.md")
+    let fileSystem = FailingWriteFileSystem(
+        base: base,
+        failureWrite: .max,
+        coordinatedURL: remappedURL
+    )
+    let store = VaultStore(root: root, fileSystem: fileSystem)
+    var patch = TaskPatch()
+    patch.title = .set("Should not save")
+    let updated = try patch.applying(to: task, now: Date())
+
+    await #expect(throws: VaultStoreError.conflict(task.path)) {
+        try await store.update(.task(updated), expectedRevision: created.revision)
+    }
+
+    #expect(try await setupStore.snapshot().tasks[task.path]?.value.title == task.title)
+    #expect(!base.exists(at: remappedURL))
+}
+
+@Test func storeRefusesToDeleteReferencedCollections() async throws {
+    let root = try makeTestVault()
+    defer { removeTestVault(root) }
+    let store = VaultStore(root: root)
+    let project = try testProject(path: "Projects/Test.md")
+    let created = try await store.create(.project(project))
+    _ = try await store.create(.task(testTask(path: "Tasks/Test.md", project: project.path)))
+
+    await #expect(throws: VaultStoreError.invalidVault("Cannot delete referenced entity at Projects/Test.md")) {
+        try await store.delete(at: project.path, expectedRevision: created.revision)
+    }
 }
 
 @Test func failedCreateRemovesNewParentDirectories() async throws {
@@ -106,67 +226,4 @@ import Testing
         #expect(snapshot.projects[destination] == nil)
         #expect(try snapshot.tasks[VaultPath("Tasks/Test.md")]?.value.project == projectPath)
     }
-}
-
-private final class FailingWriteFileSystem: VaultFileSystem, @unchecked Sendable {
-    private let base: FoundationVaultFileSystem
-    private let failureWrite: Int
-    private let lock = NSLock()
-    private var writeCount = 0
-
-    init(base: FoundationVaultFileSystem, failureWrite: Int) {
-        self.base = base
-        self.failureWrite = failureWrite
-    }
-
-    func contentsOfDirectory(at url: URL) throws -> [URL] {
-        try base.contentsOfDirectory(at: url)
-    }
-
-    func createDirectory(at url: URL) throws {
-        try base.createDirectory(at: url)
-    }
-
-    func exists(at url: URL) -> Bool {
-        base.exists(at: url)
-    }
-
-    func markdownFiles(in root: URL) throws -> [URL] {
-        try base.markdownFiles(in: root)
-    }
-
-    func move(from source: URL, to destination: URL) throws {
-        try base.move(from: source, to: destination)
-    }
-
-    func read(at url: URL) throws -> Data {
-        try base.read(at: url)
-    }
-
-    func remove(at url: URL) throws {
-        try base.remove(at: url)
-    }
-
-    func removeEmptyDirectory(at url: URL) throws {
-        try base.removeEmptyDirectory(at: url)
-    }
-
-    func writeAtomically(_ data: Data, to url: URL) throws {
-        lock.lock()
-        writeCount += 1
-        let shouldFail = writeCount == failureWrite
-        lock.unlock()
-        if shouldFail {
-            throw TestFileSystemError.injectedFailure
-        }
-        try base.writeAtomically(data, to: url)
-    }
-
-    func writeExclusively(_ data: Data, to url: URL) throws {
-        try base.writeExclusively(data, to: url)
-    }
-}
-
-private enum TestFileSystemError: Error {
-    case injectedFailure
 }

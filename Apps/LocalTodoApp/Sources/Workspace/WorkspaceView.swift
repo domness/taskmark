@@ -3,6 +3,7 @@ import SwiftUI
 struct WorkspaceView: View {
     @Bindable var model: WorkspaceModel
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.undoManager) private var undoManager
 
     var body: some View {
         Group {
@@ -53,6 +54,7 @@ struct WorkspaceView: View {
                 Task { await model.refresh() }
             }
         }
+        .onAppear { model.setUndoManager(undoManager) }
     }
 
     private var errorPresented: Binding<Bool> {

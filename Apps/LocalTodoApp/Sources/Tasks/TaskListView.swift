@@ -3,6 +3,7 @@ import SwiftUI
 
 struct TaskListView: View {
     @Bindable var model: WorkspaceModel
+    @FocusState private var isSearchFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
@@ -12,12 +13,21 @@ struct TaskListView: View {
                     .padding(.vertical, 10)
                 Divider()
             }
-            if model.visibleTasks.isEmpty {
+            if model.route == .search, !model.hasActiveSearch {
                 ContentUnavailableView(
-                    model.searchText.isEmpty ? "No Tasks" : "No Results",
-                    systemImage: model.searchText.isEmpty ? "checkmark.circle" : "magnifyingglass",
-                    description: Text(model.searchText
-                        .isEmpty ? "Capture a task or choose another view." : "Try a different search.")
+                    "Search Tasks",
+                    systemImage: "magnifyingglass",
+                    description: Text("Search titles, notes, and tags across the vault.")
+                )
+            } else if model.visibleTasks.isEmpty {
+                ContentUnavailableView(
+                    model.route == .search ? "No Results" : "No Tasks",
+                    systemImage: model.route == .search ? "magnifyingglass" : "checkmark.circle",
+                    description: Text(
+                        model.route == .search
+                            ? "Try a different search."
+                            : "Capture a task or choose another view."
+                    )
                 )
             } else {
                 List(model.visibleTasks, id: \.path, selection: selection) { task in
@@ -29,6 +39,16 @@ struct TaskListView: View {
         }
         .navigationTitle(model.route.title)
         .searchable(text: $model.searchText, placement: .toolbar, prompt: "Search tasks")
+        .searchFocused($isSearchFocused)
+        .onChange(of: model.route) { _, route in
+            isSearchFocused = route == .search
+        }
+        .onChange(of: model.searchText) { _, text in
+            if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                model.route = .search
+            }
+        }
+        .onAppear { isSearchFocused = model.route == .search }
         .toolbar {
             ToolbarItemGroup {
                 Button("New Task", systemImage: "plus") { model.beginQuickCapture() }

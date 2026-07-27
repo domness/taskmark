@@ -2,14 +2,24 @@ import SwiftUI
 
 @main
 struct LocalTodoApp: App {
+    @NSApplicationDelegateAdaptor(LocalTodoAppDelegate.self) private var appDelegate
     @State private var model = WorkspaceModel()
 
     var body: some Scene {
         WindowGroup {
             WorkspaceView(model: model)
+                .onAppear { appDelegate.model = model }
                 .task { await model.restoreVault() }
         }
         .commands {
+            CommandGroup(replacing: .undoRedo) {
+                Button("Undo") { model.performUndo() }
+                    .keyboardShortcut("z", modifiers: .command)
+                    .disabled(!model.canPerformHistory)
+                Button("Redo") { model.performRedo() }
+                    .keyboardShortcut("z", modifiers: [.command, .shift])
+                    .disabled(!model.canPerformHistory)
+            }
             CommandGroup(replacing: .newItem) {
                 Button("New Task") { model.beginQuickCapture() }
                     .keyboardShortcut("n", modifiers: .command)

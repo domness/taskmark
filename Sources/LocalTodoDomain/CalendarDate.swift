@@ -45,6 +45,15 @@ public struct CalendarDate: Codable, Comparable, Hashable, Sendable {
         try self.init(year: year, month: month, day: day)
     }
 
+    public init(date: Date, calendar: Calendar) throws {
+        let gregorian = Self.gregorianCalendar(timeZone: calendar.timeZone)
+        let components = gregorian.dateComponents([.year, .month, .day], from: date)
+        guard let year = components.year, let month = components.month, let day = components.day else {
+            throw DomainValidationError.invalidCalendarDate
+        }
+        try self.init(year: year, month: month, day: day)
+    }
+
     public static func < (lhs: Self, rhs: Self) -> Bool {
         if lhs.year != rhs.year {
             return lhs.year < rhs.year
@@ -57,18 +66,19 @@ public struct CalendarDate: Codable, Comparable, Hashable, Sendable {
 
     public func date(in calendar: Calendar) throws -> Date {
         let components = DateComponents(year: year, month: month, day: day, hour: 12)
-        guard let date = calendar.date(from: components) else {
+        guard let date = Self.gregorianCalendar(timeZone: calendar.timeZone).date(from: components) else {
             throw DomainValidationError.invalidCalendarDate
         }
         return date
     }
 
     public func adding(_ components: DateComponents, calendar: Calendar) throws -> Self {
-        let date = try date(in: calendar)
-        guard let result = calendar.date(byAdding: components, to: date) else {
+        let gregorian = Self.gregorianCalendar(timeZone: calendar.timeZone)
+        let date = try date(in: gregorian)
+        guard let result = gregorian.date(byAdding: components, to: date) else {
             throw DomainValidationError.invalidCalendarDate
         }
-        let resultComponents = calendar.dateComponents([.year, .month, .day], from: result)
+        let resultComponents = gregorian.dateComponents([.year, .month, .day], from: result)
         guard
             let year = resultComponents.year,
             let month = resultComponents.month,
@@ -77,6 +87,12 @@ public struct CalendarDate: Codable, Comparable, Hashable, Sendable {
             throw DomainValidationError.invalidCalendarDate
         }
         return try Self(year: year, month: month, day: day)
+    }
+
+    private static func gregorianCalendar(timeZone: TimeZone) -> Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = timeZone
+        return calendar
     }
 }
 

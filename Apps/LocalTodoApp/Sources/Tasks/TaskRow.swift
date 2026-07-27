@@ -43,6 +43,8 @@ struct TaskRow: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
             }
+            .contentShape(Rectangle())
+            .onTapGesture(count: 2) { model.editTask(at: task.path) }
         }
     }
 

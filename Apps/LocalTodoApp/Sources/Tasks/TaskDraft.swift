@@ -8,49 +8,53 @@ import Observation
 final class TaskDraft {
     let path: VaultPath
     let vaultSession: UUID
-    private(set) var sourceTask: TodoTask
-    private(set) var revision: FileRevision
-    private(set) var isDirty = false
+    var sourceTask: TodoTask
+    var revision: FileRevision
+    var isDirty = false
     private(set) var isSaving = false
-    private(set) var generation: UInt64 = 0
+    var generation: UInt64 = 0
+    var conflictedFields = Set<TaskDraftField>()
+    var sourceUnavailableMessage: String?
+    var canRecreateSource = false
 
     var title: String {
-        didSet { markDirty() }
+        didSet { markDirty(.title) }
     }
 
     var status: TaskStatus {
-        didSet { markDirty() }
+        didSet { markDirty(.status) }
     }
 
     var priority: TaskPriority? {
-        didSet { markDirty() }
+        didSet { markDirty(.priority) }
     }
 
     var scheduled: String {
-        didSet { markDirty() }
+        didSet { markDirty(.scheduled) }
     }
 
     var deadline: String {
-        didSet { markDirty() }
+        didSet { markDirty(.deadline) }
     }
 
     var project: String {
-        didSet { markDirty() }
+        didSet { markDirty(.project) }
     }
 
     var area: String {
-        didSet { markDirty() }
+        didSet { markDirty(.area) }
     }
 
     var tags: String {
-        didSet { markDirty() }
+        didSet { markDirty(.tags) }
     }
 
     var notes: String {
-        didSet { markDirty() }
+        didSet { markDirty(.notes) }
     }
 
-    @ObservationIgnored private var isResetting = false
+    @ObservationIgnored var isResetting = false
+    @ObservationIgnored var onChange: ((TaskDraft) -> Void)?
 
     init(record: VaultRecord<TodoTask>, vaultSession: UUID) {
         let task = record.value
@@ -71,16 +75,48 @@ final class TaskDraft {
 
     func patch() throws -> TaskPatch {
         var patch = TaskPatch()
-        patch.title = .set(title)
-        patch.status = .set(status)
-        patch.priority = .set(priority)
-        patch.scheduled = try .set(optionalDate(scheduled))
-        patch.deadline = try .set(optionalDate(deadline))
-        patch.project = try .set(optionalPath(project))
-        patch.area = try .set(optionalPath(area))
-        patch.tags = .set(tags.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) })
-        patch.body = .set(notes)
+        if title != sourceTask.title {
+            patch.title = .set(title)
+        }
+        if status != sourceTask.status {
+            patch.status = .set(status)
+        }
+        if priority != sourceTask.priority {
+            patch.priority = .set(priority)
+        }
+        if scheduled != (sourceTask.scheduled?.description ?? "") {
+            patch.scheduled = try .set(optionalDate(scheduled))
+        }
+        if deadline != (sourceTask.deadline?.description ?? "") {
+            patch.deadline = try .set(optionalDate(deadline))
+        }
+        if project != (sourceTask.project?.value ?? "") {
+            patch.project = try .set(optionalPath(project))
+        }
+        if area != (sourceTask.area?.value ?? "") {
+            patch.area = try .set(optionalPath(area))
+        }
+        let tagValues = tags.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+        if tagValues != sourceTask.tags {
+            patch.tags = .set(tagValues)
+        }
+        if notes != sourceTask.body {
+            patch.body = .set(notes)
+        }
         return patch
+    }
+
+    var validationError: Error? {
+        do {
+            _ = try patch().applying(to: sourceTask, now: sourceTask.updatedAt)
+            return nil
+        } catch {
+            return error
+        }
+    }
+
+    var hasConflicts: Bool {
+        !conflictedFields.isEmpty
     }
 
     func reset(to record: VaultRecord<TodoTask>) {
@@ -99,6 +135,9 @@ final class TaskDraft {
         tags = task.tags.joined(separator: ", ")
         notes = task.body
         isDirty = false
+        conflictedFields.removeAll()
+        sourceUnavailableMessage = nil
+        canRecreateSource = false
     }
 
     func beginSaving() -> UInt64? {
@@ -113,6 +152,7 @@ final class TaskDraft {
         } else {
             sourceTask = record.value
             revision = record.revision
+            isDirty = hasChanges
         }
         isSaving = false
     }
@@ -121,11 +161,50 @@ final class TaskDraft {
         isSaving = false
     }
 
-    private func markDirty() {
+    func markSourceUnavailable(_ message: String, canRecreate: Bool) {
+        sourceUnavailableMessage = message
+        canRecreateSource = canRecreate
+        isSaving = false
+    }
+
+    func transferCurrentValues(to draft: TaskDraft) {
+        draft.isResetting = true
+        draft.title = title
+        draft.status = status
+        draft.priority = priority
+        draft.scheduled = scheduled
+        draft.deadline = deadline
+        draft.project = project
+        draft.area = area
+        draft.tags = tags
+        draft.notes = notes
+        draft.isDirty = draft.hasChanges
+        draft.isResetting = false
+    }
+
+    private func markDirty(_ field: TaskDraftField) {
         if !isResetting {
-            isDirty = true
+            conflictedFields.remove(field)
+            isDirty = hasChanges
             generation += 1
+            onChange?(self)
         }
+    }
+
+    var hasChanges: Bool {
+        title != sourceTask.title
+            || status != sourceTask.status
+            || priority != sourceTask.priority
+            || scheduled != (sourceTask.scheduled?.description ?? "")
+            || deadline != (sourceTask.deadline?.description ?? "")
+            || project != (sourceTask.project?.value ?? "")
+            || area != (sourceTask.area?.value ?? "")
+            || tags.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) } != sourceTask.tags
+            || notes != sourceTask.body
+    }
+
+    var tagValues: [String] {
+        tags.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
     }
 
     private func optionalDate(_ value: String) throws -> CalendarDate? {

@@ -5,20 +5,41 @@ import SwiftUI
 struct TaskInspectorView: View {
     let model: WorkspaceModel
     @Bindable var draft: TaskDraft
+    @FocusState private var isTitleFocused: Bool
 
     var body: some View {
         Form {
             TextField("Title", text: $draft.title)
                 .font(.headline)
-            Picker("Status", selection: $draft.status) {
+                .focused($isTitleFocused)
+            Picker("Status", selection: status) {
                 ForEach(TaskStatus.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
             }
-            Picker("Priority", selection: $draft.priority) {
+            Picker("Priority", selection: priority) {
                 Text("None").tag(TaskPriority?.none)
                 ForEach(TaskPriority.allCases, id: \.self) { Text($0.rawValue.uppercased()).tag(Optional($0)) }
             }
-            TextField("Scheduled (YYYY-MM-DD)", text: $draft.scheduled)
-            TextField("Deadline (YYYY-MM-DD)", text: $draft.deadline)
+            CalendarDateField(
+                label: "Scheduled",
+                text: $draft.scheduled,
+                calendar: model.vaultCalendar,
+                onCalendarChange: {
+                    model.changeDraft(
+                        draft,
+                        keyPath: \.scheduled,
+                        to: $0,
+                        actionName: "Change Scheduled Date"
+                    )
+                }
+            )
+            CalendarDateField(
+                label: "Deadline",
+                text: $draft.deadline,
+                calendar: model.vaultCalendar,
+                onCalendarChange: {
+                    model.changeDraft(draft, keyPath: \.deadline, to: $0, actionName: "Change Deadline")
+                }
+            )
             DisclosureGroup("Organize") {
                 TextField("Project path", text: $draft.project)
                 TextField("Area path", text: $draft.area)
@@ -38,20 +59,86 @@ struct TaskInspectorView: View {
                     Button("Open Externally") { openExternally() }
                 }
             }
-            Button("Save Changes") { save() }
-                .keyboardShortcut("s", modifiers: .command)
-                .disabled(!draft.isDirty || draft.isSaving)
-            if draft.isDirty {
-                Button("Discard Changes", role: .destructive) { model.discardChanges(for: draft.path) }
-                    .disabled(draft.isSaving)
+            if let sourceUnavailableMessage = draft.sourceUnavailableMessage {
+                Section("Task File Unavailable") {
+                    Text(sourceUnavailableMessage)
+                        .foregroundStyle(.secondary)
+                    HStack {
+                        if draft.canRecreateSource {
+                            Button("Recreate Task") { Task { await model.recreateTask(draft) } }
+                        } else {
+                            Button("Save Copy") { Task { await model.saveTaskCopy(draft) } }
+                        }
+                        Button("Discard Changes") { model.discardChanges(for: draft.path) }
+                    }
+                }
+            } else if draft.hasConflicts {
+                Section("Changed In File") {
+                    Text("Both versions changed: \(conflictNames).")
+                        .foregroundStyle(.secondary)
+                    HStack {
+                        Button("Use File Version") { model.discardChanges(for: draft.path) }
+                        Button("Keep My Changes") { draft.resolveConflictsKeepingLocalChanges() }
+                    }
+                }
             }
+            saveStatus
         }
         .formStyle(.grouped)
         .padding(.vertical)
+        .onAppear { focusTitleIfRequested() }
+        .onChange(of: model.titleEditRequest) { _, _ in focusTitleIfRequested() }
     }
 
-    private func save() {
-        Task { await model.updateTask(draft) }
+    @ViewBuilder
+    private var saveStatus: some View {
+        if draft.sourceUnavailableMessage != nil {
+            Label("Choose how to preserve or discard these changes", systemImage: "exclamationmark.triangle")
+                .foregroundStyle(.secondary)
+        } else if draft.hasConflicts {
+            Label("Choose which conflicting changes to keep", systemImage: "exclamationmark.triangle")
+                .foregroundStyle(.secondary)
+        } else if draft.isSaving {
+            Label("Saving", systemImage: "arrow.triangle.2.circlepath")
+                .foregroundStyle(.secondary)
+        } else if draft.validationError != nil {
+            Label("Fix invalid fields to save", systemImage: "exclamationmark.circle")
+                .foregroundStyle(.secondary)
+        } else if draft.isDirty {
+            Label("Waiting to save", systemImage: "clock")
+                .foregroundStyle(.secondary)
+        } else {
+            Label("Saved", systemImage: "checkmark")
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    private var status: Binding<TaskStatus> {
+        Binding(
+            get: { draft.status },
+            set: { model.changeDraft(draft, keyPath: \.status, to: $0, actionName: "Change Status") }
+        )
+    }
+
+    private var priority: Binding<TaskPriority?> {
+        Binding(
+            get: { draft.priority },
+            set: { model.changeDraft(draft, keyPath: \.priority, to: $0, actionName: "Change Priority") }
+        )
+    }
+
+    private var conflictNames: String {
+        draft.conflictedFields
+            .map(\.rawValue)
+            .sorted()
+            .joined(separator: ", ")
+    }
+
+    private func focusTitleIfRequested() {
+        if model.titleEditingPath == draft.path {
+            isTitleFocused = true
+            model.consumeTitleEditRequest(at: draft.path)
+        }
     }
 
     private func fileURL() -> URL? {

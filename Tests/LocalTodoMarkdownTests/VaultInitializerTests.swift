@@ -75,6 +75,14 @@ private struct FailingInitializerFileSystem: VaultFileSystem {
         case createRootFileAfterMarker
     }
 
+    func coordinateWriting(
+        at url: URL,
+        intent: VaultWriteIntent,
+        operation: (URL) throws -> Void
+    ) throws {
+        try base.coordinateWriting(at: url, intent: intent, operation: operation)
+    }
+
     func contentsOfDirectory(at url: URL) throws -> [URL] {
         try base.contentsOfDirectory(at: url)
     }
@@ -109,6 +117,10 @@ private struct FailingInitializerFileSystem: VaultFileSystem {
 
     func removeEmptyDirectory(at url: URL) throws {
         try base.removeEmptyDirectory(at: url)
+    }
+
+    func removeFile(at url: URL) throws {
+        try base.removeFile(at: url)
     }
 
     func writeAtomically(_ data: Data, to url: URL) throws {

@@ -65,12 +65,90 @@ import Testing
     #expect(draft.revision == saved.revision)
 }
 
-private func taskRecord(path: String, title: String, revision: String) throws -> VaultRecord<TodoTask> {
+@MainActor
+@Test func taskDraftRebasesLocalEditsOntoExternalChanges() throws {
+    let original = try taskRecord(path: "Tasks/One.md", title: "Original", revision: "first")
+    let external = try taskRecord(
+        path: "Tasks/One.md",
+        title: "External title",
+        revision: "second",
+        notes: "External notes"
+    )
+    let draft = TaskDraft(record: original, vaultSession: UUID())
+    draft.notes = "Local notes"
+
+    draft.rebase(to: external)
+
+    #expect(draft.title == "External title")
+    #expect(draft.notes == "Local notes")
+    #expect(draft.revision == external.revision)
+    let merged = try draft.patch().applying(to: draft.sourceTask, now: Date())
+    #expect(merged.title == "External title")
+    #expect(merged.body == "Local notes")
+}
+
+@MainActor
+@Test func taskDraftSurfacesOverlappingExternalChanges() throws {
+    let original = try taskRecord(path: "Tasks/One.md", title: "Original", revision: "first")
+    let external = try taskRecord(path: "Tasks/One.md", title: "External", revision: "second")
+    let draft = TaskDraft(record: original, vaultSession: UUID())
+    draft.title = "Local"
+
+    draft.rebase(to: external)
+
+    #expect(draft.hasConflicts)
+    #expect(draft.conflictedFields == [.title])
+    #expect(draft.title == "Local")
+    #expect(draft.sourceTask.title == "External")
+}
+
+@MainActor
+@Test func taskDraftClearsConflictWhenExternalValueConverges() throws {
+    let original = try taskRecord(path: "Tasks/One.md", title: "Original", revision: "first")
+    let conflicting = try taskRecord(path: "Tasks/One.md", title: "External", revision: "second")
+    let converged = try taskRecord(path: "Tasks/One.md", title: "Local", revision: "third")
+    let draft = TaskDraft(record: original, vaultSession: UUID())
+    draft.title = "Local"
+
+    draft.rebase(to: conflicting)
+    #expect(draft.hasConflicts)
+
+    draft.rebase(to: converged)
+
+    #expect(!draft.hasConflicts)
+    #expect(!draft.isDirty)
+    #expect(draft.title == "Local")
+}
+
+@MainActor
+@Test func taskDraftTransfersEditsMadeWhileSavingToACopy() throws {
+    let original = try taskRecord(path: "Tasks/One.md", title: "Original", revision: "first")
+    let savedCopy = try taskRecord(path: "Tasks/Copy.md", title: "First edit", revision: "second")
+    let draft = TaskDraft(record: original, vaultSession: UUID())
+    draft.title = "First edit"
+    _ = draft.beginSaving()
+    draft.notes = "Typed while saving"
+    let copy = TaskDraft(record: savedCopy, vaultSession: draft.vaultSession)
+
+    draft.transferCurrentValues(to: copy)
+
+    #expect(copy.title == "First edit")
+    #expect(copy.notes == "Typed while saving")
+    #expect(copy.isDirty)
+}
+
+private func taskRecord(
+    path: String,
+    title: String,
+    revision: String,
+    notes: String = ""
+) throws -> VaultRecord<TodoTask> {
     let timestamp = Date(timeIntervalSince1970: 1_774_608_000)
     let task = try TodoTask(
         path: VaultPath(path),
         title: title,
         status: .next,
+        body: notes,
         createdAt: timestamp,
         updatedAt: timestamp
     )

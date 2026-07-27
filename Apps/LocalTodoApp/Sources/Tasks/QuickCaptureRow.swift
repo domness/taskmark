@@ -1,27 +1,26 @@
 import SwiftUI
 
 struct QuickCaptureRow: View {
-    let model: WorkspaceModel
-    @State private var title = ""
+    @Bindable var model: WorkspaceModel
     @FocusState private var isFocused: Bool
 
     var body: some View {
         HStack {
             Image(systemName: "plus.circle")
                 .foregroundStyle(.secondary)
-            TextField("Capture to Inbox", text: $title)
+            TextField("Capture to Inbox", text: $model.quickCaptureTitle)
                 .textFieldStyle(.plain)
                 .focused($isFocused)
                 .onSubmit { submit() }
-            Button("Cancel") { model.isQuickCapturePresented = false }
+            Button("Cancel") { model.cancelQuickCapture() }
                 .buttonStyle(.plain)
         }
         .onAppear { isFocused = true }
-        .onExitCommand { model.isQuickCapturePresented = false }
+        .onExitCommand { model.cancelQuickCapture() }
     }
 
     private func submit() {
-        let value = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        let value = model.quickCaptureTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !value.isEmpty else { return }
         let vaultSession = model.vaultSession
         Task { await model.createTask(title: value, vaultSession: vaultSession) }

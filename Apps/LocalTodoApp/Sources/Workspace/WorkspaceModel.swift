@@ -7,23 +7,40 @@ import Observation
 @Observable
 final class WorkspaceModel {
     var snapshot: VaultSnapshot?
-    var route: WorkspaceRoute = .today
+    var route: WorkspaceRoute = .today {
+        didSet {
+            if route != .search {
+                searchText = ""
+            }
+        }
+    }
+
     var selectedTaskPath: VaultPath?
     var searchText = ""
     var isInspectorPresented = true
     var isCommandPalettePresented = false
     var isQuickCapturePresented = false
+    var quickCaptureTitle = ""
     var newEntityKind: NewEntityKind?
     var errorMessage: String?
     var isLoading = false
+    var isHistoryBusy = false
+    var titleEditRequest = 0
+    var titleEditingPath: VaultPath?
 
     @ObservationIgnored var store: VaultStore?
+    @ObservationIgnored weak var undoManager: UndoManager?
+    @ObservationIgnored var pendingMutationPaths = Set<VaultPath>()
+    @ObservationIgnored var completedTaskStatuses = [VaultPath: TaskStatus]()
+    @ObservationIgnored var autosaveTasks = [VaultPath: Task<Void, Never>]()
+    @ObservationIgnored var modelEpoch: UInt64 = 0
     @ObservationIgnored private var scopedVault: SecurityScopedVault?
     @ObservationIgnored private var refreshLoop: Task<Void, Never>?
     @ObservationIgnored private let bookmarks: VaultBookmarkStore
     @ObservationIgnored private(set) var vaultSession = UUID()
     @ObservationIgnored private var openRequest = UUID()
-    @ObservationIgnored private var taskDrafts = [VaultPath: TaskDraft]()
+    @ObservationIgnored private var refreshRequest = UUID()
+    @ObservationIgnored var taskDrafts = [VaultPath: TaskDraft]()
 
     init(bookmarks: VaultBookmarkStore = VaultBookmarkStore()) {
         self.bookmarks = bookmarks
@@ -31,6 +48,9 @@ final class WorkspaceModel {
 
     deinit {
         refreshLoop?.cancel()
+        for task in autosaveTasks.values {
+            task.cancel()
+        }
     }
 
     var vaultName: String? {
@@ -74,7 +94,7 @@ final class WorkspaceModel {
     }
 
     func createVault(at url: URL) async {
-        guard !isLoading else { return }
+        guard !isLoading, pendingMutationPaths.isEmpty, !isHistoryBusy else { return }
         let access = SecurityScopedVault(url: url)
         defer { _ = access }
         do {
@@ -90,11 +110,17 @@ final class WorkspaceModel {
     func refresh() async {
         guard let store else { return }
         let session = vaultSession
+        let epoch = modelEpoch
+        let request = UUID()
+        refreshRequest = request
         do {
             let nextSnapshot = try await store.snapshot()
-            guard session == vaultSession else { return }
+            guard session == vaultSession, epoch == modelEpoch, request == refreshRequest else { return }
+            if let snapshot, containsExternalChanges(from: snapshot, to: nextSnapshot) {
+                clearHistory()
+            }
             snapshot = nextSnapshot
-            reconcileDrafts(with: nextSnapshot)
+            await reconcileDrafts(with: nextSnapshot)
             if let selectedTaskPath, nextSnapshot.tasks[selectedTaskPath] == nil {
                 if taskDrafts[selectedTaskPath]?.isDirty != true {
                     self.selectedTaskPath = nil
@@ -105,39 +131,14 @@ final class WorkspaceModel {
         }
     }
 
-    func beginQuickCapture() {
-        guard snapshot != nil else { return }
-        isQuickCapturePresented = true
-    }
-
-    func selectTask(_ path: VaultPath?) {
-        selectedTaskPath = path
-        guard let path, let record = snapshot?.tasks[path] else { return }
-        if taskDrafts[path] == nil {
-            taskDrafts[path] = TaskDraft(record: record, vaultSession: vaultSession)
-        }
-    }
-
-    var selectedTaskDraft: TaskDraft? {
-        guard let selectedTaskPath else { return nil }
-        return taskDrafts[selectedTaskPath]
-    }
-
-    func discardChanges(for path: VaultPath) {
-        if let record = snapshot?.tasks[path] {
-            taskDrafts[path]?.reset(to: record)
-        } else {
-            taskDrafts.removeValue(forKey: path)
-            if selectedTaskPath == path {
-                selectedTaskPath = nil
-            }
-        }
-    }
-
     private func canChangeVault() -> Bool {
         guard !isLoading else { return false }
+        guard pendingMutationPaths.isEmpty, !isHistoryBusy else {
+            errorMessage = "Wait for the current change to finish before switching vaults."
+            return false
+        }
         guard !taskDrafts.values.contains(where: \.isDirty) else {
-            errorMessage = "Save or discard task changes before switching vaults."
+            errorMessage = "Wait for task changes to save or fix invalid fields before switching vaults."
             return false
         }
         guard !isQuickCapturePresented else {
@@ -159,15 +160,26 @@ final class WorkspaceModel {
         guard !taskDrafts.values.contains(where: \.isDirty) else {
             throw VaultSwitchError.unsavedTaskChanges
         }
+        guard pendingMutationPaths.isEmpty, !isHistoryBusy else {
+            throw VaultSwitchError.activeMutation
+        }
         guard !isQuickCapturePresented else {
             throw VaultSwitchError.activeQuickCapture
         }
         refreshLoop?.cancel()
+        for task in autosaveTasks.values {
+            task.cancel()
+        }
+        clearHistory()
+        modelEpoch += 1
         vaultSession = UUID()
         scopedVault = access
         self.store = store
         self.snapshot = snapshot
         taskDrafts.removeAll()
+        autosaveTasks.removeAll()
+        pendingMutationPaths.removeAll()
+        completedTaskStatuses.removeAll()
         route = .today
         selectedTaskPath = nil
         startRefreshLoop()
@@ -181,19 +193,6 @@ final class WorkspaceModel {
                 guard !Task.isCancelled else { return }
                 await self?.refresh()
             }
-        }
-    }
-
-    private func reconcileDrafts(with snapshot: VaultSnapshot) {
-        for (path, draft) in taskDrafts {
-            guard let record = snapshot.tasks[path] else { continue }
-            if !draft.isDirty, draft.revision != record.revision {
-                draft.reset(to: record)
-            }
-        }
-        guard let selectedTaskPath else { return }
-        if taskDrafts[selectedTaskPath] == nil, let record = snapshot.tasks[selectedTaskPath] {
-            taskDrafts[selectedTaskPath] = TaskDraft(record: record, vaultSession: vaultSession)
         }
     }
 }
@@ -210,11 +209,13 @@ enum NewEntityKind: String, Identifiable {
 private enum VaultSwitchError: LocalizedError {
     case unsavedTaskChanges
     case activeQuickCapture
+    case activeMutation
 
     var errorDescription: String? {
         switch self {
-        case .unsavedTaskChanges: "Save or discard task changes before switching vaults."
+        case .unsavedTaskChanges: "Wait for task changes to save or fix invalid fields before switching vaults."
         case .activeQuickCapture: "Finish or cancel quick capture before switching vaults."
+        case .activeMutation: "Wait for the current change to finish before switching vaults."
         }
     }
 }

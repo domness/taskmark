@@ -4,6 +4,33 @@ import Foundation
 public struct FoundationVaultFileSystem: VaultFileSystem {
     public init() {}
 
+    public func coordinateWriting(
+        at url: URL,
+        intent: VaultWriteIntent,
+        operation: (URL) throws -> Void
+    ) throws {
+        let coordinator = NSFileCoordinator(filePresenter: nil)
+        var coordinationError: NSError?
+        var operationError: Error?
+        let options: NSFileCoordinator.WritingOptions = switch intent {
+        case .replacing: .forReplacing
+        case .deleting: .forDeleting
+        }
+        coordinator.coordinate(writingItemAt: url, options: options, error: &coordinationError) { coordinatedURL in
+            do {
+                try operation(coordinatedURL)
+            } catch {
+                operationError = error
+            }
+        }
+        if let coordinationError {
+            throw coordinationError
+        }
+        if let operationError {
+            throw operationError
+        }
+    }
+
     public func contentsOfDirectory(at url: URL) throws -> [URL] {
         try FileManager.default.contentsOfDirectory(
             at: url,
@@ -71,6 +98,16 @@ public struct FoundationVaultFileSystem: VaultFileSystem {
         }
     }
 
+    public func removeFile(at url: URL) throws {
+        let result = url.withUnsafeFileSystemRepresentation { path in
+            guard let path else { return Int32(-1) }
+            return unlink(path)
+        }
+        if result != 0 {
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        }
+    }
+
     public func writeAtomically(_ data: Data, to url: URL) throws {
         let temporaryURL = try writeTemporaryFile(data, beside: url)
 
@@ -126,11 +163,7 @@ public struct FoundationVaultFileSystem: VaultFileSystem {
     }
 
     private func unlinkFile(at url: URL) {
-        url.withUnsafeFileSystemRepresentation { path in
-            if let path {
-                _ = unlink(path)
-            }
-        }
+        try? removeFile(at: url)
     }
 
     private func relativePath(of url: URL, in root: URL) -> String {

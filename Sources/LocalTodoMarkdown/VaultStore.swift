@@ -4,7 +4,7 @@ import LocalTodoDomain
 public actor VaultStore {
     public let root: URL
 
-    private let fileSystem: any VaultFileSystem
+    let fileSystem: any VaultFileSystem
     private var generation: UInt64 = 0
 
     public init(root: URL, fileSystem: any VaultFileSystem = FoundationVaultFileSystem()) {
@@ -15,6 +15,10 @@ public actor VaultStore {
     public func snapshot() throws -> VaultSnapshot {
         generation += 1
         return try VaultScanner(root: root, fileSystem: fileSystem).scan(generation: generation)
+    }
+
+    public func fileExists(at path: VaultPath) -> Bool {
+        fileSystem.exists(at: fileURL(for: path))
     }
 
     public func create(_ entity: LocalTodoEntity) throws -> VaultRecord<LocalTodoEntity> {
@@ -29,37 +33,17 @@ public actor VaultStore {
             if !missingDirectories.isEmpty {
                 try performIO { try fileSystem.createDirectory(at: url.deletingLastPathComponent()) }
             }
-            try performIO { try fileSystem.writeAtomically(data, to: url) }
+            try performIO { try fileSystem.writeExclusively(data, to: url) }
         } catch {
             for directory in missingDirectories {
-                try? fileSystem.remove(at: directory)
+                try? fileSystem.removeEmptyDirectory(at: directory)
+            }
+            if fileSystem.exists(at: url) {
+                throw VaultStoreError.destinationExists(entity.path)
             }
             throw error
         }
         return VaultRecord(value: entity, revision: FileRevision(data: data))
-    }
-
-    public func update(
-        _ entity: LocalTodoEntity,
-        expectedRevision: FileRevision
-    ) throws -> VaultRecord<LocalTodoEntity> {
-        let url = fileURL(for: entity.path)
-        guard fileSystem.exists(at: url) else {
-            throw VaultStoreError.notFound(entity.path)
-        }
-        let currentData = try performIO { try fileSystem.read(at: url) }
-        guard FileRevision(data: currentData) == expectedRevision else {
-            throw VaultStoreError.conflict(entity.path)
-        }
-        let currentDocument = try parseDocument(currentData, at: entity.path)
-        let currentEntity = try EntityDocumentCodec.decode(currentDocument, at: entity.path)
-        guard sameKind(currentEntity, entity) else {
-            throw VaultStoreError.wrongEntityType(entity.path)
-        }
-        let updatedDocument = try EntityDocumentCodec.encode(entity, preserving: currentDocument)
-        let updatedData = try renderedData(updatedDocument)
-        try performIO { try fileSystem.writeAtomically(updatedData, to: url) }
-        return VaultRecord(value: entity, revision: FileRevision(data: updatedData))
     }
 
     public func move(from source: VaultPath, to destination: VaultPath, now: Date) throws -> VaultSnapshot {
@@ -134,21 +118,21 @@ public actor VaultStore {
         return try renderedData(EntityDocumentCodec.encode(entity, preserving: document))
     }
 
-    private func parseDocument(_ data: Data, at path: VaultPath) throws -> MarkdownDocument {
+    func parseDocument(_ data: Data, at path: VaultPath) throws -> MarkdownDocument {
         guard let source = String(data: data, encoding: .utf8) else {
             throw VaultStoreError.inputOutput("File is not valid UTF-8: \(path.value)")
         }
         return try MarkdownDocument.parse(source)
     }
 
-    private func renderedData(_ document: MarkdownDocument) throws -> Data {
+    func renderedData(_ document: MarkdownDocument) throws -> Data {
         guard let data = try document.rendered().data(using: .utf8) else {
             throw VaultStoreError.inputOutput("Unable to encode Markdown")
         }
         return data
     }
 
-    private func fileURL(for path: VaultPath) -> URL {
+    func fileURL(for path: VaultPath) -> URL {
         root.appendingPathComponent(path.value)
     }
 
@@ -162,14 +146,14 @@ public actor VaultStore {
         return result
     }
 
-    private func sameKind(_ lhs: LocalTodoEntity, _ rhs: LocalTodoEntity) -> Bool {
+    func sameKind(_ lhs: LocalTodoEntity, _ rhs: LocalTodoEntity) -> Bool {
         switch (lhs, rhs) {
         case (.task, .task), (.project, .project), (.area, .area): true
         default: false
         }
     }
 
-    private func performIO<Value>(_ operation: () throws -> Value) throws -> Value {
+    func performIO<Value>(_ operation: () throws -> Value) throws -> Value {
         do {
             return try operation()
         } catch let error as VaultStoreError {
