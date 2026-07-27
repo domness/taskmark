@@ -1,0 +1,4 @@
+interface:
+  display_name: "Local Todo"
+  short_description: "Manage a Local Todo Markdown vault safely"
+  default_prompt: "Use the localtodo CLI to inspect and manage tasks in my Local Todo vault."

@@ -1,0 +1,24 @@
+#!/bin/sh
+
+set -eu
+
+message_file="${1:-}"
+
+if [ -z "$message_file" ] || [ ! -f "$message_file" ]; then
+    printf '%s\n' "usage: scripts/validate-commit-message <message-file>" >&2
+    exit 2
+fi
+
+IFS= read -r subject < "$message_file" || true
+pattern='^(feat|fix|docs|refactor|test|build|ci|chore|perf|style)\((app|cli|domain|markdown|skill|docs|build|ci)\)!?: .+'
+
+if ! printf '%s\n' "$subject" | grep -Eq "$pattern"; then
+    printf '%s\n' "invalid Conventional Commit: $subject" >&2
+    printf '%s\n' "expected: type(scope): subject" >&2
+    exit 1
+fi
+
+if [ "${#subject}" -gt 72 ]; then
+    printf '%s\n' "commit subject exceeds 72 characters" >&2
+    exit 1
+fi

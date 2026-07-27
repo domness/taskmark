@@ -1,0 +1,36 @@
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  commits:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Validate Conventional Commits
+        run: scripts/validate-commit-range "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}"
+
+  swift:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install quality tools
+        run: brew install swiftformat swiftlint xcodegen
+      - name: Resolve packages
+        run: swift package resolve
+      - name: Check formatting
+        run: swiftformat Apps Sources Tests Package.swift --lint
+      - name: Lint
+        run: swiftlint lint --strict
+      - name: Test packages
+        run: swift test
+      - name: Generate app project
+        run: xcodegen generate
+      - name: Build app
+        run: xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoApp -configuration Debug build CODE_SIGNING_ALLOWED=NO

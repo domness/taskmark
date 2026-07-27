@@ -1,0 +1,7 @@
+.DS_Store
+.build/
+.swiftpm/xcode/package.xcworkspace/xcuserdata/
+DerivedData/
+LocalTodo.xcodeproj/
+*.xcuserstate
+xcuserdata/
