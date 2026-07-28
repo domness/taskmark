@@ -31,7 +31,9 @@ extension WorkspaceModel {
 
     func registerHistory(replacingWith entity: LocalTodoEntity?, at path: VaultPath, actionName: String) {
         undoManager?.registerUndo(withTarget: self) { model in
-            model.performHistory(replacingWith: entity, at: path, actionName: actionName)
+            MainActor.assumeIsolated {
+                model.performHistory(replacingWith: entity, at: path, actionName: actionName)
+            }
         }
         undoManager?.setActionName(actionName)
     }
@@ -42,7 +44,9 @@ extension WorkspaceModel {
         actionName: String
     ) {
         undoManager?.registerUndo(withTarget: self) { model in
-            model.performTaskTransitionHistory(restoring: task, fields: fields, actionName: actionName)
+            MainActor.assumeIsolated {
+                model.performTaskTransitionHistory(restoring: task, fields: fields, actionName: actionName)
+            }
         }
         undoManager?.setActionName(actionName)
     }
@@ -65,8 +69,21 @@ extension WorkspaceModel {
         restoring value: Value,
         actionName: String
     ) {
+        let action = DraftHistoryAction(
+            draft: draft,
+            keyPath: keyPath,
+            value: value,
+            actionName: actionName
+        )
         undoManager?.registerUndo(withTarget: self) { model in
-            model.changeDraft(draft, keyPath: keyPath, to: value, actionName: actionName)
+            MainActor.assumeIsolated {
+                model.changeDraft(
+                    action.draft,
+                    keyPath: action.keyPath,
+                    to: action.value,
+                    actionName: action.actionName
+                )
+            }
         }
         undoManager?.setActionName(actionName)
     }
