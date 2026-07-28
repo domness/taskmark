@@ -16,13 +16,25 @@ struct SidebarView: View {
             if let snapshot = model.snapshot {
                 Section("Projects") {
                     ForEach(snapshot.projects.keys.sorted(by: { $0.value < $1.value }), id: \.self) { path in
-                        route(.project(path), snapshot.projects[path]?.value.title ?? path.value, "square.stack")
+                        SidebarAssignmentRoute(
+                            model: model,
+                            route: .project(path),
+                            title: model.projectDisplayTitle(path),
+                            systemImage: "square.stack",
+                            target: .project(path)
+                        )
                     }
                     Button("New Project", systemImage: "plus") { model.newEntityKind = .project }
                 }
                 Section("Areas") {
                     ForEach(snapshot.areas.keys.sorted(by: { $0.value < $1.value }), id: \.self) { path in
-                        route(.area(path), snapshot.areas[path]?.value.title ?? path.value, "circle.grid.2x2")
+                        SidebarAssignmentRoute(
+                            model: model,
+                            route: .area(path),
+                            title: model.areaDisplayTitle(path),
+                            systemImage: "circle.grid.2x2",
+                            target: .area(path)
+                        )
                     }
                     Button("New Area", systemImage: "plus") { model.newEntityKind = .area }
                 }

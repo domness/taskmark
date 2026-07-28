@@ -34,6 +34,8 @@ struct LocalTodoApp: App {
                     .keyboardShortcut("2", modifiers: .command)
                 Button("Next") { model.route = .next }
                     .keyboardShortcut("3", modifiers: .command)
+                Button("Search Tasks") { model.beginSearch() }
+                    .keyboardShortcut("f", modifiers: .command)
             }
         }
     }

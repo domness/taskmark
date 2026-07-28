@@ -40,6 +40,11 @@ extension WorkspaceModel {
         return Array(Set(values)).sorted()
     }
 
+    func beginSearch() {
+        route = .search
+        searchFocusRequest += 1
+    }
+
     func createTask(title: String, vaultSession intentSession: UUID) async {
         guard intentSession == vaultSession, let store, let snapshot else { return }
         var mutationPath: VaultPath?

@@ -66,6 +66,28 @@ import Testing
 }
 
 @MainActor
+@Test func taskDraftAdoptsAnAssignmentWhilePreservingAnOverlappingEdit() throws {
+    let original = try taskRecord(path: "Tasks/One.md", title: "Original", revision: "first")
+    var patch = TaskPatch()
+    let project = try VaultPath("Projects/Launch.md")
+    patch.project = .set(project)
+    let savedTask = try patch.applying(to: original.value, now: Date())
+    let saved = VaultRecord(value: savedTask, revision: FileRevision(data: Data("second".utf8)))
+    let draft = TaskDraft(record: original, vaultSession: UUID())
+    let generation = draft.generation
+    draft.notes = "Typed while assigning"
+
+    draft.acceptOrganizationSave(saved, generation: generation, field: .project)
+
+    #expect(draft.project == project.value)
+    #expect(draft.notes == "Typed while assigning")
+    #expect(draft.isDirty)
+    let merged = try draft.patch().applying(to: draft.sourceTask, now: Date())
+    #expect(merged.project == project)
+    #expect(merged.body == "Typed while assigning")
+}
+
+@MainActor
 @Test func taskDraftRebasesLocalEditsOntoExternalChanges() throws {
     let original = try taskRecord(path: "Tasks/One.md", title: "Original", revision: "first")
     let external = try taskRecord(

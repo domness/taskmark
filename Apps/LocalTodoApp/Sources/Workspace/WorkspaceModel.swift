@@ -27,6 +27,8 @@ final class WorkspaceModel {
     var isHistoryBusy = false
     var titleEditRequest = 0
     var titleEditingPath: VaultPath?
+    var searchFocusRequest = 0
+    var taskListDisplayOptionsByRoute: [String: TaskListDisplayOptions]
 
     @ObservationIgnored var store: VaultStore?
     @ObservationIgnored weak var undoManager: UndoManager?
@@ -41,9 +43,15 @@ final class WorkspaceModel {
     @ObservationIgnored private var openRequest = UUID()
     @ObservationIgnored private var refreshRequest = UUID()
     @ObservationIgnored var taskDrafts = [VaultPath: TaskDraft]()
+    @ObservationIgnored let taskListDisplayPreferences: TaskListDisplayPreferencesStore
 
-    init(bookmarks: VaultBookmarkStore = VaultBookmarkStore()) {
+    init(
+        bookmarks: VaultBookmarkStore = VaultBookmarkStore(),
+        taskListDisplayPreferences: TaskListDisplayPreferencesStore = TaskListDisplayPreferencesStore()
+    ) {
         self.bookmarks = bookmarks
+        self.taskListDisplayPreferences = taskListDisplayPreferences
+        taskListDisplayOptionsByRoute = taskListDisplayPreferences.load()
     }
 
     deinit {

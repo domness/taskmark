@@ -26,4 +26,19 @@ enum WorkspaceRoute: Hashable {
         case .issues: "Issues"
         }
     }
+
+    var listPreferencesKey: String {
+        switch self {
+        case .today: "today"
+        case .inbox: "inbox"
+        case .next: "next"
+        case .all: "all"
+        case .search: "search"
+        case let .project(path): "project:\(path.value)"
+        case let .area(path): "area:\(path.value)"
+        case let .tag(tag): "tag:\(tag)"
+        case let .priority(priority): "priority:\(priority?.rawValue ?? "none")"
+        case .issues: "issues"
+        }
+    }
 }

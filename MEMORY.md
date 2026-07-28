@@ -52,6 +52,18 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Routine date planning should take little inspector space while preserving fast keyboard entry, accessible selection state, and deterministic shortcuts.
 - What was rejected and why: Persistent inline date text fields were rejected because they consumed scarce inspector width. Calendar-only entry was rejected because distant dates and pasted values would become unnecessarily slow.
 
+### 2026-07-27: Keep Task-List Controls And Display Preferences In The List Column
+
+- What was decided: Search, capture, inspector, and display controls live in an adaptive middle-column header. Each route persists its own project, area, and tag visibility plus optional project or area grouping.
+- Why: Window-level toolbar placement obscured column ownership, while different task views need different context without forcing one dense row design everywhere.
+- What was rejected and why: A single global row layout was rejected because project, area, and tag views have different redundant metadata. A fixed-width header was rejected because the inspector and sidebar can leave a narrow list column.
+
+### 2026-07-27: Organize Tasks Through Named Pickers And Vault-Bound Dragging
+
+- What was decided: The inspector edits project and area references through named pickers, and task rows can be dragged onto project or area sidebar destinations using an own-process payload bound to the current vault session. Drop assignments persist as direct field-specific transitions, and their undo is registered only after persistence succeeds.
+- Why: Users should not need to type canonical paths for routine organization, while drag-and-drop must not apply external, stale, or cross-vault references. Direct transitions keep failed assignments out of autosave retries and let undo restore only the assigned field.
+- What was rejected and why: Raw or externally readable drag payloads were rejected because external or stale values could target the wrong vault. Temporarily changing the inspector draft and registering undo before the write were rejected because failures and overlapping edits could leave unreliable history.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

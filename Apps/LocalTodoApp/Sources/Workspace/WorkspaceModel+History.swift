@@ -55,11 +55,20 @@ extension WorkspaceModel {
     ) {
         let previous = draft[keyPath: keyPath]
         guard previous != value else { return }
+        registerDraftHistory(draft, keyPath: keyPath, restoring: previous, actionName: actionName)
+        draft[keyPath: keyPath] = value
+    }
+
+    func registerDraftHistory<Value: Equatable>(
+        _ draft: TaskDraft,
+        keyPath: ReferenceWritableKeyPath<TaskDraft, Value>,
+        restoring value: Value,
+        actionName: String
+    ) {
         undoManager?.registerUndo(withTarget: self) { model in
-            model.changeDraft(draft, keyPath: keyPath, to: previous, actionName: actionName)
+            model.changeDraft(draft, keyPath: keyPath, to: value, actionName: actionName)
         }
         undoManager?.setActionName(actionName)
-        draft[keyPath: keyPath] = value
     }
 
     func merge(_ record: VaultRecord<LocalTodoEntity>) {
@@ -228,8 +237,8 @@ extension WorkspaceModel {
             priority: current.priority,
             scheduled: fields.contains(.scheduled) ? task.scheduled : current.scheduled,
             deadline: fields.contains(.deadline) ? task.deadline : current.deadline,
-            project: current.project,
-            area: current.area,
+            project: fields.contains(.project) ? task.project : current.project,
+            area: fields.contains(.area) ? task.area : current.area,
             tags: current.tags,
             recurrence: current.recurrence,
             body: current.body,
@@ -252,5 +261,7 @@ enum TaskTransitionField: Hashable {
     case status
     case scheduled
     case deadline
+    case project
+    case area
     case completedAt
 }

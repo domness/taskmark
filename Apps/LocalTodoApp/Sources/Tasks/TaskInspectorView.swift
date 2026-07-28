@@ -46,8 +46,24 @@ struct TaskInspectorView: View {
                 Spacer()
             }
             DisclosureGroup("Organize") {
-                TextField("Project path", text: $draft.project)
-                TextField("Area path", text: $draft.area)
+                Picker("Project", selection: project) {
+                    Text("None").tag("")
+                    ForEach(projects, id: \.path) { project in
+                        Text(model.projectDisplayTitle(project.path)).tag(project.path.value)
+                    }
+                    if !draft.project.isEmpty, !projects.contains(where: { $0.path.value == draft.project }) {
+                        Text("Missing: \(draft.project)").tag(draft.project)
+                    }
+                }
+                Picker("Area", selection: area) {
+                    Text("None").tag("")
+                    ForEach(areas, id: \.path) { area in
+                        Text(model.areaDisplayTitle(area.path)).tag(area.path.value)
+                    }
+                    if !draft.area.isEmpty, !areas.contains(where: { $0.path.value == draft.area }) {
+                        Text("Missing: \(draft.area)").tag(draft.area)
+                    }
+                }
                 TextField("Tags, comma separated", text: $draft.tags)
             }
             Section("Notes") {
@@ -130,6 +146,28 @@ struct TaskInspectorView: View {
             get: { draft.priority },
             set: { model.changeDraft(draft, keyPath: \.priority, to: $0, actionName: "Change Priority") }
         )
+    }
+
+    private var project: Binding<String> {
+        Binding(
+            get: { draft.project },
+            set: { model.changeDraft(draft, keyPath: \.project, to: $0, actionName: "Change Project") }
+        )
+    }
+
+    private var area: Binding<String> {
+        Binding(
+            get: { draft.area },
+            set: { model.changeDraft(draft, keyPath: \.area, to: $0, actionName: "Change Area") }
+        )
+    }
+
+    private var projects: [Project] {
+        model.snapshot?.projects.values.map(\.value).sorted { $0.title < $1.title } ?? []
+    }
+
+    private var areas: [Area] {
+        model.snapshot?.areas.values.map(\.value).sorted { $0.title < $1.title } ?? []
     }
 
     private var conflictNames: String {

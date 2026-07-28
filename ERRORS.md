@@ -13,3 +13,9 @@ Read this file before suggesting an approach similar to a previous multi-attempt
 - What did not work: Initial autosave and undo implementations treated refresh, selection, and mutation work as mostly independent. Repeated review found stale refresh publication, autosave/history races, and undo operations that could advance the native stack before acquiring their filesystem mutation path.
 - What worked instead: Track vault sessions and model epochs, serialize mutations per path, merge successful writes immediately into the snapshot, keep drafts in the workspace model, and reserve history mutation paths before asynchronous filesystem work begins.
 - Note for next time: Design asynchronous UI mutations as state machines before adding convenience behavior. Reserve shared resources synchronously, make stale-result rejection explicit, and add delayed-store race tests alongside happy-path tests.
+
+## 2026-07-27: Drag Assignment And Draft Reconciliation
+
+- What did not work: Routing sidebar assignments through autosave made failed writes retry without undo history. The first direct-write replacement then let an overlapping unrelated draft edit restore the old assignment, and it treated same-target drops as changes because patches always advance `updatedAt`.
+- What worked instead: Persist assignments as direct field-specific transitions, reject same-target drops before applying a patch, reconcile only the assigned draft field when unrelated edits overlap, and register field-specific undo only after a successful write with an unchanged draft generation.
+- Note for next time: For async commands that overlap editable drafts, define ownership for every field before writing. Detect no-ops from semantic fields before applying timestamped patches, and test failed writes plus overlapping local edits.
