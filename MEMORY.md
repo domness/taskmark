@@ -64,6 +64,31 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Users should not need to type canonical paths for routine organization, while drag-and-drop must not apply external, stale, or cross-vault references. Direct transitions keep failed assignments out of autosave retries and let undo restore only the assigned field.
 - What was rejected and why: Raw or externally readable drag payloads were rejected because external or stale values could target the wrong vault. Temporarily changing the inspector draft and registering undo before the write were rejected because failures and overlapping edits could leave unreliable history.
 
+### 2026-09-08: Target A Dedicated Personal Task Vault
+
+- What was decided: Keep one Markdown note per task in a dedicated task vault. Subtasks are Markdown checkboxes inside the parent task's body. The user's essential Todoist replacement workflows are recurring tasks, subtasks, filters, and projects; sharing is not needed.
+- Why: This matches the user's intended workflow and the existing file contract, allowing daily-driver work to focus on reliability and missing app interactions rather than a new storage model.
+- What was rejected and why: Indexing tasks scattered across general-purpose notes and integrating into an existing Obsidian vault were rejected for this workflow because the user explicitly prefers individual task notes and a dedicated vault. First-class child-task entities are unnecessary for the requested checkbox-based subtasks. Sharing is outside the user's needs.
+
+### 2026-09-08: Harden Metadata, Recurrence, And Mutation Paths
+
+- What was decided: Reject collection-shaped values in optional scalar frontmatter fields, reserved entity paths, NUL, and symlink components below the vault root. After-completion recurrence anchors on the completion day, and paired dates preserve their calendar-day offset. Fixed recurrence retains one-step advancement and checklists remain unchanged.
+- Why: Malformed user content must be diagnosed rather than erased, mutations must not follow static links outside their intended paths, and completing a late recurring task must not calculate its interval from an obsolete date.
+- What was rejected and why: Treating malformed optional fields as absent was rejected because later edits discard them. Resetting checklists or skipping missed fixed occurrences was not introduced because those are separate workflow decisions. Static link checks are not represented as protection against malicious concurrent filesystem swaps.
+
+### 2026-09-08: Disable Unsafe Collection Moves Pending Recovery Design
+
+- What was decided: Temporarily reject all project/area path moves, including dry runs, before mutation. Task moves coordinate both exact paths and use exclusive atomic rename, preserving file bytes. Keep the all-or-nothing reference-update requirement for any future collection-move implementation.
+- Why: Review exposed a conflict between the documented atomic move contract and the old sequential writes with suppressed rollback errors. Multi-file Markdown changes are not one atomic filesystem operation. Even an apparently unreferenced collection can acquire references from another writer, so scanning for references alone is not sufficient to enable a safe collection move.
+- What was rejected and why: Continuing best-effort rollback was rejected because failure or interruption can leave mixed references. Adding a journal alone was rejected as a claim of atomicity because recovery does not hide intermediate states from external editors. A new transaction/recovery design is deferred rather than weakening the storage contract; users can edit collection titles without changing paths.
+
+### 2026-09-08: Calculate Inspector Recurrence Before Autosave
+
+- What was decided: Selecting Done for a recurring task calculates the shared completion transition from the current valid draft and vault timezone. Apply its status and dates together as one native undo group, then persist through existing autosave. Pending notes and other edits stay intact. External repeat-rule changes conflict with local recurring planning edits; external status changes conflict with local recurring date edits.
+- Why: Inspector completion must match the completion action without advancing again on autosave retry or redo. Recurrence/status changes invalidate the assumptions behind calculated dates even when their YAML keys do not overlap. These are semantic conflicts, rather than safe non-overlapping edits under the earlier merge decision.
+- What was rejected and why: Applying recurrence on every draft save was rejected because retries, overlapping edits, and history replay can repeat the transition. Status-only undo was rejected because it leaves the advanced dates behind. Silently adopting a concurrent cancellation or repeat-rule change while saving the calculated dates was rejected because it applies an invalidated completion.
+
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".
