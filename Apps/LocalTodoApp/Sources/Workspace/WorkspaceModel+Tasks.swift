@@ -249,7 +249,7 @@ extension WorkspaceModel {
         return fields
     }
 
-    private func today(configuration: VaultConfiguration, now: Date = Date()) throws -> CalendarDate {
+    func today(configuration: VaultConfiguration, now: Date = Date()) throws -> CalendarDate {
         let calendar = calendar(configuration: configuration)
         let parts = calendar.dateComponents([.year, .month, .day], from: now)
         guard let year = parts.year, let month = parts.month, let day = parts.day else {

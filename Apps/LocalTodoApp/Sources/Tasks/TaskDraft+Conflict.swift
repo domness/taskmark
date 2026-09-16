@@ -68,9 +68,17 @@ extension TaskDraft {
     private func conflictingFields(original: TodoTask, external: TodoTask) -> Set<TaskDraftField> {
         let localChanges = fieldsChanged(from: original)
         let externalChanges = fieldsChanged(in: external, from: original)
-        return localChanges.intersection(externalChanges).filter { field in
-            localValue(for: field) != value(for: field, in: external)
+        var conflicts = localChanges.intersection(externalChanges)
+        if original.recurrence != nil {
+            // Recurring planning edits depend on the repeat rule and completion eligibility, not just date fields.
+            if external.recurrence != original.recurrence {
+                conflicts.formUnion(localChanges.intersection([.status, .scheduled, .deadline]))
+            }
+            if external.status != original.status {
+                conflicts.formUnion(localChanges.intersection([.scheduled, .deadline]))
+            }
         }
+        return conflicts.filter { localValue(for: $0) != value(for: $0, in: external) }
     }
 
     private func fieldsChanged(in task: TodoTask, from original: TodoTask) -> Set<TaskDraftField> {

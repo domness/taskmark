@@ -95,7 +95,7 @@ struct TaskInspectorView: View {
                 }
             } else if draft.hasConflicts {
                 Section("Changed In File") {
-                    Text("Both versions changed: \(conflictNames).")
+                    Text("Conflicting changes: \(conflictNames).")
                         .foregroundStyle(.secondary)
                     HStack {
                         Button("Use File Version") { model.discardChanges(for: draft.path) }
@@ -137,7 +137,7 @@ struct TaskInspectorView: View {
     private var status: Binding<TaskStatus> {
         Binding(
             get: { draft.status },
-            set: { model.changeDraft(draft, keyPath: \.status, to: $0, actionName: "Change Status") }
+            set: { model.changeTaskStatus(draft, to: $0) }
         )
     }
 
