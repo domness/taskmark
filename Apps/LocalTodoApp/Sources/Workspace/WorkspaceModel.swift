@@ -33,6 +33,7 @@ final class WorkspaceModel {
     var titleEditingPath: VaultPath?
     var searchFocusRequest = 0
     var taskListDisplayOptionsByRoute: [String: TaskListDisplayOptions]
+    let filterState = FilterWorkspaceState()
 
     @ObservationIgnored var store: VaultStore?
     @ObservationIgnored weak var undoManager: UndoManager?
@@ -135,6 +136,7 @@ final class WorkspaceModel {
             snapshot = nextSnapshot
             await reconcileDrafts(with: nextSnapshot)
             reconcileProjectDrafts(nextSnapshot)
+            await refreshSavedFilters()
             if let selectedTaskPath, nextSnapshot.tasks[selectedTaskPath] == nil {
                 if taskDrafts[selectedTaskPath]?.isDirty != true {
                     self.selectedTaskPath = nil
@@ -147,7 +149,7 @@ final class WorkspaceModel {
 
     private func canChangeVault() -> Bool {
         guard !isLoading else { return false }
-        guard pendingMutationPaths.isEmpty, !isHistoryBusy else {
+        guard pendingMutationPaths.isEmpty, !isHistoryBusy, !filterState.isSaving else {
             errorMessage = "Wait for the current change to finish before switching vaults."
             return false
         }
@@ -174,7 +176,7 @@ final class WorkspaceModel {
         guard !hasDirtyDrafts else {
             throw VaultSwitchError.unsavedTaskChanges
         }
-        guard pendingMutationPaths.isEmpty, !isHistoryBusy else {
+        guard pendingMutationPaths.isEmpty, !isHistoryBusy, !filterState.isSaving else {
             throw VaultSwitchError.activeMutation
         }
         guard !isQuickCapturePresented else {
@@ -195,9 +197,11 @@ final class WorkspaceModel {
         autosaveTasks.removeAll()
         pendingMutationPaths.removeAll()
         completedTaskStatuses.removeAll()
+        filterState.reset()
         route = .today
         selectedTaskPath = nil
         startRefreshLoop()
+        await refreshSavedFilters()
         return true
     }
 

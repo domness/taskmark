@@ -125,6 +125,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Saved filters are user-authored data, not a disposable index. Keeping them in the vault makes reloads and CLI/app use consistent without hidden identifiers or a canonical database. The optional metadata file needs no migration of existing task notes.
 - What was rejected and why: UserDefaults-only storage was rejected because it would strand definitions outside the vault and CLI. Encoding Swift enum representations directly was rejected because the file format should remain legible. Automatic conflict overwrite/repair was rejected because another client's definitions and unknown metadata must survive.
 
+### 2026-09-16: Separate Working Queries From Saved Filter Definitions
+
+- What was decided: The app previews working criteria immediately and saves named definitions only through explicit Save/Update. Changing a saved filter's sort opens its working editor. Ordinary per-view sorting stays a display preference. Named definition writes use their edit-start revision; conflicts retain working criteria and require Use File Version or an explicit Keep Working Filter rebase before another save. Save operations use native undo/redo and block vault switching while in flight.
+- Why: Exploring task queries is ephemeral; changing a reusable vault definition should be intentional. Background refresh must not silently authorize an overwrite of another client's saved filters.
+- What was rejected and why: Autosaving every filter toggle into a named definition was rejected because exploratory changes would rewrite shared preferences unexpectedly. Making saved filters a cache or silently replacing duplicate names was rejected because they are user-authored vault data. Task/project document autosave remains unchanged.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

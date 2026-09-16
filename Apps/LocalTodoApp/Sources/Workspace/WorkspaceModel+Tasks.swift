@@ -14,21 +14,7 @@ extension WorkspaceModel {
         if route == .search, !hasActiveSearch {
             return []
         }
-        let scope: TaskScope = switch route {
-        case .today: .today
-        case .inbox: .inbox
-        case .next: .next
-        case .all, .search, .issues: .all
-        case let .project(path): .project(path)
-        case let .area(path): .area(path)
-        case let .tag(tag): .tag(tag)
-        case let .priority(priority): .priority(priority)
-        }
-        let query = TaskQuery(
-            scope: scope,
-            text: route == .search ? searchText.trimmingCharacters(in: .whitespacesAndNewlines) : "",
-            includeCompleted: route == .all || route == .search
-        )
+        guard let query = currentTaskQuery else { return [] }
         return query.results(from: snapshot.tasks.values.map(\.value), today: today)
     }
 

@@ -1,6 +1,27 @@
 import LocalTodoDomain
 
 extension WorkspaceModel {
+    var currentTaskSort: TaskSort {
+        if route == .filters {
+            return filterState.editor.sort
+        }
+        if case let .savedFilter(name) = route {
+            return filterState.record?.filters.first { $0.name == name }?.query.sort ?? .path
+        }
+        return currentTaskListDisplayOptions.sort ?? route.defaultSort
+    }
+
+    func setTaskSort(_ sort: TaskSort) {
+        if case let .savedFilter(name) = route {
+            beginFilterEditing(name: name)
+        }
+        if route == .filters {
+            filterState.editor.sort = sort
+        } else {
+            updateTaskListDisplayOptions { $0.sort = sort }
+        }
+    }
+
     var currentTaskListDisplayOptions: TaskListDisplayOptions {
         taskListDisplayOptionsByRoute[route.listPreferencesKey] ?? .defaults(for: route)
     }

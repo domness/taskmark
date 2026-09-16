@@ -7,6 +7,7 @@ extension WorkspaceModel {
         !isHistoryBusy
             && pendingMutationPaths.isEmpty
             && !hasDirtyDrafts
+            && !filterState.isSaving
     }
 
     func setUndoManager(_ undoManager: UndoManager?) {

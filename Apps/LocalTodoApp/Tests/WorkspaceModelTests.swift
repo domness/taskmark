@@ -269,7 +269,10 @@ func withWorkspace(
         defaults.removePersistentDomain(forName: suiteName)
         try? FileManager.default.removeItem(at: root)
     }
-    let model = WorkspaceModel(bookmarks: VaultBookmarkStore(defaults: defaults))
+    let model = WorkspaceModel(
+        bookmarks: VaultBookmarkStore(defaults: defaults),
+        taskListDisplayPreferences: TaskListDisplayPreferencesStore(defaults: defaults)
+    )
     await model.createVault(at: root)
     #expect(model.errorMessage == nil)
     try await operation(model, root)

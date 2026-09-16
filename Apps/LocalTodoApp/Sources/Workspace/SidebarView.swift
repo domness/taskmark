@@ -14,6 +14,7 @@ struct SidebarView: View {
                 route(.search, "Search", "magnifyingglass")
             }
             if let snapshot = model.snapshot {
+                FilterSidebarSection(model: model)
                 ProjectSidebarSection(model: model)
                 Section("Areas") {
                     ForEach(snapshot.areas.keys.sorted(by: { $0.value < $1.value }), id: \.self) { path in
