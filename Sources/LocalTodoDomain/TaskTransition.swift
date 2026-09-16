@@ -17,14 +17,24 @@ public enum TaskTransition {
         }
 
         let baseDate = task.scheduled ?? task.deadline ?? today
-        let nextDate = try recurrence.next(after: baseDate, calendar: calendar)
+        let recurrenceBase: CalendarDate = switch recurrence {
+        case .fixed: baseDate
+        case .afterCompletion: today
+        }
+        let nextDate = try recurrence.next(after: recurrenceBase, calendar: calendar)
         var patch = TaskPatch()
         patch.status = .set(.next)
         if task.scheduled != nil || task.deadline == nil {
             patch.scheduled = .set(nextDate)
         }
-        if task.deadline != nil {
-            patch.deadline = .set(nextDate)
+        if let deadline = task.deadline {
+            // Shift by calendar days so date separation survives DST and month-length changes.
+            var gregorian = Calendar(identifier: .gregorian)
+            gregorian.timeZone = calendar.timeZone
+            let advance = try gregorian.dateComponents(
+                [.day], from: baseDate.date(in: gregorian), to: nextDate.date(in: gregorian)
+            )
+            patch.deadline = try .set(deadline.adding(advance, calendar: gregorian))
         }
         return try patch.applying(to: task, now: now)
     }
