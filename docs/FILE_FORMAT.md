@@ -103,6 +103,8 @@ completed_at: null
 
 Project status is `active`, `someday`, `done`, or `canceled`.
 
+Completing a project sets its own status and `completed_at`; reopening sets `active` and clears `completed_at`. Neither action changes child task files or references. Title/notes edits keep the exact project path. Routine app navigation shows active projects; inactive projects remain available in a separate collapsed section.
+
 ```yaml
 ---
 type: area

@@ -6,7 +6,7 @@ extension WorkspaceModel {
     var canPerformHistory: Bool {
         !isHistoryBusy
             && pendingMutationPaths.isEmpty
-            && !taskDrafts.values.contains(where: \.isDirty)
+            && !hasDirtyDrafts
     }
 
     func setUndoManager(_ undoManager: UndoManager?) {
@@ -122,6 +122,7 @@ extension WorkspaceModel {
         projects.removeValue(forKey: path)
         areas.removeValue(forKey: path)
         taskDrafts.removeValue(forKey: path)
+        projectDrafts.removeValue(forKey: path)
         if selectedTaskPath == path {
             selectedTaskPath = nil
         }

@@ -166,7 +166,8 @@ struct TaskInspectorView: View {
     }
 
     private var projects: [Project] {
-        model.snapshot?.projects.values.map(\.value).sorted { $0.title < $1.title } ?? []
+        let assignedInactive = model.inactiveProjects.filter { $0.path.value == draft.project }
+        return model.activeProjects + assignedInactive
     }
 
     private var areas: [Area] {

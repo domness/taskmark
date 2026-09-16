@@ -12,10 +12,10 @@ All automated vault workflows use disposable temporary directories.
 - Task notes expose interactive checklist toggles backed by the shared body projection. Stale projections are rejected. Raw notes remain available for writing steps and other Markdown.
 - App completion flushes pending draft edits before calculating the shared transition. Regression tests first reproduced row completion ignoring an unsaved repeat rule; both row and inspector paths now persist the correct dates and checklist state.
 - `WorkspaceRepeatEditingTests`, `WorkspaceChecklistEditingTests`, and `WorkspaceChecklistResetTests` exercise autosave after selection changes, reload, undo/redo, external recurrence/notes/reset conflicts, explicit conflict resolution, and pending-edit completion. Existing retry, unavailable-file, and date-conflict suites remain passing.
+- Project title/notes/status editing now uses workspace-owned autosave. Complete/reopen uses shared domain transitions. Active projects appear in routine navigation; inactive projects remain accessible in a collapsed section. `WorkspaceProjectTests` and `WorkspaceProjectConflictTests` cover persistence, actual workspace reload, title/path/reference preservation, unknown frontmatter, status undo/redo, concurrent field rebases/conflicts, malformed-file recovery, in-flight typing, and injected write-failure retry. `CLIProjectTests` verifies the shared project lifecycle.
 
 ## Remaining Acceptance Gaps
 
-- Project title/notes editing, complete/reopen, and inactive-project navigation in the app, including autosave/history/conflict evidence.
 - Combined and saved filters over project, status, tags, priority and dates, with useful sorting and reload evidence.
 - Upcoming, Waiting, and Someday routes with keyboard-accessible capture, completion and rescheduling, and workflow tests.
 - Broader injected write-failure evidence for new mutations and final cross-workflow acceptance review.
@@ -23,7 +23,7 @@ All automated vault workflows use disposable temporary directories.
 
 ## Verification Boundary
 
-The latest implementation checkpoint passed `make check`: formatting, strict lint, 34 domain tests, 51 Markdown tests, 6 CLI tests, 41 macOS app tests, and app build (parameterized cases are additional to test-function counts).
+Implementation checkpoints run `make check`: formatting, strict lint, shared domain/Markdown/CLI tests, macOS app tests, and app build. The project-management checkpoint includes 34 domain tests, 51 Markdown tests, 7 CLI tests, and 48 macOS app tests (parameterized cases are additional to test-function counts).
 No live UI inspection or screenshots have been performed. Rendered layout, VoiceOver traversal and physical keyboard focus behavior are not yet verified; native controls and accessible labels are implemented and compile-tested.
 
 Todoist migration, a real-use pilot, mobile/web clients, iCloud validation, and project/area file moves are excluded.

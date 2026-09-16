@@ -14,18 +14,7 @@ struct SidebarView: View {
                 route(.search, "Search", "magnifyingglass")
             }
             if let snapshot = model.snapshot {
-                Section("Projects") {
-                    ForEach(snapshot.projects.keys.sorted(by: { $0.value < $1.value }), id: \.self) { path in
-                        SidebarAssignmentRoute(
-                            model: model,
-                            route: .project(path),
-                            title: model.projectDisplayTitle(path),
-                            systemImage: "square.stack",
-                            target: .project(path)
-                        )
-                    }
-                    Button("New Project", systemImage: "plus") { model.newEntityKind = .project }
-                }
+                ProjectSidebarSection(model: model)
                 Section("Areas") {
                     ForEach(snapshot.areas.keys.sorted(by: { $0.value < $1.value }), id: \.self) { path in
                         SidebarAssignmentRoute(

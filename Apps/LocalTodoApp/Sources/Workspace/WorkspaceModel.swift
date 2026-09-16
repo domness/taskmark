@@ -12,6 +12,10 @@ final class WorkspaceModel {
             if route != .search {
                 searchText = ""
             }
+            if route != oldValue {
+                selectedTaskPath = nil
+                prepareProjectDraft()
+            }
         }
     }
 
@@ -43,6 +47,7 @@ final class WorkspaceModel {
     @ObservationIgnored private var openRequest = UUID()
     @ObservationIgnored private var refreshRequest = UUID()
     @ObservationIgnored var taskDrafts = [VaultPath: TaskDraft]()
+    @ObservationIgnored var projectDrafts = [VaultPath: ProjectDraft]()
     @ObservationIgnored let taskListDisplayPreferences: TaskListDisplayPreferencesStore
 
     init(
@@ -129,6 +134,7 @@ final class WorkspaceModel {
             }
             snapshot = nextSnapshot
             await reconcileDrafts(with: nextSnapshot)
+            reconcileProjectDrafts(nextSnapshot)
             if let selectedTaskPath, nextSnapshot.tasks[selectedTaskPath] == nil {
                 if taskDrafts[selectedTaskPath]?.isDirty != true {
                     self.selectedTaskPath = nil
@@ -145,8 +151,8 @@ final class WorkspaceModel {
             errorMessage = "Wait for the current change to finish before switching vaults."
             return false
         }
-        guard !taskDrafts.values.contains(where: \.isDirty) else {
-            errorMessage = "Wait for task changes to save or fix invalid fields before switching vaults."
+        guard !hasDirtyDrafts else {
+            errorMessage = "Wait for document changes to save or fix invalid fields before switching vaults."
             return false
         }
         guard !isQuickCapturePresented else {
@@ -165,7 +171,7 @@ final class WorkspaceModel {
         let store = VaultStore(root: url)
         let snapshot = try await store.snapshot()
         guard request == openRequest else { return false }
-        guard !taskDrafts.values.contains(where: \.isDirty) else {
+        guard !hasDirtyDrafts else {
             throw VaultSwitchError.unsavedTaskChanges
         }
         guard pendingMutationPaths.isEmpty, !isHistoryBusy else {
@@ -185,6 +191,7 @@ final class WorkspaceModel {
         self.store = store
         self.snapshot = snapshot
         taskDrafts.removeAll()
+        projectDrafts.removeAll()
         autosaveTasks.removeAll()
         pendingMutationPaths.removeAll()
         completedTaskStatuses.removeAll()

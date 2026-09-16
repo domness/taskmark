@@ -107,6 +107,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Completion must use the rule and notes currently being edited, including a newly added repeat rule. A regression test reproduced the old row action completing the stale on-disk non-recurring task and conflicting with the pending rule.
 - What was rejected and why: View-owned persistence was rejected because selection changes must not lose edits. Separate checklist files and a rendered-Markdown rewrite were rejected because the parent body remains canonical. Calculating from the old record then merging pending repeat settings was rejected because its dates and reset behavior would be wrong.
 
+### 2026-09-16: Manage Projects Through Persistent Drafts And Active Navigation
+
+- What was decided: Project title, notes and status use workspace-owned debounced drafts, field-specific undo, revision-checked writes, non-overlapping rebases and explicit conflict resolution. Routine sidebar and assignment choices show active projects; a collapsed Inactive Projects section retains someday, done and canceled projects for review/reopening. An already-assigned inactive project remains selectable in the task inspector.
+- Why: Project management should be possible without YAML or path moves, and finishing a project should remove it from routine navigation without hiding its content permanently. Project completion changes only the project file, not its tasks.
+- What was rejected and why: Cascading task completion and collection moves were rejected because they change unrelated task state or violate the current collection-move restriction. View-owned saves were rejected because navigation and application termination must retain/flush edits. Missing/malformed project files block saving and retain local notes until restored or explicitly discarded.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

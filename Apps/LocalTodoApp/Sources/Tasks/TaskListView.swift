@@ -10,6 +10,10 @@ struct TaskListView: View {
         VStack(spacing: 0) {
             listHeader
             Divider()
+            if let draft = model.selectedProjectDraft {
+                ProjectListHeader(model: model, draft: draft)
+                Divider()
+            }
             if model.isQuickCapturePresented {
                 QuickCaptureRow(model: model)
                     .padding(.horizontal)

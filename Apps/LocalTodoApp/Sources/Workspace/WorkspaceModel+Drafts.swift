@@ -6,7 +6,7 @@ extension WorkspaceModel {
         !pendingMutationPaths.isEmpty
             || isHistoryBusy
             || !quickCaptureTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            || taskDrafts.values.contains(where: \.isDirty)
+            || hasDirtyDrafts
     }
 
     func flushTaskChanges() async -> Bool {
@@ -20,10 +20,13 @@ extension WorkspaceModel {
         for draft in taskDrafts.values where draft.isDirty && !draft.hasConflicts && draft.validationError == nil {
             await updateTask(draft)
         }
+        for draft in projectDrafts.values where draft.canSave {
+            await updateProject(draft)
+        }
         return pendingMutationPaths.isEmpty
             && !isHistoryBusy
             && quickCaptureTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            && !taskDrafts.values.contains(where: \.isDirty)
+            && !hasDirtyDrafts
     }
 
     func beginQuickCapture() {
