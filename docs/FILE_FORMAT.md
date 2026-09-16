@@ -153,7 +153,7 @@ Fixed rules use a strict RFC 5545 subset:
 After-completion intervals use exactly `P<n>D`, `P<n>W`, `P<n>M`, or `P<n>Y`, where `<n>` is from 1 through 999. Completing a recurring task keeps the same path and advances its scheduled date, deadline, or both according to the rule.
 
 - After-completion rules calculate the next date from the injected completion day in the vault timezone, not the previous task date.
-- Fixed rules advance one occurrence from the previous scheduled date, or deadline when no scheduled date exists. Missed occurrences are not automatically skipped.
+- Fixed rules advance from the previous scheduled date, or deadline when no scheduled date exists, repeatedly following the rule until the next occurrence is strictly after the completion day. Early completion still advances at least one occurrence. Monthly/yearly advancement retains the existing calendar clamping behavior (for example January 31 → February 28 → March 28).
 - When both dates exist, the scheduled date anchors the recurrence and the deadline keeps its calendar-day offset from it, including across daylight-saving changes.
 - A recurring task with neither date gets a scheduled date calculated from the completion day.
 - Recurrence does not reset checklist items or otherwise modify the Markdown body.

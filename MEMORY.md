@@ -89,6 +89,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - What was rejected and why: Applying recurrence on every draft save was rejected because retries, overlapping edits, and history replay can repeat the transition. Status-only undo was rejected because it leaves the advanced dates behind. Silently adopting a concurrent cancellation or repeat-rule change while saving the calculated dates was rejected because it applies an invalidated completion.
 
 
+### 2026-09-16: Skip Missed Fixed Occurrences For Run Your Day
+
+- What was decided: At the user's explicit request, fixed completion walks the existing cadence until its next date is strictly after the vault-local completion day; early completion still advances once. After-completion intervals remain anchored to the completion day. Paired dates retain their signed calendar-day offset.
+- Why: Completing late must produce usable future work rather than another overdue occurrence. This intentionally revises the one-step decision recorded on 2026-09-08. No persisted schema changes are needed for this transition change.
+- What was rejected and why: Anchoring fixed recurrence to today was rejected because it changes the cadence. Changing monthly clamping while skipping was rejected because it is a separate recurrence-rule change.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

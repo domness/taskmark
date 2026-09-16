@@ -82,8 +82,14 @@ func completingAfterCompletionRecurrenceUsesToday(
     #expect(Array(next.body.utf8) == Array(body.utf8))
 }
 
-@Test(arguments: ["2026-06-01", "2026-09-01"])
-func completingFixedRecurrenceAdvancesOneStepFromPreviousDate(today: String) throws {
+@Test(arguments: [
+    ("2026-06-01", "2026-08-03", "2026-08-08"),
+    ("2026-08-03", "2026-08-10", "2026-08-15"),
+    ("2026-09-01", "2026-09-07", "2026-09-12"),
+])
+func completingFixedRecurrenceSkipsMissedOccurrences(
+    today: String, scheduled: String, deadline: String
+) throws {
     let task = try makeTask(
         scheduled: CalendarDate("2026-07-27"),
         deadline: CalendarDate("2026-08-01"),
@@ -94,8 +100,8 @@ func completingFixedRecurrenceAdvancesOneStepFromPreviousDate(today: String) thr
         task, now: testNow, today: CalendarDate(today), calendar: testCalendar()
     )
 
-    #expect(try next.scheduled == CalendarDate("2026-08-03"))
-    #expect(try next.deadline == CalendarDate("2026-08-08"))
+    #expect(try next.scheduled == CalendarDate(scheduled))
+    #expect(try next.deadline == CalendarDate(deadline))
     #expect(next.body == task.body)
 }
 

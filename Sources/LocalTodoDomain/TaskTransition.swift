@@ -21,7 +21,13 @@ public enum TaskTransition {
         case .fixed: baseDate
         case .afterCompletion: today
         }
-        let nextDate = try recurrence.next(after: recurrenceBase, calendar: calendar)
+        var nextDate = try recurrence.next(after: recurrenceBase, calendar: calendar)
+        if case .fixed = recurrence {
+            // Walk the existing cadence; completing late must not leave another overdue occurrence.
+            while nextDate <= today {
+                nextDate = try recurrence.next(after: nextDate, calendar: calendar)
+            }
+        }
         var patch = TaskPatch()
         patch.status = .set(.next)
         if task.scheduled != nil || task.deadline == nil {

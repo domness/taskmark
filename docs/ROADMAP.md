@@ -12,7 +12,7 @@
 ### Trust The Files Follow-Up
 
 - Restore project/area path moves only after designing and testing multi-file recovery, concurrent-writer behavior, and external-reader visibility. These moves are currently rejected before mutation; task moves use exclusive atomic rename.
-- Decide whether fixed recurrence should skip missed occurrences. Inspector completion now uses the shared transition, with grouped status/date undo and conflict checks for externally changed recurrence inputs.
+- Fixed recurrence skips missed occurrences through the completion day. Inspector completion uses the shared transition, with grouped status/date undo and conflict checks for externally changed recurrence inputs.
 - Validate real iCloud behavior and crash/power-loss recovery before claiming sync or durability guarantees.
 
 ### Feature Scope
