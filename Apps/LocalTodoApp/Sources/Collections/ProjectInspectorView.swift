@@ -1,0 +1,59 @@
+import LocalTodoDomain
+import SwiftUI
+
+struct ProjectInspectorView: View {
+    let model: WorkspaceModel
+    @Bindable var draft: ProjectDraft
+
+    var body: some View {
+        Form {
+            TextField("Project title", text: $draft.title)
+                .font(.headline)
+            Picker("Project status", selection: Binding(
+                get: { draft.status },
+                set: { model.changeProjectField(draft, field: .status, to: $0.rawValue) }
+            )) {
+                ForEach(ProjectStatus.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
+            }
+            Button(draft.status == .done || draft.status == .canceled ? "Reopen Project" : "Complete Project") {
+                model.toggleProjectCompletion(draft)
+            }
+            .disabled(!draft.conflicts.isEmpty || draft.unavailableMessage != nil)
+            Text("Project status does not change its tasks.")
+                .font(.caption).foregroundStyle(.secondary)
+            Section("Project Notes") {
+                TextEditor(text: $draft.notes)
+                    .font(.body)
+                    .frame(minHeight: 180)
+                    .accessibilityLabel("Project notes, Markdown")
+            }
+            Section("File") {
+                Text(draft.path.value).font(.caption.monospaced()).textSelection(.enabled)
+            }
+            if let message = draft.unavailableMessage {
+                Section("Project File Unavailable") {
+                    Text(message)
+                    Button("Discard Changes") { model.discardProjectChanges(draft) }
+                }
+            } else if !draft.conflicts.isEmpty {
+                Section("Changed In File") {
+                    Text("Conflicting changes: \(draft.conflicts.map(\.rawValue).sorted().joined(separator: ", ")).")
+                    Button("Use File Version") { model.discardProjectChanges(draft) }
+                    Button("Keep My Changes") { draft.keepLocalChanges() }
+                }
+            } else if let error = draft.validationError ?? draft.saveError {
+                Label(error, systemImage: "exclamationmark.triangle")
+                Button("Retry Save") { Task { await model.updateProject(draft) } }
+                    .disabled(draft.validationError != nil)
+            } else {
+                Label(
+                    draft.isSaving ? "Saving" : draft.isDirty ? "Waiting to save" : "Saved",
+                    systemImage: draft.isDirty ? "clock" : "checkmark"
+                )
+                .foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .padding(.vertical)
+    }
+}

@@ -8,27 +8,13 @@ extension WorkspaceModel {
     }
 
     var visibleTasks: [TodoTask] {
-        guard let snapshot, let today = try? today(configuration: snapshot.configuration) else {
+        guard let snapshot, let today = try? today(configuration: snapshot.configuration, now: clock()) else {
             return []
         }
         if route == .search, !hasActiveSearch {
             return []
         }
-        let scope: TaskScope = switch route {
-        case .today: .today
-        case .inbox: .inbox
-        case .next: .next
-        case .all, .search, .issues: .all
-        case let .project(path): .project(path)
-        case let .area(path): .area(path)
-        case let .tag(tag): .tag(tag)
-        case let .priority(priority): .priority(priority)
-        }
-        let query = TaskQuery(
-            scope: scope,
-            text: route == .search ? searchText.trimmingCharacters(in: .whitespacesAndNewlines) : "",
-            includeCompleted: route == .all || route == .search
-        )
+        guard let query = currentTaskQuery else { return [] }
         return query.results(from: snapshot.tasks.values.map(\.value), today: today)
     }
 
@@ -45,19 +31,17 @@ extension WorkspaceModel {
         searchFocusRequest += 1
     }
 
-    func createTask(title: String, vaultSession intentSession: UUID) async {
+    func createTask(
+        title: String, vaultSession intentSession: UUID, captureRoute: WorkspaceRoute = .inbox,
+        captureGeneration: UInt64? = nil, now: Date? = nil
+    ) async {
         guard intentSession == vaultSession, let store, let snapshot else { return }
+        let submittedGeneration = captureGeneration ?? quickCaptureGeneration
         var mutationPath: VaultPath?
         do {
-            let now = Date()
+            let now = now ?? clock()
             let path = try nextTaskPath(title: title, snapshot: snapshot)
-            let task = try TodoTask(
-                path: path,
-                title: title,
-                status: .inbox,
-                createdAt: now,
-                updatedAt: now
-            )
+            let task = try capturedTask(at: path, title: title, route: captureRoute, now: now)
             mutationPath = path
             guard beginMutation(at: path) else { return }
             let record = try await store.create(.task(task))
@@ -65,8 +49,7 @@ extension WorkspaceModel {
             guard intentSession == vaultSession else { return }
             merge(record)
             registerHistory(replacingWith: nil, at: path, actionName: "Create Task")
-            quickCaptureTitle = ""
-            isQuickCapturePresented = false
+            finishQuickCapture(title: title, generation: submittedGeneration)
             await refresh()
             selectTask(path)
         } catch {
@@ -87,9 +70,10 @@ extension WorkspaceModel {
             errorMessage = "The task changed before completion. Local Todo refreshed it; try again."
             return
         }
+        guard let record = await prepareCompletion(record, session: intentSession) else { return }
         guard beginMutation(at: path) else { return }
         do {
-            let now = Date()
+            let now = clock()
             let task = record.value
             let previousStatus = completedTaskStatuses[path] ?? .inbox
             let updated = task.status.isComplete
@@ -119,6 +103,20 @@ extension WorkspaceModel {
             endMutation(at: path)
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func prepareCompletion(_ record: VaultRecord<TodoTask>, session: UUID) async -> VaultRecord<TodoTask>? {
+        guard let draft = taskDrafts[record.value.path] else { return record }
+        if draft.isDirty {
+            await updateTask(draft)
+        }
+        guard !draft.isDirty, !draft.hasConflicts, draft.sourceUnavailableMessage == nil,
+              session == vaultSession, let saved = snapshot?.tasks[record.value.path]
+        else {
+            errorMessage = "Save or resolve the task’s pending changes before completing it."
+            return nil
+        }
+        return saved
     }
 
     func updateTask(_ draft: TaskDraft, retryingConflict: Bool = true) async {
@@ -234,6 +232,9 @@ extension WorkspaceModel {
 
     private func transitionFields(from task: TodoTask, to updated: TodoTask) -> Set<TaskTransitionField> {
         var fields = Set<TaskTransitionField>()
+        if task.body != updated.body {
+            fields.insert(.body)
+        }
         if task.status != updated.status {
             fields.insert(.status)
         }

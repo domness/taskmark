@@ -10,6 +10,11 @@ struct TaskListView: View {
         VStack(spacing: 0) {
             listHeader
             Divider()
+            FilterRouteHeader(model: model)
+            if let draft = model.selectedProjectDraft {
+                ProjectListHeader(model: model, draft: draft)
+                Divider()
+            }
             if model.isQuickCapturePresented {
                 QuickCaptureRow(model: model)
                     .padding(.horizontal)
@@ -68,6 +73,9 @@ struct TaskListView: View {
 
     private var displayOptionsMenu: some View {
         Menu {
+            Picker("Sort", selection: Binding(get: { model.currentTaskSort }, set: { model.setTaskSort($0) })) {
+                ForEach(TaskSort.allCases, id: \.self) { Text($0.title).tag($0) }
+            }
             Section("Show in Rows") {
                 Toggle("Project", isOn: metadataBinding(.project))
                 Toggle("Area", isOn: metadataBinding(.area))

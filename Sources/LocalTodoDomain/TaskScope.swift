@@ -3,6 +3,9 @@ public enum TaskScope: Hashable, Sendable {
     case today
     case inbox
     case next
+    case upcoming
+    case waiting
+    case someday
     case project(VaultPath)
     case area(VaultPath)
     case tag(String)

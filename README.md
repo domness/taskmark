@@ -2,7 +2,9 @@
 
 Local Todo is a local-first GTD task manager whose source of truth is a directory of human-readable Markdown files. The macOS app and CLI share the same domain rules and storage implementation, so every change remains inspectable outside the app.
 
-The current implementation includes inbox, Today, Next, projects, areas, tags, priorities, dates, deadlines, recurrence, search, diagnostics, atomic task moves, and conflict-aware edits. Project and area path moves are temporarily disabled pending safe multi-file recovery. iOS is planned; a web client is intentionally deferred.
+The macOS app supports Inbox, Today, Next, Upcoming, Waiting and Someday; project editing and completion; interactive note checklists; editable fixed/after-completion recurrence; saved combined filters; and keyboard capture, completion and rescheduling. Task and project edits autosave with conflict handling and native undo/redo. Project and area path moves remain disabled pending safe multi-file recovery.
+
+See the [daily workflow guide](docs/DAILY_WORK.md) for controls and shortcuts, and the [acceptance evidence](docs/RUN_YOUR_DAY.md) for automated verification and its limits. iOS/web clients, migration, a real-use pilot and iCloud validation are outside this milestone.
 
 ## Requirements
 
@@ -42,7 +44,9 @@ show       Show any entity by exact path
 edit       Edit task fields or body
 complete   Complete or roll forward a recurring task
 reopen     Restore a completed task to an incomplete status
+reschedule Move paired dates together while preserving their offset
 search     Search titles, bodies, and tags with combined filters
+filter     Save, list, run, and delete named vault filters
 project    Add, list, show, edit, complete, and reopen projects
 area       Add, list, show, edit, archive, and activate areas
 move       Move a task atomically; project and area moves are disabled
@@ -51,6 +55,8 @@ schema     Describe the supported schema
 ```
 
 Commands resolve the nearest ancestor vault by default. Pass `--vault PATH` to target one explicitly, `--json` for stable machine-readable output, and `--dry-run` to preview mutations. `localtodo doctor` exits with status 10 when it finds diagnostics.
+
+**Intentional CLI behavior change:** `edit --status done` now applies recurrence using the edited rule, dates and reset preference, matching the app inspector and `complete`. To finish a recurring task permanently, use `edit --clear-recurrence --status done`. JSON entity output retains the `recurrence` mode and adds `repeat_rule` or `repeat_after` for inspecting the full rule, plus `reset_checklist_on_repeat`.
 
 ```bash
 localtodo edit --vault "$HOME/Local Todo" --dry-run --json \

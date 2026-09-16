@@ -7,6 +7,9 @@ struct InspectorContentView: View {
         if let draft = model.selectedTaskDraft {
             TaskInspectorView(model: model, draft: draft)
                 .id(draft.path)
+        } else if let draft = model.selectedProjectDraft {
+            ProjectInspectorView(model: model, draft: draft)
+                .id(draft.path)
         } else {
             ContentUnavailableView(
                 "No Task Selected",

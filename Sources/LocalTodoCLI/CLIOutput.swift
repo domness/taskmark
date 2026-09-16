@@ -32,6 +32,9 @@ struct EntityOutput: Encodable {
     let area: String?
     let tags: [String]
     let recurrence: String?
+    let repeatRule: String?
+    let repeatAfter: String?
+    let resetChecklistOnRepeat: Bool?
     let body: String?
     let createdAt: String
     let updatedAt: String
@@ -42,6 +45,9 @@ struct EntityOutput: Encodable {
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case completedAt = "completed_at"
+        case resetChecklistOnRepeat = "reset_checklist_on_repeat"
+        case repeatRule = "repeat_rule"
+        case repeatAfter = "repeat_after"
     }
 
     init(_ entity: LocalTodoEntity, includeBody: Bool) {
@@ -69,6 +75,18 @@ struct EntityOutput: Encodable {
         area = task.area?.value
         tags = task.tags
         recurrence = task.recurrence.map(Self.recurrenceDescription)
+        switch task.recurrence {
+        case let .fixed(rule):
+            repeatRule = RecurrenceFormat.expression(.fixed(rule))
+            repeatAfter = nil
+        case let .afterCompletion(interval):
+            repeatRule = nil
+            repeatAfter = RecurrenceFormat.expression(.afterCompletion(interval))
+        case nil:
+            repeatRule = nil
+            repeatAfter = nil
+        }
+        resetChecklistOnRepeat = task.resetChecklistOnRepeat
         body = includeBody ? task.body : nil
         createdAt = formatter.string(from: task.createdAt)
         updatedAt = formatter.string(from: task.updatedAt)
@@ -87,6 +105,9 @@ struct EntityOutput: Encodable {
         area = value.area?.value
         tags = value.tags
         recurrence = nil
+        repeatRule = nil
+        repeatAfter = nil
+        resetChecklistOnRepeat = nil
         body = includeBody ? value.body : nil
         createdAt = formatter.string(from: value.createdAt)
         updatedAt = formatter.string(from: value.updatedAt)
@@ -105,6 +126,9 @@ struct EntityOutput: Encodable {
         area = nil
         tags = value.tags
         recurrence = nil
+        repeatRule = nil
+        repeatAfter = nil
+        resetChecklistOnRepeat = nil
         body = includeBody ? value.body : nil
         createdAt = formatter.string(from: value.createdAt)
         updatedAt = formatter.string(from: value.updatedAt)

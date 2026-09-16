@@ -1,10 +1,12 @@
 import Foundation
+import LocalTodoDomain
 
 struct TaskListDisplayOptions: Codable, Equatable {
     var showsProject: Bool
     var showsArea: Bool
     var showsTags: Bool
     var grouping: TaskListGrouping
+    var sort: TaskSort?
 
     static func defaults(for route: WorkspaceRoute) -> Self {
         switch route {

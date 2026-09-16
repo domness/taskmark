@@ -101,6 +101,60 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: These improvements support daily use and personalization while making native UI and file-contract dependencies visible before implementation.
 - What was rejected and why: Treating CSS as directly supported by SwiftUI or silently reserving `.config/` was rejected because each requires an explicit implementation/contract design. Reordering by moving collection files was rejected because sidebar order is presentation and collection path moves remain disabled for safety.
 
+### 2026-09-16: Opt In To Checklist Reset Per Task
+
+- What was decided: Add optional V1 task field `reset_checklist_on_repeat`, defaulting off. Shared completion resets recognized checklist markers only when the task repeats and the option is true. Use a conservative shared body projection for checklist controls and reset, preserving every other byte.
+- Why: The user explicitly requested a per-task reset option. This intentionally revises the blanket no-reset decision from 2026-09-08 while retaining its behavior for existing notes. A missing field remains false, so migration is unnecessary.
+- What was rejected and why: Global reset was rejected because repeat workflows differ. First-class subtask entities and Markdown re-rendering were rejected because they would change the one-note model and unrelated content. Ambiguous Markdown constructs remain text rather than risking changes to code examples.
+
+### 2026-09-16: Edit Repeats And Checklist Markers Through Task Drafts
+
+- What was decided: Keep recurrence and checklist-reset settings in workspace-owned task drafts, with native inspector controls and the same autosave, conflict and history paths as other fields. Checklist toggles change draft notes through the shared byte-preserving projection and reject a stale projection. Row completion saves pending draft edits before calculating recurrence.
+- Why: Completion must use the rule and notes currently being edited, including a newly added repeat rule. A regression test reproduced the old row action completing the stale on-disk non-recurring task and conflicting with the pending rule.
+- What was rejected and why: View-owned persistence was rejected because selection changes must not lose edits. Separate checklist files and a rendered-Markdown rewrite were rejected because the parent body remains canonical. Calculating from the old record then merging pending repeat settings was rejected because its dates and reset behavior would be wrong.
+
+### 2026-09-16: Manage Projects Through Persistent Drafts And Active Navigation
+
+- What was decided: Project title, notes and status use workspace-owned debounced drafts, field-specific undo, revision-checked writes, non-overlapping rebases and explicit conflict resolution. Routine sidebar and assignment choices show active projects; a collapsed Inactive Projects section retains someday, done and canceled projects for review/reopening. An already-assigned inactive project remains selectable in the task inspector.
+- Why: Project management should be possible without YAML or path moves, and finishing a project should remove it from routine navigation without hiding its content permanently. Project completion changes only the project file, not its tasks.
+- What was rejected and why: Cascading task completion and collection moves were rejected because they change unrelated task state or violate the current collection-move restriction. View-owned saves were rejected because navigation and application termination must retain/flush edits. Missing/malformed project files block saving and retain local notes until restored or explicitly discarded.
+
+### 2026-09-16: Define Daily Query Membership And Stable Sorting
+
+- What was decided: Upcoming includes incomplete tasks with either date strictly after the injected local day; Today retains its existing overdue/on-day semantics, so mixed-date tasks may appear in both. Waiting and Someday follow explicit status. Combined filters intersect dimensions, use OR within statuses/priorities, require every tag, and use inclusive valid date ranges. Shared sort modes break ties by exact path and put missing dates/priorities last.
+- Why: App and CLI need one predictable query contract, including boundary dates and tasks with only deadlines. Existing Today behavior must remain intact.
+- What was rejected and why: Mutually exclusive Today/Upcoming membership was rejected because it would hide a future deadline solely due to an overdue planned date. Client-specific sorting/filtering was rejected because results would diverge. Reversed ranges are rejected rather than silently returning misleading empty results.
+
+### 2026-09-16: Keep Saved Filters In Canonical Vault Markdown
+
+- What was decided: Store named queries in optional `.localtodo/filters.md` with a versioned frontmatter list and shared Domain/Markdown APIs. Preserve unknown top-level/entry keys and body notes; use exact-file coordination, exclusive creation, atomic replacement and whole-file optimistic revisions. Diagnose malformed definitions and missing project/area references. Expose the same definitions through CLI save/list/run/delete.
+- Why: Saved filters are user-authored data, not a disposable index. Keeping them in the vault makes reloads and CLI/app use consistent without hidden identifiers or a canonical database. The optional metadata file needs no migration of existing task notes.
+- What was rejected and why: UserDefaults-only storage was rejected because it would strand definitions outside the vault and CLI. Encoding Swift enum representations directly was rejected because the file format should remain legible. Automatic conflict overwrite/repair was rejected because another client's definitions and unknown metadata must survive.
+
+### 2026-09-16: Separate Working Queries From Saved Filter Definitions
+
+- What was decided: The app previews working criteria immediately and saves named definitions only through explicit Save/Update. Changing a saved filter's sort opens its working editor. Ordinary per-view sorting stays a display preference. Named definition writes use their edit-start revision; conflicts retain working criteria and require Use File Version or an explicit Keep Working Filter rebase before another save. Save operations use native undo/redo and block vault switching while in flight.
+- Why: Exploring task queries is ephemeral; changing a reusable vault definition should be intentional. Background refresh must not silently authorize an overwrite of another client's saved filters.
+- What was rejected and why: Autosaving every filter toggle into a named definition was rejected because exploratory changes would rewrite shared preferences unexpectedly. Making saved filters a cache or silently replacing duplicate names was rejected because they are user-authored vault data. Task/project document autosave remains unchanged.
+
+### 2026-09-16: Add Contextual Daily Capture And Paired-Date Rescheduling
+
+- What was decided: Add Upcoming/Waiting/Someday navigation and native task keyboard commands. Capture remembers its opening route: Today/Upcoming schedule today/tomorrow, Next/Waiting/Someday use their explicit status, and project/area capture assigns that collection. Search/filter capture remains Inbox. A shared reschedule transition shifts the existing planning anchor and paired dates by calendar days; independent inspector date edits retain their previous behavior.
+- Why: Daily routes need immediately usable capture, completion and planning without YAML. Shifting both dates preserves the user's planning separation, including negative offsets and DST. Workspace tests inject a clock and explicit timezone.
+- What was rejected and why: Reading the route only at submission was rejected because navigation could silently change the destination. Recalculating recurrence during rescheduling was rejected because planning is not completion. Merging external planning-input changes with an already-calculated transition was rejected; related drafts and undo/redo retain semantic conflict dependencies.
+
+### 2026-09-16: Close Recurrence And Filter Persistence Gaps In Acceptance Review
+
+- What was decided: Preserve unknown nested recurrence keys during edits/mode changes, and remove cleared optional filter criteria at the YAML mapping level. Make CLI `edit --status done` invoke recurring completion from the edited inputs, matching the inspector, and expose full recurrence expressions in additive JSON fields. Permanent completion is explicit removal of recurrence plus Done.
+- Why: Regression tests reproduced nested-key loss, filter criteria reappearing after reload, and CLI status edits bypassing recurrence. The CLI status-edit change is intentional and breaking; it is documented and committed with a breaking-change footer.
+- What was rejected and why: Keeping divergent app/CLI completion was rejected because users should not get different next dates from the same action. Replacing whole recurrence mappings was rejected because unknown metadata belongs to users. Assigning nil through Yams `Node` was rejected because it silently does nothing; mutation uses `Node.Mapping` instead.
+
+### 2026-09-16: Preserve New Capture Input Across Delayed Saves
+
+- What was decided: Bind capture completion to a UI-input generation captured at submission. A completed write clears/dismisses only the capture it submitted, preserving later typing and canceled/reopened captures even when the title is identical. The command palette uses the same active-project projection as routine sidebar navigation.
+- Why: A paused-filesystem regression reproduced successful task creation erasing newer capture input. Inactive projects also remained visible in the routine palette despite being collapsed in the sidebar.
+- What was rejected and why: Comparing text alone was rejected because a newly opened capture may intentionally use the same title. Disabling all typing during filesystem coordination was rejected because preserving input supports fast capture without unnecessary waiting. Inactive projects remain explicitly accessible through the sidebar's review section.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

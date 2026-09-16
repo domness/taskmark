@@ -26,14 +26,14 @@ struct EditCommand: AsyncParsableCommand {
     @Option(name: .customLong("repeat-rule")) var repeatRule: String?
     @Option(name: .customLong("repeat-after")) var repeatAfter: String?
     @Flag var clearRecurrence = false
+    @Option(help: "Reset checkboxes on repeat: true or false.") var resetChecklistOnRepeat: Bool?
 
     func run() async throws {
         let context = try CLIContext(options: global)
         let path = try CLIParsing.path(path)
         let snapshot = try await context.snapshot()
         let record = try TaskCommandSupport.record(at: path, in: snapshot)
-        let patch = try makePatch()
-        let updated = try patch.applying(to: record.value, now: Date())
+        let updated = try editedTask(record.value, context: context, snapshot: snapshot)
         try TaskCommandSupport.validateReferences(updated, in: snapshot)
         if !global.dryRun {
             _ = try await context.store.update(.task(updated), expectedRevision: record.revision)
@@ -67,12 +67,33 @@ struct EditCommand: AsyncParsableCommand {
         if !tag.isEmpty || clearTags {
             patch.tags = .set(tag)
         }
-        if repeatRule != nil || repeatAfter != nil || clearRecurrence {
-            patch.recurrence = try .set(CLIParsing.recurrence(rule: repeatRule, after: repeatAfter))
-        }
+        try applyRecurrence(to: &patch)
         if let body {
             patch.body = .set(body)
         }
+        if let resetChecklistOnRepeat {
+            patch.resetChecklistOnRepeat = .set(resetChecklistOnRepeat)
+        }
         return patch
+    }
+
+    private func applyRecurrence(to patch: inout TaskPatch) throws {
+        if repeatRule != nil || repeatAfter != nil || clearRecurrence {
+            patch.recurrence = try .set(CLIParsing.recurrence(rule: repeatRule, after: repeatAfter))
+        }
+    }
+
+    private func editedTask(_ task: TodoTask, context: CLIContext, snapshot: VaultSnapshot) throws -> TodoTask {
+        let now = Date()
+        var patch = try makePatch()
+        let edited = try patch.applying(to: task, now: now)
+        guard status == "done", task.status != .done, edited.recurrence != nil else { return edited }
+        // Complete from the edited inputs while preserving the original eligibility state, just like the inspector.
+        patch.status = .unchanged
+        return try TaskTransition.complete(
+            patch.applying(to: task, now: now), now: now,
+            today: context.today(configuration: snapshot.configuration, now: now),
+            calendar: context.calendar(configuration: snapshot.configuration)
+        )
     }
 }

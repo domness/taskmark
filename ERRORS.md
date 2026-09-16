@@ -2,6 +2,24 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-16: Checklist Byte Projection Linting
+
+- What did not work: Direct non-failable UTF-8 conversions triggered the optional-data-string rule; a file-wide exemption then triggered the blanket-disable rule.
+- What worked instead: Centralize conversion of already-valid, ASCII-edited String bytes in one private function with a documented, single-line exemption.
+- Note for next time: Prefer narrowly documented lint exceptions for proven byte invariants; never disable a rule for an entire file.
+
+## 2026-09-16: Long Throwing Loop Predicates
+
+- What did not work: A loop containing only an `if` triggered `for_where`; moving its long throwing condition into `where` then let SwiftFormat put the opening brace on a separate line, conflicting with SwiftLint.
+- What worked instead: Extract the per-component validation into a named throwing function and call it from the loop.
+- Note for next time: Keep long predicates out of loop headers when the formatter and linter disagree; prefer a named validation step to rule suppression.
+
+## 2026-09-16: Removing Optional Yams Mapping Fields
+
+- What did not work: Replacing a whole recurrence node lost unknown nested metadata. Updating a `Node` preserved metadata, but assigning nil through `Node` subscripting was a no-op, leaving obsolete recurrence keys and cleared saved-filter criteria on disk.
+- What worked instead: Mutate `Node.Mapping`, whose nil assignment removes keys, then wrap it as `.mapping`. Regression tests cover recurrence mode changes and fresh-store reload after clearing all optional saved-filter criteria.
+- Note for next time: Test both setting and clearing optional YAML fields after serialization. `Node` and `Node.Mapping` have different nil-setter behavior.
+
 ## 2026-07-27: Vault Initialization Failure Recovery
 
 - What did not work: The first rollback removed `.localtodo` recursively after a failed manifest write. The next version made manifest creation exclusive but still used recursive removal for temporary-file cleanup and checked directory emptiness only before setup.

@@ -12,6 +12,10 @@ final class WorkspaceModel {
             if route != .search {
                 searchText = ""
             }
+            if route != oldValue {
+                selectedTaskPath = nil
+                prepareProjectDraft()
+            }
         }
     }
 
@@ -20,7 +24,12 @@ final class WorkspaceModel {
     var isInspectorPresented = true
     var isCommandPalettePresented = false
     var isQuickCapturePresented = false
-    var quickCaptureTitle = ""
+    var quickCaptureTitle = "" {
+        didSet { quickCaptureGeneration &+= 1 }
+    }
+
+    var quickCaptureRoute: WorkspaceRoute = .inbox
+    var rescheduleSelection: RescheduleSelection?
     var newEntityKind: NewEntityKind?
     var errorMessage: String?
     var isLoading = false
@@ -29,6 +38,7 @@ final class WorkspaceModel {
     var titleEditingPath: VaultPath?
     var searchFocusRequest = 0
     var taskListDisplayOptionsByRoute: [String: TaskListDisplayOptions]
+    let filterState = FilterWorkspaceState()
 
     @ObservationIgnored var store: VaultStore?
     @ObservationIgnored weak var undoManager: UndoManager?
@@ -41,15 +51,20 @@ final class WorkspaceModel {
     @ObservationIgnored private let bookmarks: VaultBookmarkStore
     @ObservationIgnored private(set) var vaultSession = UUID()
     @ObservationIgnored private var openRequest = UUID()
-    @ObservationIgnored private var refreshRequest = UUID()
+    @ObservationIgnored var refreshRequest = UUID()
     @ObservationIgnored var taskDrafts = [VaultPath: TaskDraft]()
+    @ObservationIgnored var projectDrafts = [VaultPath: ProjectDraft]()
     @ObservationIgnored let taskListDisplayPreferences: TaskListDisplayPreferencesStore
+    @ObservationIgnored let clock: () -> Date
+    @ObservationIgnored var quickCaptureGeneration: UInt64 = 0
 
     init(
         bookmarks: VaultBookmarkStore = VaultBookmarkStore(),
-        taskListDisplayPreferences: TaskListDisplayPreferencesStore = TaskListDisplayPreferencesStore()
+        taskListDisplayPreferences: TaskListDisplayPreferencesStore = TaskListDisplayPreferencesStore(),
+        clock: @escaping () -> Date = Date.init
     ) {
         self.bookmarks = bookmarks
+        self.clock = clock
         self.taskListDisplayPreferences = taskListDisplayPreferences
         taskListDisplayOptionsByRoute = taskListDisplayPreferences.load()
     }
@@ -115,38 +130,14 @@ final class WorkspaceModel {
         }
     }
 
-    func refresh() async {
-        guard let store else { return }
-        let session = vaultSession
-        let epoch = modelEpoch
-        let request = UUID()
-        refreshRequest = request
-        do {
-            let nextSnapshot = try await store.snapshot()
-            guard session == vaultSession, epoch == modelEpoch, request == refreshRequest else { return }
-            if let snapshot, containsExternalChanges(from: snapshot, to: nextSnapshot) {
-                clearHistory()
-            }
-            snapshot = nextSnapshot
-            await reconcileDrafts(with: nextSnapshot)
-            if let selectedTaskPath, nextSnapshot.tasks[selectedTaskPath] == nil {
-                if taskDrafts[selectedTaskPath]?.isDirty != true {
-                    self.selectedTaskPath = nil
-                }
-            }
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
     private func canChangeVault() -> Bool {
         guard !isLoading else { return false }
-        guard pendingMutationPaths.isEmpty, !isHistoryBusy else {
+        guard pendingMutationPaths.isEmpty, !isHistoryBusy, !filterState.isSaving else {
             errorMessage = "Wait for the current change to finish before switching vaults."
             return false
         }
-        guard !taskDrafts.values.contains(where: \.isDirty) else {
-            errorMessage = "Wait for task changes to save or fix invalid fields before switching vaults."
+        guard !hasDirtyDrafts else {
+            errorMessage = "Wait for document changes to save or fix invalid fields before switching vaults."
             return false
         }
         guard !isQuickCapturePresented else {
@@ -165,10 +156,10 @@ final class WorkspaceModel {
         let store = VaultStore(root: url)
         let snapshot = try await store.snapshot()
         guard request == openRequest else { return false }
-        guard !taskDrafts.values.contains(where: \.isDirty) else {
+        guard !hasDirtyDrafts else {
             throw VaultSwitchError.unsavedTaskChanges
         }
-        guard pendingMutationPaths.isEmpty, !isHistoryBusy else {
+        guard pendingMutationPaths.isEmpty, !isHistoryBusy, !filterState.isSaving else {
             throw VaultSwitchError.activeMutation
         }
         guard !isQuickCapturePresented else {
@@ -185,12 +176,15 @@ final class WorkspaceModel {
         self.store = store
         self.snapshot = snapshot
         taskDrafts.removeAll()
+        projectDrafts.removeAll()
         autosaveTasks.removeAll()
         pendingMutationPaths.removeAll()
         completedTaskStatuses.removeAll()
+        filterState.reset()
         route = .today
         selectedTaskPath = nil
         startRefreshLoop()
+        await refreshSavedFilters()
         return true
     }
 

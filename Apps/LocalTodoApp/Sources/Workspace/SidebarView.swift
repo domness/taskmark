@@ -10,22 +10,15 @@ struct SidebarView: View {
                 route(.today, "Today", "sun.max")
                 route(.inbox, "Inbox", "tray")
                 route(.next, "Next", "arrow.right.circle")
+                route(.upcoming, "Upcoming", "calendar")
+                route(.waiting, "Waiting", "hourglass")
+                route(.someday, "Someday", "archivebox")
                 route(.all, "All Tasks", "checklist")
                 route(.search, "Search", "magnifyingglass")
             }
             if let snapshot = model.snapshot {
-                Section("Projects") {
-                    ForEach(snapshot.projects.keys.sorted(by: { $0.value < $1.value }), id: \.self) { path in
-                        SidebarAssignmentRoute(
-                            model: model,
-                            route: .project(path),
-                            title: model.projectDisplayTitle(path),
-                            systemImage: "square.stack",
-                            target: .project(path)
-                        )
-                    }
-                    Button("New Project", systemImage: "plus") { model.newEntityKind = .project }
-                }
+                FilterSidebarSection(model: model)
+                ProjectSidebarSection(model: model)
                 Section("Areas") {
                     ForEach(snapshot.areas.keys.sorted(by: { $0.value < $1.value }), id: \.self) { path in
                         SidebarAssignmentRoute(

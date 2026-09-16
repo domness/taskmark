@@ -46,6 +46,9 @@ enum CLIErrorRenderer {
     }
 
     private static func kind(for error: Error) -> String {
+        if let error = error as? SavedFilterError {
+            return error == .conflict ? "conflict" : "malformed_file"
+        }
         if let error = error as? VaultStoreError {
             return kind(for: error)
         }

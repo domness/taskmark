@@ -76,6 +76,7 @@ Confirm that external editors can add unknown frontmatter safely.
 | `area` | no | Vault-relative path to an area file. |
 | `tags` | no | Ordered, unique strings without a leading `#`. |
 | `recurrence` | no | Structured recurrence definition described below. |
+| `reset_checklist_on_repeat` | no | `true` to uncheck recognized body checklists on repeat; absent, `null`, or `false` defaults off. Lowercase string forms `"true"` and `"false"` are also accepted. |
 | `created_at` | yes | ISO 8601 timestamp stored in UTC. |
 | `updated_at` | yes | ISO 8601 timestamp stored in UTC. |
 | `completed_at` | no | ISO 8601 UTC timestamp for `done`, otherwise `null`. |
@@ -102,6 +103,8 @@ completed_at: null
 
 Project status is `active`, `someday`, `done`, or `canceled`.
 
+Completing a project sets its own status and `completed_at`; reopening sets `active` and clears `completed_at`. Neither action changes child task files or references. Title/notes edits keep the exact project path. Routine app navigation shows active projects; inactive projects remain available in a separate collapsed section.
+
 ```yaml
 ---
 type: area
@@ -120,8 +123,13 @@ Area status is `active` or `archived`.
 - Inbox contains incomplete tasks with `status: inbox`.
 - Next contains incomplete tasks with `status: next`.
 - Today contains incomplete tasks scheduled on or before today or with a deadline on or before today.
+- Upcoming contains incomplete tasks with a scheduled date or deadline strictly after today. A task may appear in both Today and Upcoming when one date is overdue and the other is in the future.
+- Waiting and Someday contain tasks in their corresponding explicit statuses, whether dated or undated.
 - Projects, areas, tags, and priorities are queries over explicit metadata.
+- Combined filters intersect project, area, status, priority, required tags, and inclusive scheduled/deadline ranges. Multiple statuses/priorities are alternatives; all selected tags are required and case-sensitive. A date range excludes undated tasks and its start must not exceed its end. Completed/canceled tasks require the include-completed option.
+- Sorting supports exact path, title, priority (P1 first), scheduled/deadline (earliest first, missing last), and creation/update time (newest first). Ties use exact path. CLI defaults to path order.
 - Completion updates the existing file in place; automatic archiving is outside V1.
+- Rescheduling an incomplete task moves its scheduled date (or deadline when scheduled is absent) to a chosen date, preserving the signed calendar-day offset of paired dates. Undated tasks gain a scheduled date. Rescheduling does not complete/repeat the task or change checklist markers. Explicit edits to an individual date remain independent.
 
 ## Recurrence
 
@@ -150,13 +158,50 @@ Fixed rules use a strict RFC 5545 subset:
 - `BYDAY` is optional and valid only with `WEEKLY`; values are unique `MO`, `TU`, `WE`, `TH`, `FR`, `SA`, or `SU` entries.
 - No other rule fields are accepted.
 
+Unknown sibling keys within the `recurrence` mapping survive known-field edits and mode changes. Switching modes removes only the other mode's known `rule`/`interval` key. Explicitly removing recurrence removes the whole definition.
+
 After-completion intervals use exactly `P<n>D`, `P<n>W`, `P<n>M`, or `P<n>Y`, where `<n>` is from 1 through 999. Completing a recurring task keeps the same path and advances its scheduled date, deadline, or both according to the rule.
 
 - After-completion rules calculate the next date from the injected completion day in the vault timezone, not the previous task date.
 - Fixed rules advance from the previous scheduled date, or deadline when no scheduled date exists, repeatedly following the rule until the next occurrence is strictly after the completion day. Early completion still advances at least one occurrence. Monthly/yearly advancement retains the existing calendar clamping behavior (for example January 31 → February 28 → March 28).
 - When both dates exist, the scheduled date anchors the recurrence and the deadline keeps its calendar-day offset from it, including across daylight-saving changes.
 - A recurring task with neither date gets a scheduled date calculated from the completion day.
-- Recurrence does not reset checklist items or otherwise modify the Markdown body.
+- Recurrence leaves the body unchanged unless `reset_checklist_on_repeat: true` is set. Then recognized checked markers become unchecked; all other body bytes are preserved. This optional V1 extension requires no migration and defaults off for existing notes. Ordinary non-recurring completion never resets checklists.
+
+### Body Checklists
+
+Interactive checklist items use `-`, `*`, `+`, or a 1–9 digit ordered marker ending in `.` or `)`, followed by whitespace and `[ ]`, `[x]`, or `[X]`. The closing bracket must be followed by whitespace or the end of the line. Up to three leading spaces are supported (including lightweight nested lists). Four-space indented code, blockquotes, escaped markers, HTML comments, and fenced code blocks are not interactive. More complex Markdown remains editable as notes. Toggle and reset operations replace only the one-byte check marker, preserving Unicode, line endings, spacing, and unrelated Markdown.
+
+## Saved Filters
+
+Optional `.localtodo/filters.md` is canonical vault metadata, not a cache or task entity. It stores named query definitions in Markdown frontmatter:
+
+```markdown
+---
+schema: 1
+filters:
+  - name: Waiting work
+    view: waiting
+    project: Projects/Local Todo.md
+    statuses: [waiting]
+    priorities: [p1, p2]
+    includes_no_priority: false
+    tags: [work]
+    scheduled_from: 2026-09-01
+    scheduled_through: 2026-09-30
+    include_completed: false
+    sort: deadline
+---
+Optional notes about these views.
+```
+
+- The file uses its own `schema: 1`; missing file means no saved filters. Existing vaults require no migration. The `filters` list is required when the file exists, and may be empty.
+- Names are non-empty, unique and case-sensitive, without leading/trailing whitespace or newlines. They identify entries within this metadata document, not task/project/area entities. Task identity remains its exact path; no hidden IDs are introduced.
+- `view` is `all` (default), `today`, `inbox`, `next`, `upcoming`, `waiting`, or `someday`. Today/Upcoming resolve against the current vault-local day when run.
+- Optional `text`, `project`, `area`, `statuses`, `priorities`, `includes_no_priority`, `tags`, `scheduled_from`, `scheduled_through`, `deadline_from`, `deadline_through`, `include_completed`, and `sort` follow the shared query semantics above. Absent collections are empty, booleans false, text empty, and sort `path`. Date bounds are fixed inclusive calendar dates. Unknown enum values, malformed fields, reversed ranges and duplicate names are rejected.
+- Unknown frontmatter keys, unknown fields on retained named entries, and the full Markdown body survive edits. Explicitly deleting an entry removes its fields. Frontmatter formatting/comments may normalize as with task notes.
+- Writes coordinate the exact metadata file, reject symlink components and coordinator remaps, compare the whole-file revision, then exclusively create or atomically replace it. Stale revisions fail rather than merging or overwriting other clients' saved views. A malformed file is surfaced and never silently repaired. Missing project/area references are reported in vault diagnostics and by saved-filter execution.
+- Both app and CLI use the shared definition and query implementation. CLI commands: `filter list`, `filter save NAME [query options] [--replace]`, `filter run NAME`, and `filter delete NAME`; mutation commands support `--dry-run`.
 
 ## Mutation Guarantees
 

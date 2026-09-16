@@ -36,6 +36,14 @@ struct FrontmatterReader {
         return values
     }
 
+    func boolean(_ key: FrontmatterKey, default defaultValue: Bool) throws -> Bool {
+        guard let node = document.node(forKey: key.rawValue), node.null == nil else { return defaultValue }
+        guard let value = node.scalar?.string, value == "true" || value == "false" else {
+            throw EntityDocumentError.invalidField(key.rawValue)
+        }
+        return value == "true"
+    }
+
     func date(_ key: FrontmatterKey) throws -> CalendarDate? {
         guard let value = try optionalString(key) else {
             return nil

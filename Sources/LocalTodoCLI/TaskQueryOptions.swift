@@ -2,8 +2,11 @@ import ArgumentParser
 import LocalTodoDomain
 
 struct TaskQueryOptions: ParsableArguments {
-    @Option(help: "View: inbox, next, or today.")
+    @Option(help: "View: inbox, next, today, upcoming, waiting, or someday.")
     var view: String?
+
+    @Option(help: "Sort: path, title, priority, scheduled, deadline, created, or updated.")
+    var sort = "path"
 
     @Option(help: "Status filter. Repeat for multiple statuses.")
     var status: [String] = []
@@ -42,22 +45,21 @@ struct TaskQueryOptions: ParsableArguments {
         filters.scheduled = try dateRange(on: scheduledOn, from: scheduledFrom, through: scheduledThrough)
         filters.deadline = try dateRange(on: deadlineOn, from: deadlineFrom, through: deadlineThrough)
 
+        guard let ordering = TaskSort(rawValue: sort) else { throw CLIError.message("Invalid sort: \(sort)") }
         return try TaskQuery(
             scope: scope(),
             text: text,
             filters: filters,
-            includeCompleted: all
+            includeCompleted: all,
+            sort: ordering
         )
     }
 
     private func scope() throws -> TaskScope {
-        switch view {
-        case nil: .all
-        case "inbox": .inbox
-        case "next": .next
-        case "today": .today
-        case let value?: throw CLIError.message("Invalid view: \(value)")
+        guard let taskView = TaskView(rawValue: view ?? "all") else {
+            throw CLIError.message("Invalid view: \(view ?? "")")
         }
+        return taskView.scope
     }
 
     private func dateRange(on: String?, from: String?, through: String?) throws -> DateRange {
@@ -67,6 +69,8 @@ struct TaskQueryOptions: ParsableArguments {
             }
             return DateRange(start: date, end: date)
         }
-        return try DateRange(start: CLIParsing.date(from), end: CLIParsing.date(through))
+        let range = try DateRange(start: CLIParsing.date(from), end: CLIParsing.date(through))
+        guard range.isValid else { throw CLIError.message("The date range start must be on or before its end") }
+        return range
     }
 }

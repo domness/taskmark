@@ -36,6 +36,14 @@ struct TaskRow: View {
             Label(task.title, systemImage: "checklist")
                 .padding(8)
         }
+        .contextMenu {
+            Button("Edit Task") { model.editTask(at: task.path) }
+            Button("Reschedule…") {
+                model.selectTask(task.path)
+                model.beginRescheduling()
+            }
+            .disabled(task.status.isComplete)
+        }
     }
 
     private var completionImage: String {

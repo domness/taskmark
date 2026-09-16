@@ -66,10 +66,13 @@ struct TaskInspectorView: View {
                 }
                 TextField("Tags, comma separated", text: $draft.tags)
             }
+            TaskRecurrenceView(model: model, draft: draft)
+            TaskChecklistView(model: model, draft: draft)
             Section("Notes") {
                 TextEditor(text: $draft.notes)
                     .font(.body)
                     .frame(minHeight: 160)
+                    .accessibilityLabel("Task notes, Markdown")
             }
             Section("File") {
                 Text(draft.path.value)
@@ -163,7 +166,8 @@ struct TaskInspectorView: View {
     }
 
     private var projects: [Project] {
-        model.snapshot?.projects.values.map(\.value).sorted { $0.title < $1.title } ?? []
+        let assignedInactive = model.inactiveProjects.filter { $0.path.value == draft.project }
+        return model.activeProjects + assignedInactive
     }
 
     private var areas: [Area] {

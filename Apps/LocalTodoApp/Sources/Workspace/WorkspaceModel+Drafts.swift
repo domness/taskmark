@@ -6,11 +6,12 @@ extension WorkspaceModel {
         !pendingMutationPaths.isEmpty
             || isHistoryBusy
             || !quickCaptureTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            || taskDrafts.values.contains(where: \.isDirty)
+            || hasDirtyDrafts
+            || filterState.isSaving
     }
 
     func flushTaskChanges() async -> Bool {
-        for _ in 0 ..< 100 where !pendingMutationPaths.isEmpty {
+        for _ in 0 ..< 100 where !pendingMutationPaths.isEmpty || filterState.isSaving {
             try? await Task.sleep(for: .milliseconds(50))
         }
         for task in autosaveTasks.values {
@@ -20,18 +21,31 @@ extension WorkspaceModel {
         for draft in taskDrafts.values where draft.isDirty && !draft.hasConflicts && draft.validationError == nil {
             await updateTask(draft)
         }
+        for draft in projectDrafts.values where draft.canSave {
+            await updateProject(draft)
+        }
         return pendingMutationPaths.isEmpty
             && !isHistoryBusy
             && quickCaptureTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            && !taskDrafts.values.contains(where: \.isDirty)
+            && !hasDirtyDrafts
+            && !filterState.isSaving
     }
 
     func beginQuickCapture() {
         guard snapshot != nil else { return }
+        quickCaptureGeneration &+= 1
+        quickCaptureRoute = route
         isQuickCapturePresented = true
     }
 
     func cancelQuickCapture() {
+        quickCaptureTitle = ""
+        isQuickCapturePresented = false
+    }
+
+    func finishQuickCapture(title: String, generation: UInt64) {
+        let current = quickCaptureTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard quickCaptureGeneration == generation, current.isEmpty || current == title else { return }
         quickCaptureTitle = ""
         isQuickCapturePresented = false
     }

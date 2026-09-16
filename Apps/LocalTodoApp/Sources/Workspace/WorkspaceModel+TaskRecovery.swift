@@ -109,6 +109,7 @@ extension WorkspaceModel {
             area: task.area,
             tags: task.tags,
             recurrence: task.recurrence,
+            resetChecklistOnRepeat: task.resetChecklistOnRepeat,
             body: task.body,
             createdAt: task.createdAt,
             updatedAt: task.updatedAt,

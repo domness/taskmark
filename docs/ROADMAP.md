@@ -9,6 +9,17 @@
 
 ## V1: macOS And CLI
 
+### Run Your Day — Implemented
+
+- App recurrence editing, interactive note checklists and opt-in reset on repeat.
+- Fixed recurrence skips missed occurrences; after-completion remains completion-day anchored.
+- Project title/notes/status editing, completion/reopening and inactive navigation.
+- Combined/saved filters with shared CLI execution and stable sorting.
+- Upcoming, Waiting and Someday with keyboard capture, completion and paired-date rescheduling.
+- Automated persistence, history, failure/conflict evidence and passing quality gate: [acceptance record](RUN_YOUR_DAY.md). See [daily workflows and shortcuts](DAILY_WORK.md).
+
+Live UI/VoiceOver checks, screenshots, a real-use pilot and iCloud validation are not claimed by this implementation milestone. Todoist migration and mobile/web work remain outside it.
+
 ### Trust The Files Follow-Up
 
 - Restore project/area path moves only after designing and testing multi-file recovery, concurrent-writer behavior, and external-reader visibility. These moves are currently rejected before mutation; task moves use exclusive atomic rename.
@@ -22,7 +33,7 @@
 - Inbox, Today, Next, projects, areas, tags, priorities, scheduled dates, and deadlines.
 - Explicit task states: inbox, next, waiting, someday, done, and canceled.
 - Search and combined filtering.
-- Fixed and after-completion recurrence after the grammar is finalized.
+- Fixed and after-completion recurrence using the documented strict grammar.
 - Markdown checklists inside task bodies.
 - Desktop sidebar, task list, collapsible inspector, inline editing, and command palette.
 - Full CLI operations with readable output, stable JSON, dry runs, and explicit exit codes.

@@ -26,22 +26,22 @@ enum RecurrenceDocumentCodec {
         }
     }
 
-    static func encode(_ recurrence: TaskRecurrence?) -> Node? {
+    static func encode(_ recurrence: TaskRecurrence?, preserving existing: Node? = nil) -> Node? {
         guard let recurrence else {
             return nil
         }
+        var node: Node.Mapping = existing?.mapping ?? [:]
         switch recurrence {
         case let .fixed(rule):
-            return Node([
-                (Node("mode", Tag(.str)), Node("fixed", Tag(.str))),
-                (Node("rule", Tag(.str)), Node(format(rule), Tag(.str))),
-            ])
+            node["mode"] = FrontmatterNodes.string("fixed")
+            node["rule"] = FrontmatterNodes.string(format(rule))
+            node["interval"] = nil
         case let .afterCompletion(interval):
-            return Node([
-                (Node("mode", Tag(.str)), Node("after-completion", Tag(.str))),
-                (Node("interval", Tag(.str)), Node("P\(interval.value)\(interval.unit.rawValue)", Tag(.str))),
-            ])
+            node["mode"] = FrontmatterNodes.string("after-completion")
+            node["interval"] = FrontmatterNodes.string("P\(interval.value)\(interval.unit.rawValue)")
+            node["rule"] = nil
         }
+        return .mapping(node)
     }
 
     static func parseFixed(_ value: String) throws -> FixedRecurrenceRule {
@@ -103,7 +103,7 @@ enum RecurrenceDocumentCodec {
         return integer
     }
 
-    private static func format(_ rule: FixedRecurrenceRule) -> String {
+    static func format(_ rule: FixedRecurrenceRule) -> String {
         var parts = ["FREQ=\(rule.frequency.rawValue)"]
         if rule.interval != 1 {
             parts.append("INTERVAL=\(rule.interval)")

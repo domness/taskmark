@@ -5,17 +5,20 @@ public struct TaskQuery: Equatable, Sendable {
     public var text: String
     public var filters: TaskFilters
     public var includeCompleted: Bool
+    public var sort: TaskSort
 
     public init(
         scope: TaskScope = .all,
         text: String = "",
         filters: TaskFilters = TaskFilters(),
-        includeCompleted: Bool = false
+        includeCompleted: Bool = false,
+        sort: TaskSort = .path
     ) {
         self.scope = scope
         self.text = text
         self.filters = filters
         self.includeCompleted = includeCompleted
+        self.sort = sort
     }
 
     public func matches(_ task: TodoTask, today: CalendarDate) -> Bool {
@@ -31,7 +34,7 @@ public struct TaskQuery: Equatable, Sendable {
     public func results(from tasks: some Sequence<TodoTask>, today: CalendarDate) -> [TodoTask] {
         tasks
             .filter { matches($0, today: today) }
-            .sorted { $0.path.value < $1.path.value }
+            .sorted(by: sort.precedes)
     }
 
     private func matchesScope(_ task: TodoTask, today: CalendarDate) -> Bool {
@@ -45,6 +48,20 @@ public struct TaskQuery: Equatable, Sendable {
             task.status == .inbox
         case .next:
             task.status == .next
+        case .waiting:
+            task.status == .waiting
+        case .someday:
+            task.status == .someday
+        case .upcoming:
+            !task.status.isComplete
+                && (task.scheduled.map { $0 > today } == true || task.deadline.map { $0 > today } == true)
+        default:
+            matchesMetadataScope(task)
+        }
+    }
+
+    private func matchesMetadataScope(_ task: TodoTask) -> Bool {
+        switch scope {
         case let .project(path):
             task.project == path
         case let .area(path):
@@ -53,6 +70,7 @@ public struct TaskQuery: Equatable, Sendable {
             task.tags.contains(tag)
         case let .priority(priority):
             task.priority == priority
+        default: false
         }
     }
 

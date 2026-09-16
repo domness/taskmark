@@ -3,7 +3,9 @@ final class DraftHistoryAction<Value: Equatable>: @unchecked Sendable {
     let keyPath: ReferenceWritableKeyPath<TaskDraft, Value>
     let value: Value
     let actionName: String
+    let planningTransition: Bool
 
+    @MainActor
     init(
         draft: TaskDraft,
         keyPath: ReferenceWritableKeyPath<TaskDraft, Value>,
@@ -14,5 +16,6 @@ final class DraftHistoryAction<Value: Equatable>: @unchecked Sendable {
         self.keyPath = keyPath
         self.value = value
         self.actionName = actionName
+        planningTransition = draft.isPlanningTransition
     }
 }

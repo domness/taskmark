@@ -6,7 +6,8 @@ extension WorkspaceModel {
     var canPerformHistory: Bool {
         !isHistoryBusy
             && pendingMutationPaths.isEmpty
-            && !taskDrafts.values.contains(where: \.isDirty)
+            && !hasDirtyDrafts
+            && !filterState.isSaving
     }
 
     func setUndoManager(_ undoManager: UndoManager?) {
@@ -77,6 +78,7 @@ extension WorkspaceModel {
         )
         undoManager?.registerUndo(withTarget: self) { model in
             MainActor.assumeIsolated {
+                action.draft.isPlanningTransition = action.draft.isPlanningTransition || action.planningTransition
                 model.changeDraft(
                     action.draft,
                     keyPath: action.keyPath,
@@ -122,6 +124,7 @@ extension WorkspaceModel {
         projects.removeValue(forKey: path)
         areas.removeValue(forKey: path)
         taskDrafts.removeValue(forKey: path)
+        projectDrafts.removeValue(forKey: path)
         if selectedTaskPath == path {
             selectedTaskPath = nil
         }
@@ -258,7 +261,8 @@ extension WorkspaceModel {
             area: fields.contains(.area) ? task.area : current.area,
             tags: current.tags,
             recurrence: current.recurrence,
-            body: current.body,
+            resetChecklistOnRepeat: current.resetChecklistOnRepeat,
+            body: fields.contains(.body) ? task.body : current.body,
             createdAt: current.createdAt,
             updatedAt: Date(),
             completedAt: fields.contains(.completedAt) ? task.completedAt : current.completedAt
@@ -275,6 +279,7 @@ extension WorkspaceModel {
 }
 
 enum TaskTransitionField: Hashable {
+    case body
     case status
     case scheduled
     case deadline

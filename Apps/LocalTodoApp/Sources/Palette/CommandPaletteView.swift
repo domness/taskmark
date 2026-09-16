@@ -34,7 +34,7 @@ struct CommandPaletteView: View {
     }
 
     private var filteredCommands: [PaletteCommand] {
-        let commands = baseCommands + dynamicCommands
+        let commands = baseCommands + dynamicCommands + taskCommands
         guard !query.isEmpty else { return commands }
         return commands.filter { $0.title.localizedCaseInsensitiveContains(query) }
     }
@@ -47,6 +47,10 @@ struct CommandPaletteView: View {
             command("Go to Today", "sun.max") { model.route = .today },
             command("Go to Inbox", "tray") { model.route = .inbox },
             command("Go to Next", "arrow.right.circle") { model.route = .next },
+            command("Go to Upcoming", "calendar") { model.route = .upcoming },
+            command("Go to Waiting", "hourglass") { model.route = .waiting },
+            command("Go to Someday", "archivebox") { model.route = .someday },
+            command("Filter Tasks", "line.3.horizontal.decrease.circle") { model.beginFilterEditing() },
             command("Search Tasks", "magnifyingglass") { model.route = .search },
             command("Toggle Inspector", "sidebar.trailing") { model.isInspectorPresented.toggle() },
             command("Switch Vault", "folder") { Task { await model.chooseVault() } },
@@ -55,13 +59,31 @@ struct CommandPaletteView: View {
 
     private var dynamicCommands: [PaletteCommand] {
         guard let snapshot = model.snapshot else { return [] }
-        let projects = snapshot.projects.values.map(\.value).map { project in
+        let projects = model.activeProjects.map { project in
             command("Go to \(project.title)", "square.stack") { model.route = .project(project.path) }
         }
         let areas = snapshot.areas.values.map(\.value).map { area in
             command("Go to \(area.title)", "circle.grid.2x2") { model.route = .area(area.path) }
         }
-        return (projects + areas).sorted { $0.title < $1.title }
+        let filters = (model.filterState.record?.filters ?? []).map { filter in
+            command("Filter: \(filter.name)", "line.3.horizontal.decrease.circle") {
+                model.route = .savedFilter(filter.name)
+            }
+        }
+        return (projects + areas + filters).sorted { $0.title < $1.title }
+    }
+
+    private var taskCommands: [PaletteCommand] {
+        guard model.selectedTaskPath != nil else { return [] }
+        let completion = command(
+            model.selectedTaskIsComplete ? "Reopen Selected Task" : "Complete Selected Task",
+            "checkmark.circle"
+        ) { Task { await model.completeSelectedTask() } }
+        var commands = [completion]
+        if model.canRescheduleSelectedTask {
+            commands.append(command("Reschedule Selected Task", "calendar") { model.beginRescheduling() })
+        }
+        return commands
     }
 
     private func command(_ title: String, _ image: String, action: @escaping @MainActor () -> Void) -> PaletteCommand {

@@ -259,6 +259,7 @@ import Testing
 
 @MainActor
 func withWorkspace(
+    now: Date? = nil,
     _ operation: @MainActor (WorkspaceModel, URL) async throws -> Void
 ) async throws {
     let root = FileManager.default.temporaryDirectory
@@ -269,8 +270,15 @@ func withWorkspace(
         defaults.removePersistentDomain(forName: suiteName)
         try? FileManager.default.removeItem(at: root)
     }
-    let model = WorkspaceModel(bookmarks: VaultBookmarkStore(defaults: defaults))
+    let model = WorkspaceModel(
+        bookmarks: VaultBookmarkStore(defaults: defaults),
+        taskListDisplayPreferences: TaskListDisplayPreferencesStore(defaults: defaults),
+        clock: { now ?? Date() }
+    )
     await model.createVault(at: root)
+    let configuration = VaultConfiguration(timezone: "Europe/London")
+    try Data(configuration.encoded().utf8).write(to: root.appendingPathComponent(LocalTodoSchema.manifestPath))
+    await model.refresh()
     #expect(model.errorMessage == nil)
     try await operation(model, root)
 }

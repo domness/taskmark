@@ -8,7 +8,7 @@ struct QuickCaptureRow: View {
         HStack {
             Image(systemName: "plus.circle")
                 .foregroundStyle(.secondary)
-            TextField("Capture to Inbox", text: $model.quickCaptureTitle)
+            TextField(model.capturePrompt, text: $model.quickCaptureTitle)
                 .textFieldStyle(.plain)
                 .focused($isFocused)
                 .onSubmit { submit() }
@@ -23,6 +23,15 @@ struct QuickCaptureRow: View {
         let value = model.quickCaptureTitle.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !value.isEmpty else { return }
         let vaultSession = model.vaultSession
-        Task { await model.createTask(title: value, vaultSession: vaultSession) }
+        let route = model.quickCaptureRoute
+        let generation = model.quickCaptureGeneration
+        Task {
+            await model.createTask(
+                title: value,
+                vaultSession: vaultSession,
+                captureRoute: route,
+                captureGeneration: generation
+            )
+        }
     }
 }
