@@ -24,6 +24,7 @@ extension WorkspaceModel {
             undoManager?.beginUndoGrouping()
             defer { undoManager?.endUndoGrouping() }
             changeDraft(draft, keyPath: \.status, to: completed.status, actionName: "Complete Task")
+            changeDraft(draft, keyPath: \.notes, to: completed.body, actionName: "Complete Task")
             changeDraft(
                 draft, keyPath: \.scheduled, to: completed.scheduled?.description ?? "", actionName: "Complete Task"
             )

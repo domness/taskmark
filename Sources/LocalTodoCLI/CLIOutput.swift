@@ -32,6 +32,7 @@ struct EntityOutput: Encodable {
     let area: String?
     let tags: [String]
     let recurrence: String?
+    let resetChecklistOnRepeat: Bool?
     let body: String?
     let createdAt: String
     let updatedAt: String
@@ -42,6 +43,7 @@ struct EntityOutput: Encodable {
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case completedAt = "completed_at"
+        case resetChecklistOnRepeat = "reset_checklist_on_repeat"
     }
 
     init(_ entity: LocalTodoEntity, includeBody: Bool) {
@@ -69,6 +71,7 @@ struct EntityOutput: Encodable {
         area = task.area?.value
         tags = task.tags
         recurrence = task.recurrence.map(Self.recurrenceDescription)
+        resetChecklistOnRepeat = task.resetChecklistOnRepeat
         body = includeBody ? task.body : nil
         createdAt = formatter.string(from: task.createdAt)
         updatedAt = formatter.string(from: task.updatedAt)
@@ -87,6 +90,7 @@ struct EntityOutput: Encodable {
         area = value.area?.value
         tags = value.tags
         recurrence = nil
+        resetChecklistOnRepeat = nil
         body = includeBody ? value.body : nil
         createdAt = formatter.string(from: value.createdAt)
         updatedAt = formatter.string(from: value.updatedAt)
@@ -105,6 +109,7 @@ struct EntityOutput: Encodable {
         area = nil
         tags = value.tags
         recurrence = nil
+        resetChecklistOnRepeat = nil
         body = includeBody ? value.body : nil
         createdAt = formatter.string(from: value.createdAt)
         updatedAt = formatter.string(from: value.updatedAt)

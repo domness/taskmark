@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-16: Checklist Byte Projection Linting
+
+- What did not work: Direct non-failable UTF-8 conversions triggered the optional-data-string rule; a file-wide exemption then triggered the blanket-disable rule.
+- What worked instead: Centralize conversion of already-valid, ASCII-edited String bytes in one private function with a documented, single-line exemption.
+- Note for next time: Prefer narrowly documented lint exceptions for proven byte invariants; never disable a rule for an entire file.
+
 ## 2026-07-27: Vault Initialization Failure Recovery
 
 - What did not work: The first rollback removed `.localtodo` recursively after a failed manifest write. The next version made manifest creation exclusive but still used recursive removal for temporary-file cleanup and checked directory emptiness only before setup.

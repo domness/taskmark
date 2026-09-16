@@ -76,6 +76,7 @@ Confirm that external editors can add unknown frontmatter safely.
 | `area` | no | Vault-relative path to an area file. |
 | `tags` | no | Ordered, unique strings without a leading `#`. |
 | `recurrence` | no | Structured recurrence definition described below. |
+| `reset_checklist_on_repeat` | no | `true` to uncheck recognized body checklists on repeat; absent, `null`, or `false` defaults off. Lowercase string forms `"true"` and `"false"` are also accepted. |
 | `created_at` | yes | ISO 8601 timestamp stored in UTC. |
 | `updated_at` | yes | ISO 8601 timestamp stored in UTC. |
 | `completed_at` | no | ISO 8601 UTC timestamp for `done`, otherwise `null`. |
@@ -156,7 +157,11 @@ After-completion intervals use exactly `P<n>D`, `P<n>W`, `P<n>M`, or `P<n>Y`, wh
 - Fixed rules advance from the previous scheduled date, or deadline when no scheduled date exists, repeatedly following the rule until the next occurrence is strictly after the completion day. Early completion still advances at least one occurrence. Monthly/yearly advancement retains the existing calendar clamping behavior (for example January 31 → February 28 → March 28).
 - When both dates exist, the scheduled date anchors the recurrence and the deadline keeps its calendar-day offset from it, including across daylight-saving changes.
 - A recurring task with neither date gets a scheduled date calculated from the completion day.
-- Recurrence does not reset checklist items or otherwise modify the Markdown body.
+- Recurrence leaves the body unchanged unless `reset_checklist_on_repeat: true` is set. Then recognized checked markers become unchecked; all other body bytes are preserved. This optional V1 extension requires no migration and defaults off for existing notes. Ordinary non-recurring completion never resets checklists.
+
+### Body Checklists
+
+Interactive checklist items use `-`, `*`, `+`, or a 1–9 digit ordered marker ending in `.` or `)`, followed by whitespace and `[ ]`, `[x]`, or `[X]`. The closing bracket must be followed by whitespace or the end of the line. Up to three leading spaces are supported (including lightweight nested lists). Four-space indented code, blockquotes, escaped markers, HTML comments, and fenced code blocks are not interactive. More complex Markdown remains editable as notes. Toggle and reset operations replace only the one-byte check marker, preserving Unicode, line endings, spacing, and unrelated Markdown.
 
 ## Mutation Guarantees
 

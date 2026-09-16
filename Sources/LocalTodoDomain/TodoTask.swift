@@ -11,6 +11,7 @@ public struct TodoTask: Equatable, Sendable {
     public let area: VaultPath?
     public let tags: [String]
     public let recurrence: TaskRecurrence?
+    public let resetChecklistOnRepeat: Bool
     public let body: String
     public let createdAt: Date
     public let updatedAt: Date
@@ -27,6 +28,7 @@ public struct TodoTask: Equatable, Sendable {
         area: VaultPath? = nil,
         tags: [String] = [],
         recurrence: TaskRecurrence? = nil,
+        resetChecklistOnRepeat: Bool = false,
         body: String = "",
         createdAt: Date,
         updatedAt: Date,
@@ -53,6 +55,7 @@ public struct TodoTask: Equatable, Sendable {
         self.area = area
         self.tags = tags
         self.recurrence = recurrence
+        self.resetChecklistOnRepeat = resetChecklistOnRepeat
         self.body = body
         self.createdAt = createdAt
         self.updatedAt = updatedAt

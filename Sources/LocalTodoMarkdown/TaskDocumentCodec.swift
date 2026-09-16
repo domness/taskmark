@@ -22,6 +22,7 @@ enum TaskDocumentCodec {
                 area: reader.path(.area),
                 tags: reader.strings(.tags),
                 recurrence: RecurrenceDocumentCodec.decode(document.node(forKey: FrontmatterKey.recurrence.rawValue)),
+                resetChecklistOnRepeat: reader.boolean(.resetChecklistOnRepeat, default: false),
                 body: document.body,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
@@ -55,6 +56,10 @@ enum TaskDocumentCodec {
         document.setNode(FrontmatterNodes.optionalString(task.area?.value), forKey: FrontmatterKey.area.rawValue)
         document.setNode(FrontmatterNodes.strings(task.tags), forKey: FrontmatterKey.tags.rawValue)
         document.setNode(RecurrenceDocumentCodec.encode(task.recurrence), forKey: FrontmatterKey.recurrence.rawValue)
+        document.setNode(
+            task.resetChecklistOnRepeat ? FrontmatterNodes.boolean(true) : nil,
+            forKey: FrontmatterKey.resetChecklistOnRepeat.rawValue
+        )
         document.setNode(FrontmatterNodes.date(task.createdAt), forKey: FrontmatterKey.createdAt.rawValue)
         document.setNode(FrontmatterNodes.date(task.updatedAt), forKey: FrontmatterKey.updatedAt.rawValue)
         document.setNode(FrontmatterNodes.optionalDate(task.completedAt), forKey: FrontmatterKey.completedAt.rawValue)

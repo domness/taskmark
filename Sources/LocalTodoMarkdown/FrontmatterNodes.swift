@@ -2,6 +2,10 @@ import Foundation
 import Yams
 
 enum FrontmatterNodes {
+    static func boolean(_ value: Bool) -> Node {
+        Node(value ? "true" : "false", Tag(.bool))
+    }
+
     static func string(_ value: String) -> Node {
         Node(value, Tag(.str))
     }

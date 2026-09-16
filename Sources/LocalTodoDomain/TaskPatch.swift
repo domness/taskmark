@@ -10,6 +10,7 @@ public struct TaskPatch: Equatable, Sendable {
     public var area: FieldUpdate<VaultPath?> = .unchanged
     public var tags: FieldUpdate<[String]> = .unchanged
     public var recurrence: FieldUpdate<TaskRecurrence?> = .unchanged
+    public var resetChecklistOnRepeat: FieldUpdate<Bool> = .unchanged
     public var body: FieldUpdate<String> = .unchanged
 
     public init() {}
@@ -33,6 +34,7 @@ public struct TaskPatch: Equatable, Sendable {
             area: area.resolve(task.area),
             tags: tags.resolve(task.tags),
             recurrence: recurrence.resolve(task.recurrence),
+            resetChecklistOnRepeat: resetChecklistOnRepeat.resolve(task.resetChecklistOnRepeat),
             body: body.resolve(task.body),
             createdAt: task.createdAt,
             updatedAt: now,

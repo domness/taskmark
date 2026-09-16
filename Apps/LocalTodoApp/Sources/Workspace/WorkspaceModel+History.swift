@@ -258,7 +258,8 @@ extension WorkspaceModel {
             area: fields.contains(.area) ? task.area : current.area,
             tags: current.tags,
             recurrence: current.recurrence,
-            body: current.body,
+            resetChecklistOnRepeat: current.resetChecklistOnRepeat,
+            body: fields.contains(.body) ? task.body : current.body,
             createdAt: current.createdAt,
             updatedAt: Date(),
             completedAt: fields.contains(.completedAt) ? task.completedAt : current.completedAt
@@ -275,6 +276,7 @@ extension WorkspaceModel {
 }
 
 enum TaskTransitionField: Hashable {
+    case body
     case status
     case scheduled
     case deadline

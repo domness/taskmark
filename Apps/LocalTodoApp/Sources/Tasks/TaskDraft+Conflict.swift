@@ -71,11 +71,13 @@ extension TaskDraft {
         var conflicts = localChanges.intersection(externalChanges)
         if original.recurrence != nil {
             // Recurring planning edits depend on the repeat rule and completion eligibility, not just date fields.
-            if external.recurrence != original.recurrence {
-                conflicts.formUnion(localChanges.intersection([.status, .scheduled, .deadline]))
+            let repeatChanged = external.recurrence != original.recurrence
+                || external.resetChecklistOnRepeat != original.resetChecklistOnRepeat
+            if repeatChanged {
+                conflicts.formUnion(localChanges.intersection([.status, .scheduled, .deadline, .notes]))
             }
             if external.status != original.status {
-                conflicts.formUnion(localChanges.intersection([.scheduled, .deadline]))
+                conflicts.formUnion(localChanges.intersection([.scheduled, .deadline, .notes]))
             }
         }
         return conflicts.filter { localValue(for: $0) != value(for: $0, in: external) }

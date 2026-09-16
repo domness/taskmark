@@ -36,6 +36,9 @@ struct TaskInputOptions: ParsableArguments {
     @Option(name: .customLong("repeat-after"), help: "After-completion interval, for example P3D.")
     var repeatAfter: String?
 
+    @Flag(help: "Reset recognized Markdown checkboxes when this task repeats.")
+    var resetChecklistOnRepeat = false
+
     func task(at path: VaultPath, now: Date) throws -> TodoTask {
         let status = try CLIParsing.taskStatus(status)
         return try TodoTask(
@@ -49,6 +52,7 @@ struct TaskInputOptions: ParsableArguments {
             area: area.map(CLIParsing.path),
             tags: tag,
             recurrence: CLIParsing.recurrence(rule: repeatRule, after: repeatAfter),
+            resetChecklistOnRepeat: resetChecklistOnRepeat,
             body: body,
             createdAt: now,
             updatedAt: now,

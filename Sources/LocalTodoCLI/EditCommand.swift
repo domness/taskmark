@@ -26,6 +26,7 @@ struct EditCommand: AsyncParsableCommand {
     @Option(name: .customLong("repeat-rule")) var repeatRule: String?
     @Option(name: .customLong("repeat-after")) var repeatAfter: String?
     @Flag var clearRecurrence = false
+    @Option(help: "Reset checkboxes on repeat: true or false.") var resetChecklistOnRepeat: Bool?
 
     func run() async throws {
         let context = try CLIContext(options: global)
@@ -67,12 +68,19 @@ struct EditCommand: AsyncParsableCommand {
         if !tag.isEmpty || clearTags {
             patch.tags = .set(tag)
         }
-        if repeatRule != nil || repeatAfter != nil || clearRecurrence {
-            patch.recurrence = try .set(CLIParsing.recurrence(rule: repeatRule, after: repeatAfter))
-        }
+        try applyRecurrence(to: &patch)
         if let body {
             patch.body = .set(body)
         }
+        if let resetChecklistOnRepeat {
+            patch.resetChecklistOnRepeat = .set(resetChecklistOnRepeat)
+        }
         return patch
+    }
+
+    private func applyRecurrence(to patch: inout TaskPatch) throws {
+        if repeatRule != nil || repeatAfter != nil || clearRecurrence {
+            patch.recurrence = try .set(CLIParsing.recurrence(rule: repeatRule, after: repeatAfter))
+        }
     }
 }

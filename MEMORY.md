@@ -95,6 +95,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Completing late must produce usable future work rather than another overdue occurrence. This intentionally revises the one-step decision recorded on 2026-09-08. No persisted schema changes are needed for this transition change.
 - What was rejected and why: Anchoring fixed recurrence to today was rejected because it changes the cadence. Changing monthly clamping while skipping was rejected because it is a separate recurrence-rule change.
 
+### 2026-09-16: Opt In To Checklist Reset Per Task
+
+- What was decided: Add optional V1 task field `reset_checklist_on_repeat`, defaulting off. Shared completion resets recognized checklist markers only when the task repeats and the option is true. Use a conservative shared body projection for checklist controls and reset, preserving every other byte.
+- Why: The user explicitly requested a per-task reset option. This intentionally revises the blanket no-reset decision from 2026-09-08 while retaining its behavior for existing notes. A missing field remains false, so migration is unnecessary.
+- What was rejected and why: Global reset was rejected because repeat workflows differ. First-class subtask entities and Markdown re-rendering were rejected because they would change the one-note model and unrelated content. Ambiguous Markdown constructs remain text rather than risking changes to code examples.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

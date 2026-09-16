@@ -234,6 +234,9 @@ extension WorkspaceModel {
 
     private func transitionFields(from task: TodoTask, to updated: TodoTask) -> Set<TaskTransitionField> {
         var fields = Set<TaskTransitionField>()
+        if task.body != updated.body {
+            fields.insert(.body)
+        }
         if task.status != updated.status {
             fields.insert(.status)
         }

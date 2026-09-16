@@ -30,6 +30,9 @@ public enum TaskTransition {
         }
         var patch = TaskPatch()
         patch.status = .set(.next)
+        if task.resetChecklistOnRepeat {
+            patch.body = .set(MarkdownChecklist(task.body).resetting())
+        }
         if task.scheduled != nil || task.deadline == nil {
             patch.scheduled = .set(nextDate)
         }
