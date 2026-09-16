@@ -24,6 +24,14 @@ final class FailingWriteFileSystem: VaultFileSystem, @unchecked Sendable {
         }
     }
 
+    func coordinateMoving(
+        from source: URL, to destination: URL, operation: (URL, URL) throws -> Void
+    ) throws {
+        try base.coordinateMoving(from: source, to: destination) { sourceURL, destinationURL in
+            try operation(self.coordinatedURL ?? sourceURL, destinationURL)
+        }
+    }
+
     func contentsOfDirectory(at url: URL) throws -> [URL] {
         try base.contentsOfDirectory(at: url)
     }
@@ -36,11 +44,18 @@ final class FailingWriteFileSystem: VaultFileSystem, @unchecked Sendable {
         base.exists(at: url)
     }
 
+    func isSymbolicLink(at url: URL) throws -> Bool {
+        try base.isSymbolicLink(at: url)
+    }
+
     func markdownFiles(in root: URL) throws -> [URL] {
         try base.markdownFiles(in: root)
     }
 
     func move(from source: URL, to destination: URL) throws {
+        if shouldFailWrite() {
+            throw TestFileSystemError.injectedFailure
+        }
         try base.move(from: source, to: destination)
     }
 

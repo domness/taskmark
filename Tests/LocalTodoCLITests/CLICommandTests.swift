@@ -59,7 +59,7 @@ import Testing
     #expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent("Tasks/Preview.md").path))
 }
 
-@Test func moveCommandUpdatesReferences() async throws {
+@Test(arguments: [false, true]) func moveCommandRejectsCollectionMoves(dryRun: Bool) async throws {
     let root = try makeCLITestVault()
     defer { removeCLITestVault(root) }
     let project = try ProjectAddCommand.parse([
@@ -72,13 +72,15 @@ import Testing
     try await task.run()
     let move = try MoveCommand.parse([
         "--vault", root.path, "Projects/App.md", "Projects/Renamed.md",
-    ])
+    ] + (dryRun ? ["--dry-run"] : []))
 
-    try await move.run()
+    await #expect(throws: VaultStoreError.self) {
+        try await move.run()
+    }
 
     let snapshot = try await VaultStore(root: root).snapshot()
     let taskPath = try VaultPath("Tasks/Ship.md")
-    #expect(snapshot.tasks[taskPath]?.value.project?.value == "Projects/Renamed.md")
+    #expect(snapshot.tasks[taskPath]?.value.project?.value == "Projects/App.md")
 }
 
 @Test func jsonErrorsUseStableEnvelope() throws {

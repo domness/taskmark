@@ -63,7 +63,7 @@ public struct VaultScanner: Sendable {
         }
     }
 
-    private func loadConfiguration() throws -> VaultConfiguration {
+    func loadConfiguration() throws -> VaultConfiguration {
         let manifest = root.appendingPathComponent(LocalTodoSchema.manifestPath)
         guard fileSystem.exists(at: manifest) else {
             throw VaultStoreError.invalidVault("Missing \(LocalTodoSchema.manifestPath)")

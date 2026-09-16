@@ -2,7 +2,7 @@
 
 Local Todo is a local-first GTD task manager whose source of truth is a directory of human-readable Markdown files. The macOS app and CLI share the same domain rules and storage implementation, so every change remains inspectable outside the app.
 
-V1 includes inbox, Today, Next, projects, areas, tags, priorities, dates, deadlines, recurrence, search, diagnostics, atomic moves, and conflict-aware edits. iOS is next; a web client is intentionally deferred.
+The current implementation includes inbox, Today, Next, projects, areas, tags, priorities, dates, deadlines, recurrence, search, diagnostics, atomic task moves, and conflict-aware edits. Project and area path moves are temporarily disabled pending safe multi-file recovery. iOS is planned; a web client is intentionally deferred.
 
 ## Requirements
 
@@ -45,7 +45,7 @@ reopen     Restore a completed task to an incomplete status
 search     Search titles, bodies, and tags with combined filters
 project    Add, list, show, edit, complete, and reopen projects
 area       Add, list, show, edit, archive, and activate areas
-move       Move an entity and update known path references atomically
+move       Move a task atomically; project and area moves are disabled
 doctor     Report malformed files and unresolved references
 schema     Describe the supported schema
 ```
@@ -56,11 +56,11 @@ Commands resolve the nearest ancestor vault by default. Pass `--vault PATH` to t
 localtodo edit --vault "$HOME/Local Todo" --dry-run --json \
   "Tasks/Review launch.md" --scheduled 2026-08-01 --tag launch
 localtodo move --vault "$HOME/Local Todo" --dry-run --json \
-  "Projects/App.md" "Projects/Local Todo.md"
+  "Tasks/Review launch.md" "Tasks/Review release.md"
 localtodo doctor --vault "$HOME/Local Todo" --json
 ```
 
-Entity identity is the exact, case-sensitive, vault-relative path. Use the CLI or app for moves and known-field mutations so unknown frontmatter and Markdown bodies are preserved.
+Entity identity is the exact, case-sensitive, vault-relative path. Use the CLI for task moves and the app or CLI for known-field mutations so unknown frontmatter and Markdown bodies are preserved. Change project/area titles without renaming their files for now; external path moves can break references. Move dry runs perform the same preflight validation without writing, but cannot reserve paths against later external changes.
 
 ## Development
 

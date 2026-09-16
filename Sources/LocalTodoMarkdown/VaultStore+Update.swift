@@ -6,6 +6,7 @@ extension VaultStore {
         _ entity: LocalTodoEntity,
         expectedRevision: FileRevision
     ) throws -> VaultRecord<LocalTodoEntity> {
+        try validateEntityPath(entity.path)
         var result: VaultRecord<LocalTodoEntity>?
         let url = fileURL(for: entity.path)
         try performIO {
@@ -13,6 +14,7 @@ extension VaultStore {
                 guard coordinatedURL.standardizedFileURL.path == url.standardizedFileURL.path else {
                     throw VaultStoreError.conflict(entity.path)
                 }
+                try validateEntityPath(entity.path)
                 result = try updateCoordinated(
                     entity,
                     at: coordinatedURL,
@@ -27,6 +29,7 @@ extension VaultStore {
     }
 
     public func delete(at path: VaultPath, expectedRevision: FileRevision) throws -> LocalTodoEntity {
+        try validateEntityPath(path)
         var result: LocalTodoEntity?
         let url = fileURL(for: path)
         try performIO {
@@ -34,6 +37,7 @@ extension VaultStore {
                 guard coordinatedURL.standardizedFileURL.path == url.standardizedFileURL.path else {
                     throw VaultStoreError.conflict(path)
                 }
+                try validateEntityPath(path)
                 result = try deleteCoordinated(
                     at: path,
                     coordinatedURL: coordinatedURL,

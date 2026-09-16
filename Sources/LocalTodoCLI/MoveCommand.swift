@@ -5,7 +5,7 @@ import LocalTodoMarkdown
 struct MoveCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "move",
-        abstract: "Move an entity and update references."
+        abstract: "Move a task without replacing existing files. Project and area moves are disabled."
     )
 
     @OptionGroup var global: GlobalOptions
@@ -17,11 +17,7 @@ struct MoveCommand: AsyncParsableCommand {
         let source = try CLIParsing.path(source)
         let destination = try CLIParsing.path(destination)
         if global.dryRun {
-            let snapshot = try await context.snapshot()
-            guard snapshot.tasks[source] != nil || snapshot.projects[source] != nil || snapshot.areas[source] != nil
-            else {
-                throw CLIError.message("Entity not found: \(source.value)")
-            }
+            try await context.store.validateMove(from: source, to: destination)
             let output = MoveOutput(source: source.value, destination: destination.value)
             if global.json {
                 try CLIPrinter.json(output, context: context, command: "move", dryRun: true)

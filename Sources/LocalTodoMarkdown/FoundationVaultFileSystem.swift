@@ -4,33 +4,6 @@ import Foundation
 public struct FoundationVaultFileSystem: VaultFileSystem {
     public init() {}
 
-    public func coordinateWriting(
-        at url: URL,
-        intent: VaultWriteIntent,
-        operation: (URL) throws -> Void
-    ) throws {
-        let coordinator = NSFileCoordinator(filePresenter: nil)
-        var coordinationError: NSError?
-        var operationError: Error?
-        let options: NSFileCoordinator.WritingOptions = switch intent {
-        case .replacing: .forReplacing
-        case .deleting: .forDeleting
-        }
-        coordinator.coordinate(writingItemAt: url, options: options, error: &coordinationError) { coordinatedURL in
-            do {
-                try operation(coordinatedURL)
-            } catch {
-                operationError = error
-            }
-        }
-        if let coordinationError {
-            throw coordinationError
-        }
-        if let operationError {
-            throw operationError
-        }
-    }
-
     public func contentsOfDirectory(at url: URL) throws -> [URL] {
         try FileManager.default.contentsOfDirectory(
             at: url,
@@ -45,6 +18,22 @@ public struct FoundationVaultFileSystem: VaultFileSystem {
 
     public func exists(at url: URL) -> Bool {
         FileManager.default.fileExists(atPath: url.path)
+    }
+
+    public func isSymbolicLink(at url: URL) throws -> Bool {
+        var metadata = stat()
+        let result = try url.withUnsafeFileSystemRepresentation { path in
+            guard let path else { throw POSIXError(.EINVAL) }
+            return lstat(path, &metadata)
+        }
+        guard result == 0 else {
+            let code = errno
+            if code == ENOENT {
+                return false
+            }
+            throw POSIXError(POSIXErrorCode(rawValue: code) ?? .EIO)
+        }
+        return metadata.st_mode & S_IFMT == S_IFLNK
     }
 
     public func markdownFiles(in root: URL) throws -> [URL] {
@@ -66,7 +55,7 @@ public struct FoundationVaultFileSystem: VaultFileSystem {
             }
             let values = try url.resourceValues(forKeys: Set(keys))
             if values.isSymbolicLink == true {
-                enumerator.skipDescendants()
+                // DirectoryEnumerator does not follow links; skipping here can skip real sibling entries.
                 continue
             }
             if values.isRegularFile == true, url.pathExtension == "md" {
@@ -77,7 +66,15 @@ public struct FoundationVaultFileSystem: VaultFileSystem {
     }
 
     public func move(from source: URL, to destination: URL) throws {
-        try FileManager.default.moveItem(at: source, to: destination)
+        let result = source.withUnsafeFileSystemRepresentation { sourcePath in
+            destination.withUnsafeFileSystemRepresentation { destinationPath in
+                guard let sourcePath, let destinationPath else { return Int32(-1) }
+                return renameatx_np(AT_FDCWD, sourcePath, AT_FDCWD, destinationPath, UInt32(RENAME_EXCL))
+            }
+        }
+        if result != 0 {
+            throw POSIXError(POSIXErrorCode(rawValue: errno) ?? .EIO)
+        }
     }
 
     public func read(at url: URL) throws -> Data {

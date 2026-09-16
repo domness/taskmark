@@ -64,6 +64,12 @@ import Testing
 }
 
 private struct FailingInitializerFileSystem: VaultFileSystem {
+    func coordinateMoving(
+        from source: URL, to destination: URL, operation: (URL, URL) throws -> Void
+    ) throws {
+        try base.coordinateMoving(from: source, to: destination, operation: operation)
+    }
+
     static let concurrentManifest = "schema: concurrent\n"
 
     private let base = FoundationVaultFileSystem()
@@ -97,6 +103,10 @@ private struct FailingInitializerFileSystem: VaultFileSystem {
 
     func exists(at url: URL) -> Bool {
         base.exists(at: url)
+    }
+
+    func isSymbolicLink(at url: URL) throws -> Bool {
+        try base.isSymbolicLink(at: url)
     }
 
     func markdownFiles(in root: URL) throws -> [URL] {

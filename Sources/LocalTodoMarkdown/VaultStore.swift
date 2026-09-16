@@ -22,6 +22,7 @@ public actor VaultStore {
     }
 
     public func create(_ entity: LocalTodoEntity) throws -> VaultRecord<LocalTodoEntity> {
+        try validateEntityPath(entity.path)
         let url = fileURL(for: entity.path)
         guard !fileSystem.exists(at: url) else {
             throw VaultStoreError.destinationExists(entity.path)
@@ -44,78 +45,6 @@ public actor VaultStore {
             throw error
         }
         return VaultRecord(value: entity, revision: FileRevision(data: data))
-    }
-
-    public func move(from source: VaultPath, to destination: VaultPath, now: Date) throws -> VaultSnapshot {
-        let sourceURL = fileURL(for: source)
-        let destinationURL = fileURL(for: destination)
-        guard fileSystem.exists(at: sourceURL) else {
-            throw VaultStoreError.notFound(source)
-        }
-        guard !fileSystem.exists(at: destinationURL) else {
-            throw VaultStoreError.destinationExists(destination)
-        }
-        guard fileSystem.exists(at: destinationURL.deletingLastPathComponent()) else {
-            throw VaultStoreError.invalidVault("Destination parent directory does not exist")
-        }
-
-        let currentSnapshot = try snapshot()
-        let sourceData = try performIO { try fileSystem.read(at: sourceURL) }
-        let sourceDocument = try parseDocument(sourceData, at: source)
-        let sourceEntity = try EntityDocumentCodec.decode(sourceDocument, at: source)
-        let movedEntity = try sourceEntity.moved(to: destination)
-        var writes = try referenceWrites(
-            for: sourceEntity,
-            destination: destination,
-            snapshot: currentSnapshot,
-            now: now
-        )
-        let movedDocument = try EntityDocumentCodec.encode(movedEntity, preserving: sourceDocument)
-        writes[destinationURL] = try renderedData(movedDocument)
-
-        try VaultMoveTransaction(fileSystem: fileSystem).apply(
-            sourceURL: sourceURL,
-            destinationURL: destinationURL,
-            writes: writes
-        )
-        return try snapshot()
-    }
-
-    private func referenceWrites(
-        for source: LocalTodoEntity,
-        destination: VaultPath,
-        snapshot: VaultSnapshot,
-        now: Date
-    ) throws -> [URL: Data] {
-        var writes = [URL: Data]()
-        for record in snapshot.tasks.values {
-            var patch = TaskPatch()
-            switch source {
-            case .project where record.value.project == source.path:
-                patch.project = .set(destination)
-            case .area where record.value.area == source.path:
-                patch.area = .set(destination)
-            default:
-                continue
-            }
-            let updated = try patch.applying(to: record.value, now: now)
-            writes[fileURL(for: updated.path)] = try updatedData(.task(updated), at: updated.path)
-        }
-        if case .area = source {
-            for record in snapshot.projects.values where record.value.area == source.path {
-                var patch = ProjectPatch()
-                patch.area = .set(destination)
-                let updated = try patch.applying(to: record.value, now: now)
-                writes[fileURL(for: updated.path)] = try updatedData(.project(updated), at: updated.path)
-            }
-        }
-        return writes
-    }
-
-    private func updatedData(_ entity: LocalTodoEntity, at path: VaultPath) throws -> Data {
-        let data = try performIO { try fileSystem.read(at: fileURL(for: path)) }
-        let document = try parseDocument(data, at: path)
-        return try renderedData(EntityDocumentCodec.encode(entity, preserving: document))
     }
 
     func parseDocument(_ data: Data, at path: VaultPath) throws -> MarkdownDocument {

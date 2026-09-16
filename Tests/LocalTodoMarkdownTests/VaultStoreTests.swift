@@ -180,7 +180,7 @@ import Testing
     )
 }
 
-@Test func movingProjectUpdatesTaskReferences() async throws {
+@Test func movingReferencedProjectIsRejectedWithoutChangingFiles() async throws {
     let root = try makeTestVault()
     defer { removeTestVault(root) }
     let store = VaultStore(root: root)
@@ -189,41 +189,43 @@ import Testing
     _ = try await store.create(.project(testProject(path: projectPath.value)))
     _ = try await store.create(.task(testTask(path: "Tasks/Test.md", project: projectPath)))
 
-    let snapshot = try await store.move(
-        from: projectPath,
-        to: destination,
-        now: Date(timeIntervalSince1970: 1_774_608_060)
-    )
+    let original = try Data(contentsOf: root.appendingPathComponent(projectPath.value))
+    let taskURL = root.appendingPathComponent("Tasks/Test.md")
+    let originalTask = try Data(contentsOf: taskURL)
+    await #expect(throws: VaultStoreError.self) {
+        try await store.move(from: projectPath, to: destination, now: Date())
+    }
+    let snapshot = try await store.snapshot()
 
-    #expect(snapshot.projects[projectPath] == nil)
-    #expect(snapshot.projects[destination]?.value.path == destination)
-    #expect(try snapshot.tasks[VaultPath("Tasks/Test.md")]?.value.project == destination)
-    #expect(!FileManager.default.fileExists(atPath: root.appendingPathComponent(projectPath.value).path))
+    #expect(snapshot.projects[projectPath] != nil)
+    #expect(snapshot.projects[destination] == nil)
+    #expect(try Data(contentsOf: root.appendingPathComponent(projectPath.value)) == original)
+    #expect(try Data(contentsOf: taskURL) == originalTask)
 }
 
-@Test func failedMoveRollsBackEveryFile() async throws {
+@Test func failedTaskRenameLeavesBothPathsUnchanged() async throws {
     let root = try makeTestVault()
     defer { removeTestVault(root) }
     let base = FoundationVaultFileSystem()
     let setupStore = VaultStore(root: root, fileSystem: base)
-    let projectPath = try VaultPath("Projects/Test.md")
-    let destination = try VaultPath("Projects/Renamed.md")
-    _ = try await setupStore.create(.project(testProject(path: projectPath.value)))
-    _ = try await setupStore.create(.task(testTask(path: "Tasks/Test.md", project: projectPath)))
-    let failing = FailingWriteFileSystem(base: base, failureWrite: 2)
+    let source = try VaultPath("Tasks/Test.md")
+    let destination = try VaultPath("Tasks/Renamed.md")
+    _ = try await setupStore.create(.task(testTask(path: source.value)))
+    let original = try Data(contentsOf: root.appendingPathComponent(source.value))
+    let failing = FailingWriteFileSystem(base: base, failureWrite: 1)
     let store = VaultStore(root: root, fileSystem: failing)
 
     do {
         _ = try await store.move(
-            from: projectPath,
+            from: source,
             to: destination,
             now: Date(timeIntervalSince1970: 1_774_608_060)
         )
         Issue.record("Expected move failure")
     } catch {
         let snapshot = try await setupStore.snapshot()
-        #expect(snapshot.projects[projectPath] != nil)
-        #expect(snapshot.projects[destination] == nil)
-        #expect(try snapshot.tasks[VaultPath("Tasks/Test.md")]?.value.project == projectPath)
+        #expect(snapshot.tasks[source] != nil)
+        #expect(snapshot.tasks[destination] == nil)
+        #expect(try Data(contentsOf: root.appendingPathComponent(source.value)) == original)
     }
 }

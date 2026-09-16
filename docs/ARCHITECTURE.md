@@ -58,3 +58,4 @@ Use Swift 6 strict concurrency. A vault-scoped actor will serialize indexing and
 - Write a sibling temporary file, flush it, then replace the destination atomically.
 - Coordinate reads and writes with platform file coordination where iCloud may be involved.
 - Report conflicts and invalid references through the app, CLI JSON, and non-zero exit codes.
+- Task moves coordinate both exact URLs and use an exclusive atomic rename. Project/area moves are currently disabled: sequential replacement with best-effort rollback does not meet the multi-file mutation contract. Re-enabling them requires an explicit recovery and visibility design for external Markdown readers and writers.

@@ -29,8 +29,10 @@ area: Areas/Personal Systems.md
 - References use `/` separators and include `.md`.
 - Absolute paths, `..`, and paths escaping the vault are invalid.
 - App-driven moves update known references atomically.
+- Current safety restriction: only task moves are enabled. Project and area moves are rejected before mutation until multi-file reference updates have a safe recovery design. Editing a collection title does not require a path move.
 - External moves can break references; clients report them and `localtodo doctor` will diagnose them.
 - Changing only a file title does not change identity. Renaming or moving its path does.
+- `.localtodo/` and its case variants are reserved and cannot contain entity paths, including on case-sensitive volumes so vaults remain portable. Entity identity otherwise remains exact and case-sensitive. Mutation paths cannot contain NUL or symbolic-link components below the vault root, including dangling links. This check is not a sandbox against malicious concurrent filesystem changes.
 
 ## Task
 
@@ -150,10 +152,17 @@ Fixed rules use a strict RFC 5545 subset:
 
 After-completion intervals use exactly `P<n>D`, `P<n>W`, `P<n>M`, or `P<n>Y`, where `<n>` is from 1 through 999. Completing a recurring task keeps the same path and advances its scheduled date, deadline, or both according to the rule.
 
+- After-completion rules calculate the next date from the injected completion day in the vault timezone, not the previous task date.
+- Fixed rules advance one occurrence from the previous scheduled date, or deadline when no scheduled date exists. Missed occurrences are not automatically skipped.
+- When both dates exist, the scheduled date anchors the recurrence and the deadline keeps its calendar-day offset from it, including across daylight-saving changes.
+- A recurring task with neither date gets a scheduled date calculated from the completion day.
+- Recurrence does not reset checklist items or otherwise modify the Markdown body.
+
 ## Mutation Guarantees
 
 - Validate a full mutation before writing any destination.
 - Use atomic replacement and never leave a partially written entity.
 - A path move and its reference updates succeed together or leave the vault unchanged.
+- Enabled task moves use a coordinated, exclusive filesystem rename and preserve the entire file byte-for-byte. Cross-filesystem moves fail rather than falling back to copy/delete. Multi-file collection moves remain disabled as described above.
 - Dry runs report intended path and field changes without writing.
 - JSON CLI output distinguishes validation, conflict, missing-reference, and I/O failures.

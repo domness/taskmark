@@ -6,6 +6,11 @@ public enum VaultWriteIntent: Equatable, Sendable {
 }
 
 public protocol VaultFileSystem: Sendable {
+    func coordinateMoving(
+        from source: URL,
+        to destination: URL,
+        operation: (URL, URL) throws -> Void
+    ) throws
     func coordinateWriting(
         at url: URL,
         intent: VaultWriteIntent,
@@ -14,6 +19,9 @@ public protocol VaultFileSystem: Sendable {
     func contentsOfDirectory(at url: URL) throws -> [URL]
     func createDirectory(at url: URL) throws
     func exists(at url: URL) -> Bool
+    /// Inspects the entry without following its final component, including dangling links.
+    /// Returns false for missing entries; other metadata failures must throw.
+    func isSymbolicLink(at url: URL) throws -> Bool
     func markdownFiles(in root: URL) throws -> [URL]
     func move(from source: URL, to destination: URL) throws
     func read(at url: URL) throws -> Data

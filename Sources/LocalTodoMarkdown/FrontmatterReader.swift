@@ -6,17 +6,20 @@ struct FrontmatterReader {
     let document: MarkdownDocument
 
     func requiredString(_ key: FrontmatterKey) throws -> String {
-        guard let value = optionalString(key) else {
+        guard let value = try optionalString(key) else {
             throw EntityDocumentError.missingField(key.rawValue)
         }
         return value
     }
 
-    func optionalString(_ key: FrontmatterKey) -> String? {
+    func optionalString(_ key: FrontmatterKey) throws -> String? {
         guard let node = document.node(forKey: key.rawValue), node.null == nil else {
             return nil
         }
-        return node.scalar?.string
+        guard let value = node.scalar?.string else {
+            throw EntityDocumentError.invalidField(key.rawValue)
+        }
+        return value
     }
 
     func strings(_ key: FrontmatterKey) throws -> [String] {
@@ -34,7 +37,7 @@ struct FrontmatterReader {
     }
 
     func date(_ key: FrontmatterKey) throws -> CalendarDate? {
-        guard let value = optionalString(key) else {
+        guard let value = try optionalString(key) else {
             return nil
         }
         do {
@@ -45,7 +48,7 @@ struct FrontmatterReader {
     }
 
     func timestamp(_ key: FrontmatterKey, required: Bool) throws -> Date? {
-        guard let value = optionalString(key) else {
+        guard let value = try optionalString(key) else {
             if required {
                 throw EntityDocumentError.missingField(key.rawValue)
             }
@@ -65,7 +68,7 @@ struct FrontmatterReader {
     }
 
     func path(_ key: FrontmatterKey) throws -> VaultPath? {
-        guard let value = optionalString(key) else {
+        guard let value = try optionalString(key) else {
             return nil
         }
         do {
