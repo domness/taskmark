@@ -14,6 +14,12 @@ Read this file before suggesting an approach similar to a previous multi-attempt
 - What worked instead: Extract the per-component validation into a named throwing function and call it from the loop.
 - Note for next time: Keep long predicates out of loop headers when the formatter and linter disagree; prefer a named validation step to rule suppression.
 
+## 2026-09-16: Removing Optional Yams Mapping Fields
+
+- What did not work: Replacing a whole recurrence node lost unknown nested metadata. Updating a `Node` preserved metadata, but assigning nil through `Node` subscripting was a no-op, leaving obsolete recurrence keys and cleared saved-filter criteria on disk.
+- What worked instead: Mutate `Node.Mapping`, whose nil assignment removes keys, then wrap it as `.mapping`. Regression tests cover recurrence mode changes and fresh-store reload after clearing all optional saved-filter criteria.
+- Note for next time: Test both setting and clearing optional YAML fields after serialization. `Node` and `Node.Mapping` have different nil-setter behavior.
+
 ## 2026-07-27: Vault Initialization Failure Recovery
 
 - What did not work: The first rollback removed `.localtodo` recursively after a failed manifest write. The next version made manifest creation exclusive but still used recursive removal for temporary-file cleanup and checked directory emptiness only before setup.

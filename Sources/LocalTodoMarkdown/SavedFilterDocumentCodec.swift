@@ -39,14 +39,14 @@ enum SavedFilterDocumentCodec {
             }
         }
         let nodes = try filters.map { filter in
-            var node = previous[filter.name] ?? .mapping([:])
+            var mapping: Node.Mapping = previous[filter.name]?.mapping ?? [:]
             guard let fields = try compose(yaml: YAMLEncoder().encode(SavedFilterFields(filter))) else {
                 throw SavedFilterError.invalidFormat("Unable to encode filter.")
             }
             for key in SavedFilterFields.CodingKeys.allCases {
-                node[key.rawValue] = fields[key.rawValue]
+                mapping[key.rawValue] = fields[key.rawValue]
             }
-            return node
+            return Node.mapping(mapping)
         }
         document.setNode(Node(nodes), forKey: "filters")
         return document

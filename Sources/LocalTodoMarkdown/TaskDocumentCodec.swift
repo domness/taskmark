@@ -55,7 +55,10 @@ enum TaskDocumentCodec {
         document.setNode(FrontmatterNodes.optionalString(task.project?.value), forKey: FrontmatterKey.project.rawValue)
         document.setNode(FrontmatterNodes.optionalString(task.area?.value), forKey: FrontmatterKey.area.rawValue)
         document.setNode(FrontmatterNodes.strings(task.tags), forKey: FrontmatterKey.tags.rawValue)
-        document.setNode(RecurrenceDocumentCodec.encode(task.recurrence), forKey: FrontmatterKey.recurrence.rawValue)
+        document.setNode(
+            RecurrenceDocumentCodec.encode(task.recurrence, preserving: existing?.node(forKey: "recurrence")),
+            forKey: FrontmatterKey.recurrence.rawValue
+        )
         document.setNode(
             task.resetChecklistOnRepeat ? FrontmatterNodes.boolean(true) : nil,
             forKey: FrontmatterKey.resetChecklistOnRepeat.rawValue

@@ -158,6 +158,8 @@ Fixed rules use a strict RFC 5545 subset:
 - `BYDAY` is optional and valid only with `WEEKLY`; values are unique `MO`, `TU`, `WE`, `TH`, `FR`, `SA`, or `SU` entries.
 - No other rule fields are accepted.
 
+Unknown sibling keys within the `recurrence` mapping survive known-field edits and mode changes. Switching modes removes only the other mode's known `rule`/`interval` key. Explicitly removing recurrence removes the whole definition.
+
 After-completion intervals use exactly `P<n>D`, `P<n>W`, `P<n>M`, or `P<n>Y`, where `<n>` is from 1 through 999. Completing a recurring task keeps the same path and advances its scheduled date, deadline, or both according to the rule.
 
 - After-completion rules calculate the next date from the injected completion day in the vault timezone, not the previous task date.

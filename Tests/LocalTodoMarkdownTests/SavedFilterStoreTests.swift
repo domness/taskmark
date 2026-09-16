@@ -110,3 +110,19 @@ func malformedSavedFiltersAreNotOverwritten(yaml: String) async throws {
         $0.kind == .referenceMissing && $0.reference == filters.project
     })
 }
+
+@Test func clearingSavedFilterCriteriaPersistsAfterReload() async throws {
+    let root = try makeTestVault()
+    defer { removeTestVault(root) }
+    var fields = TaskFilters()
+    fields.project = try VaultPath("Projects/Old.md")
+    fields.area = try VaultPath("Areas/Old.md")
+    fields.scheduled = try DateRange(start: CalendarDate("2026-09-01"), end: CalendarDate("2026-09-30"))
+    fields.deadline = fields.scheduled
+    let store = VaultStore(root: root)
+    let original = try SavedTaskFilter(name: "Clear me", query: TaskQuery(text: "old text", filters: fields))
+    let record = try await store.saveFilters([original], expectedRevision: nil)
+    let cleared = try SavedTaskFilter(name: original.name, query: TaskQuery())
+    _ = try await store.saveFilters([cleared], expectedRevision: record.revision)
+    #expect(try await VaultStore(root: root).savedFilters().filters == [cleared])
+}
