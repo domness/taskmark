@@ -137,6 +137,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Daily routes need immediately usable capture, completion and planning without YAML. Shifting both dates preserves the user's planning separation, including negative offsets and DST. Workspace tests inject a clock and explicit timezone.
 - What was rejected and why: Reading the route only at submission was rejected because navigation could silently change the destination. Recalculating recurrence during rescheduling was rejected because planning is not completion. Merging external planning-input changes with an already-calculated transition was rejected; related drafts and undo/redo retain semantic conflict dependencies.
 
+### 2026-09-16: Close Recurrence And Filter Persistence Gaps In Acceptance Review
+
+- What was decided: Preserve unknown nested recurrence keys during edits/mode changes, and remove cleared optional filter criteria at the YAML mapping level. Make CLI `edit --status done` invoke recurring completion from the edited inputs, matching the inspector, and expose full recurrence expressions in additive JSON fields. Permanent completion is explicit removal of recurrence plus Done.
+- Why: Regression tests reproduced nested-key loss, filter criteria reappearing after reload, and CLI status edits bypassing recurrence. The CLI status-edit change is intentional and breaking; it is documented and committed with a breaking-change footer.
+- What was rejected and why: Keeping divergent app/CLI completion was rejected because users should not get different next dates from the same action. Replacing whole recurrence mappings was rejected because unknown metadata belongs to users. Assigning nil through Yams `Node` was rejected because it silently does nothing; mutation uses `Node.Mapping` instead.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

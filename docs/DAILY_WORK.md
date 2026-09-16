@@ -70,3 +70,5 @@ localtodo filter delete "Waiting work" --dry-run
 ```
 
 Run these inside the vault or supply `--vault PATH`. CLI mutations support `--dry-run`; the app and CLI share domain transitions and storage validation.
+
+`edit --status done` also rolls recurring tasks forward, using all fields edited in that command. This intentionally changes the earlier status-only behavior. Remove recurrence in the same command (`--clear-recurrence --status done`) to finish permanently. `show --json` includes the recurrence mode, full `repeat_rule` or `repeat_after`, and checklist-reset preference.

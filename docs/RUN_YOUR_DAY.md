@@ -1,7 +1,7 @@
 # Run Your Day Acceptance Evidence
 
-This is an implementation/evidence ledger, not a claim that the milestone is complete.
-All automated vault workflows use disposable temporary directories.
+Run Your Day is implemented and its automated acceptance checks pass. This record distinguishes automated evidence from unverified live UI behavior.
+All automated vault workflows use disposable temporary directories; new workspace tests also isolate preferences and use injected clocks/timezones where date behavior matters.
 
 ## Implemented
 
@@ -18,14 +18,27 @@ All automated vault workflows use disposable temporary directories.
 - The app has combined-filter controls, saved-filter sidebar navigation, explicit Save/Update, sort choices, and conflict recovery. `WorkspaceFilterTests` and `WorkspaceFilterConflictTests` prove real task results, save/update and fresh-workspace reload, history, invalid/duplicate rejection, retention after write failure, missing/malformed definitions, and keeping a working filter without overwriting external definitions. Test workspaces now isolate display preferences as well as bookmarks and vault files.
 - Upcoming/Waiting/Someday are now sidebar and keyboard destinations. Contextual capture, selected-task completion/reopening, exact-date and today/tomorrow rescheduling are exposed through native menus, shortcuts and the command palette. Shared app/CLI rescheduling preserves paired-date offsets and notes. `WorkspaceDailyWorkflowTests`, `WorkspaceDailyFailureTests`, `TaskRescheduleTests` and `CLIRescheduleTests` cover each daily route, injected-clock capture/reload/completion/history, rescheduling/history, stale sessions, external planning-input conflicts, write-failure retry, and capture failure. [Daily workflow documentation](DAILY_WORK.md) lists the controls and shortcuts.
 
-## Remaining Acceptance Gaps
+## Final Acceptance Audit
 
-- Final cross-workflow acceptance review and any gaps exposed by that review.
-- Final documentation, passing quality gate, clean tree and remote synchronization after the remaining work.
+| Requirement | Implementation and automated evidence |
+| --- | --- |
+| Inspect/edit both recurrence modes | Native repeat controls and `RecurrenceEditorValue`; `WorkspaceRepeatEditingTests` covers editing, removing, autosave, history, validation and conflicts. CLI status-edit parity and full JSON rule fields are covered by `CLIStatusRecurrenceTests`. |
+| Fixed vs after-completion advancement | Shared `TaskTransition`; `FixedCompletionTests` and `TaskTransitionTests` cover late/early completion, selected weekdays, multi-week intervals, clamping, signed date offsets, undated/deadline-only tasks and DST. |
+| Interactive checklist subtasks and opt-in reset | Shared byte-preserving projection and native toggles; domain, codec, workspace checklist and CLI recurrence tests cover default-off, CRLF/Unicode, code/comment exclusion, reload, history and conflicts. |
+| Project title/notes, complete/reopen, inactive navigation | Project drafts/inspector and active/inactive sidebar sections; workspace project suites and `CLIProjectTests` cover file identity/references, autosave/reload, completion/history, rebases, true conflicts, unavailable files and write-failure retry. |
+| Combined/saved filters and useful sorting | Shared query/sort and canonical filter metadata, native editor and sidebar; domain/CLI/filter-store/workspace filter suites cover all dimensions, results, reload/update/clear, history, missing values/references, malformed definitions, stale revisions and write failures. |
+| Daily views and keyboard actions | Sidebar/routes, native menus, command palette and shortcuts; `WorkspaceDailyWorkflowTests` covers capture, reload, completion/history and rescheduling/history in all three routes. Native keyboard wiring compiles; physical focus/shortcut traversal is not manually verified. |
+| Planning/date-offset consistency | Shared app/CLI rescheduling plus recurrence; `TaskRescheduleTests`, `CLIRescheduleTests`, workspace daily and acceptance tests cover offsets, unchanged notes, no-ops, incomplete-state validation, injected dates, and semantic conflicts during undo. |
+| Storage/architecture preservation | Domain remains UI/YAML/filesystem-independent; Markdown owns serialization and writes; clients use shared APIs. Existing safety/move/recovery tests pass. New tests preserve nested recurrence metadata and saved-filter unknown fields/body, and prove explicit clearing survives disk reload. |
+| Relevant failures and recovery | Injected task/project/filter write failures, failed capture and recurring completion, external edits, stale identities/revisions, malformed files, symlinks and coordinator remaps are covered. The tested failures retain drafts or fail without replacing external content. |
+
+The audit first reproduced and then fixed unknown nested recurrence-key loss, cleared saved-filter criteria reappearing after reload, and CLI status edits bypassing recurring completion. `WorkspaceAcceptanceTests` additionally verifies recurring-completion failure/retry with a fresh app-model reload, planning conflicts during undo, filter clearing, and persisted/legacy sort preferences.
+
+The intentional CLI change is documented: `edit --status done` rolls a recurring task forward from the edited inputs. Use `--clear-recurrence --status done` to finish permanently. The commit uses a breaking-change footer. The new optional reset field and filter metadata file require no migration of existing vault notes.
 
 ## Verification Boundary
 
-Implementation checkpoints run `make check`: formatting, strict lint, shared domain/Markdown/CLI tests, macOS app tests, and app build. The daily-workflow checkpoint includes 41 domain tests, 57 Markdown tests, 12 CLI tests, and 60 macOS app tests (parameterized cases are additional to test-function counts).
+Final `make check` passed: formatting, strict lint, **41 domain tests, 59 Markdown/storage tests, 15 CLI tests, and 64 macOS app tests**, followed by a successful app build. These are 179 test functions; parameterized cases are additional. Each cohesive implementation checkpoint was quality-gated, committed and pushed; final clean-tree/upstream synchronization is verified at handoff.
 No live UI inspection or screenshots have been performed. Rendered layout, VoiceOver traversal and physical keyboard focus behavior are not yet verified; native controls and accessible labels are implemented and compile-tested.
 
 Todoist migration, a real-use pilot, mobile/web clients, iCloud validation, and project/area file moves are excluded.
