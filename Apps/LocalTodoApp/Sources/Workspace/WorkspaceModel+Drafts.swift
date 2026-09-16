@@ -33,11 +33,19 @@ extension WorkspaceModel {
 
     func beginQuickCapture() {
         guard snapshot != nil else { return }
+        quickCaptureGeneration &+= 1
         quickCaptureRoute = route
         isQuickCapturePresented = true
     }
 
     func cancelQuickCapture() {
+        quickCaptureTitle = ""
+        isQuickCapturePresented = false
+    }
+
+    func finishQuickCapture(title: String, generation: UInt64) {
+        let current = quickCaptureTitle.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard quickCaptureGeneration == generation, current.isEmpty || current == title else { return }
         quickCaptureTitle = ""
         isQuickCapturePresented = false
     }

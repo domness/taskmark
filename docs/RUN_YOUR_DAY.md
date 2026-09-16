@@ -34,11 +34,13 @@ All automated vault workflows use disposable temporary directories; new workspac
 
 The audit first reproduced and then fixed unknown nested recurrence-key loss, cleared saved-filter criteria reappearing after reload, and CLI status edits bypassing recurring completion. `WorkspaceAcceptanceTests` additionally verifies recurring-completion failure/retry with a fresh app-model reload, planning conflicts during undo, filter clearing, and persisted/legacy sort preferences.
 
+A follow-up acceptance pass reproduced a delayed capture write clearing newer input. `WorkspaceCaptureConcurrencyTests` now proves retention after newer typing, cancel/reopen with the same title, and a queued submission receipt. The command palette also uses the same tested active-project projection as routine sidebar navigation.
+
 The intentional CLI change is documented: `edit --status done` rolls a recurring task forward from the edited inputs. Use `--clear-recurrence --status done` to finish permanently. The commit uses a breaking-change footer. The new optional reset field and filter metadata file require no migration of existing vault notes.
 
 ## Verification Boundary
 
-Final `make check` passed: formatting, strict lint, **41 domain tests, 59 Markdown/storage tests, 15 CLI tests, and 64 macOS app tests**, followed by a successful app build. These are 179 test functions; parameterized cases are additional. Each cohesive implementation checkpoint was quality-gated, committed and pushed; final clean-tree/upstream synchronization is verified at handoff.
+Final `make check` passed: formatting, strict lint, **41 domain tests, 59 Markdown/storage tests, 15 CLI tests, and 66 macOS app tests**, followed by a successful app build. These are 181 test functions; parameterized cases are additional. Each cohesive implementation checkpoint was quality-gated, committed and pushed; final clean-tree/upstream synchronization is verified at handoff.
 No live UI inspection or screenshots have been performed. Rendered layout, VoiceOver traversal and physical keyboard focus behavior are not yet verified; native controls and accessible labels are implemented and compile-tested.
 
 Todoist migration, a real-use pilot, mobile/web clients, iCloud validation, and project/area file moves are excluded.

@@ -8,6 +8,7 @@ Open or create a **dedicated task vault** in the macOS app. Tasks stay in indivi
 - **Upcoming** shows future scheduled dates or deadlines. A task with an overdue scheduled date and a future deadline can appear in both views.
 - **Waiting** and **Someday** follow the task's status, including undated tasks.
 - Capture in Today schedules today; Upcoming schedules tomorrow; Next, Waiting and Someday use their respective status. Project/area capture assigns that collection. Capture from search or filters goes to Inbox. The destination shown when capture opens is retained if you navigate before submitting.
+- If a save is delayed, text typed after submission remains in capture when that save finishes. Canceling and reopening capture also starts a new input session, even when the title is identical.
 - Select a task and use **Task → Reschedule Selected Task…** for an exact date. Reschedule moves scheduled and deadline dates together, preserving their signed calendar-day separation. For a deadline-only task, it moves the deadline; an undated task gains a scheduled date. To edit just one date, use its inspector control.
 - **View Options → Sort** offers title, priority, scheduled date, deadline, newest created/updated, and exact file path. Missing dates/priorities sort last; ties use exact paths.
 
@@ -26,6 +27,8 @@ Write checklist steps in Notes using Markdown checkboxes such as `- [ ] Draft ou
 Choose a project in the sidebar to edit its title, status and notes in the inspector. If a task is selected, use **Edit Project** above the task list. Title edits do not rename or move files.
 
 Complete/Reopen changes only the project, not its tasks. Someday, done and canceled projects appear under **Inactive Projects**, collapsed by default. An inactive project already assigned to a task remains visible in that task's inspector.
+
+Routine project destinations in the command palette include active projects only; use the sidebar's Inactive Projects section for review or reopening.
 
 ## Combined And Saved Filters
 

@@ -32,9 +32,11 @@ extension WorkspaceModel {
     }
 
     func createTask(
-        title: String, vaultSession intentSession: UUID, captureRoute: WorkspaceRoute = .inbox, now: Date? = nil
+        title: String, vaultSession intentSession: UUID, captureRoute: WorkspaceRoute = .inbox,
+        captureGeneration: UInt64? = nil, now: Date? = nil
     ) async {
         guard intentSession == vaultSession, let store, let snapshot else { return }
+        let submittedGeneration = captureGeneration ?? quickCaptureGeneration
         var mutationPath: VaultPath?
         do {
             let now = now ?? clock()
@@ -47,8 +49,7 @@ extension WorkspaceModel {
             guard intentSession == vaultSession else { return }
             merge(record)
             registerHistory(replacingWith: nil, at: path, actionName: "Create Task")
-            quickCaptureTitle = ""
-            isQuickCapturePresented = false
+            finishQuickCapture(title: title, generation: submittedGeneration)
             await refresh()
             selectTask(path)
         } catch {

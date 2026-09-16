@@ -143,6 +143,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Regression tests reproduced nested-key loss, filter criteria reappearing after reload, and CLI status edits bypassing recurrence. The CLI status-edit change is intentional and breaking; it is documented and committed with a breaking-change footer.
 - What was rejected and why: Keeping divergent app/CLI completion was rejected because users should not get different next dates from the same action. Replacing whole recurrence mappings was rejected because unknown metadata belongs to users. Assigning nil through Yams `Node` was rejected because it silently does nothing; mutation uses `Node.Mapping` instead.
 
+### 2026-09-16: Preserve New Capture Input Across Delayed Saves
+
+- What was decided: Bind capture completion to a UI-input generation captured at submission. A completed write clears/dismisses only the capture it submitted, preserving later typing and canceled/reopened captures even when the title is identical. The command palette uses the same active-project projection as routine sidebar navigation.
+- Why: A paused-filesystem regression reproduced successful task creation erasing newer capture input. Inactive projects also remained visible in the routine palette despite being collapsed in the sidebar.
+- What was rejected and why: Comparing text alone was rejected because a newly opened capture may intentionally use the same title. Disabling all typing during filesystem coordination was rejected because preserving input supports fast capture without unnecessary waiting. Inactive projects remain explicitly accessible through the sidebar's review section.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

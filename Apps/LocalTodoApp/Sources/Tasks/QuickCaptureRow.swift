@@ -24,6 +24,14 @@ struct QuickCaptureRow: View {
         guard !value.isEmpty else { return }
         let vaultSession = model.vaultSession
         let route = model.quickCaptureRoute
-        Task { await model.createTask(title: value, vaultSession: vaultSession, captureRoute: route) }
+        let generation = model.quickCaptureGeneration
+        Task {
+            await model.createTask(
+                title: value,
+                vaultSession: vaultSession,
+                captureRoute: route,
+                captureGeneration: generation
+            )
+        }
     }
 }

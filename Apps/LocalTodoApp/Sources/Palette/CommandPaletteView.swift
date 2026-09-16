@@ -59,7 +59,7 @@ struct CommandPaletteView: View {
 
     private var dynamicCommands: [PaletteCommand] {
         guard let snapshot = model.snapshot else { return [] }
-        let projects = snapshot.projects.values.map(\.value).map { project in
+        let projects = model.activeProjects.map { project in
             command("Go to \(project.title)", "square.stack") { model.route = .project(project.path) }
         }
         let areas = snapshot.areas.values.map(\.value).map { area in

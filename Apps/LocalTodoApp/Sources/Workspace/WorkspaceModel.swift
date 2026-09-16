@@ -24,7 +24,10 @@ final class WorkspaceModel {
     var isInspectorPresented = true
     var isCommandPalettePresented = false
     var isQuickCapturePresented = false
-    var quickCaptureTitle = ""
+    var quickCaptureTitle = "" {
+        didSet { quickCaptureGeneration &+= 1 }
+    }
+
     var quickCaptureRoute: WorkspaceRoute = .inbox
     var rescheduleSelection: RescheduleSelection?
     var newEntityKind: NewEntityKind?
@@ -48,11 +51,12 @@ final class WorkspaceModel {
     @ObservationIgnored private let bookmarks: VaultBookmarkStore
     @ObservationIgnored private(set) var vaultSession = UUID()
     @ObservationIgnored private var openRequest = UUID()
-    @ObservationIgnored private var refreshRequest = UUID()
+    @ObservationIgnored var refreshRequest = UUID()
     @ObservationIgnored var taskDrafts = [VaultPath: TaskDraft]()
     @ObservationIgnored var projectDrafts = [VaultPath: ProjectDraft]()
     @ObservationIgnored let taskListDisplayPreferences: TaskListDisplayPreferencesStore
     @ObservationIgnored let clock: () -> Date
+    @ObservationIgnored var quickCaptureGeneration: UInt64 = 0
 
     init(
         bookmarks: VaultBookmarkStore = VaultBookmarkStore(),
@@ -120,32 +124,6 @@ final class WorkspaceModel {
             try VaultInitializer.initialize(at: url)
             if try await openVault(url) {
                 try bookmarks.save(url)
-            }
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    func refresh() async {
-        guard let store else { return }
-        let session = vaultSession
-        let epoch = modelEpoch
-        let request = UUID()
-        refreshRequest = request
-        do {
-            let nextSnapshot = try await store.snapshot()
-            guard session == vaultSession, epoch == modelEpoch, request == refreshRequest else { return }
-            if let snapshot, containsExternalChanges(from: snapshot, to: nextSnapshot) {
-                clearHistory()
-            }
-            snapshot = nextSnapshot
-            await reconcileDrafts(with: nextSnapshot)
-            reconcileProjectDrafts(nextSnapshot)
-            await refreshSavedFilters()
-            if let selectedTaskPath, nextSnapshot.tasks[selectedTaskPath] == nil {
-                if taskDrafts[selectedTaskPath]?.isDirty != true {
-                    self.selectedTaskPath = nil
-                }
             }
         } catch {
             errorMessage = error.localizedDescription
