@@ -113,6 +113,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Project management should be possible without YAML or path moves, and finishing a project should remove it from routine navigation without hiding its content permanently. Project completion changes only the project file, not its tasks.
 - What was rejected and why: Cascading task completion and collection moves were rejected because they change unrelated task state or violate the current collection-move restriction. View-owned saves were rejected because navigation and application termination must retain/flush edits. Missing/malformed project files block saving and retain local notes until restored or explicitly discarded.
 
+### 2026-09-16: Define Daily Query Membership And Stable Sorting
+
+- What was decided: Upcoming includes incomplete tasks with either date strictly after the injected local day; Today retains its existing overdue/on-day semantics, so mixed-date tasks may appear in both. Waiting and Someday follow explicit status. Combined filters intersect dimensions, use OR within statuses/priorities, require every tag, and use inclusive valid date ranges. Shared sort modes break ties by exact path and put missing dates/priorities last.
+- Why: App and CLI need one predictable query contract, including boundary dates and tasks with only deadlines. Existing Today behavior must remain intact.
+- What was rejected and why: Mutually exclusive Today/Upcoming membership was rejected because it would hide a future deadline solely due to an overdue planned date. Client-specific sorting/filtering was rejected because results would diverge. Reversed ranges are rejected rather than silently returning misleading empty results.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

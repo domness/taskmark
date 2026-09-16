@@ -123,7 +123,11 @@ Area status is `active` or `archived`.
 - Inbox contains incomplete tasks with `status: inbox`.
 - Next contains incomplete tasks with `status: next`.
 - Today contains incomplete tasks scheduled on or before today or with a deadline on or before today.
+- Upcoming contains incomplete tasks with a scheduled date or deadline strictly after today. A task may appear in both Today and Upcoming when one date is overdue and the other is in the future.
+- Waiting and Someday contain tasks in their corresponding explicit statuses, whether dated or undated.
 - Projects, areas, tags, and priorities are queries over explicit metadata.
+- Combined filters intersect project, area, status, priority, required tags, and inclusive scheduled/deadline ranges. Multiple statuses/priorities are alternatives; all selected tags are required and case-sensitive. A date range excludes undated tasks and its start must not exceed its end. Completed/canceled tasks require the include-completed option.
+- Sorting supports exact path, title, priority (P1 first), scheduled/deadline (earliest first, missing last), and creation/update time (newest first). Ties use exact path. CLI defaults to path order.
 - Completion updates the existing file in place; automatic archiving is outside V1.
 
 ## Recurrence

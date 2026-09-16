@@ -19,4 +19,9 @@ public struct DateRange: Equatable, Sendable {
         }
         return true
     }
+
+    public var isValid: Bool {
+        guard let start, let end else { return true }
+        return start <= end
+    }
 }
