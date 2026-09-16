@@ -101,6 +101,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The user explicitly requested a per-task reset option. This intentionally revises the blanket no-reset decision from 2026-09-08 while retaining its behavior for existing notes. A missing field remains false, so migration is unnecessary.
 - What was rejected and why: Global reset was rejected because repeat workflows differ. First-class subtask entities and Markdown re-rendering were rejected because they would change the one-note model and unrelated content. Ambiguous Markdown constructs remain text rather than risking changes to code examples.
 
+### 2026-09-16: Edit Repeats And Checklist Markers Through Task Drafts
+
+- What was decided: Keep recurrence and checklist-reset settings in workspace-owned task drafts, with native inspector controls and the same autosave, conflict and history paths as other fields. Checklist toggles change draft notes through the shared byte-preserving projection and reject a stale projection. Row completion saves pending draft edits before calculating recurrence.
+- Why: Completion must use the rule and notes currently being edited, including a newly added repeat rule. A regression test reproduced the old row action completing the stale on-disk non-recurring task and conflicting with the pending rule.
+- What was rejected and why: View-owned persistence was rejected because selection changes must not lose edits. Separate checklist files and a rendered-Markdown rewrite were rejected because the parent body remains canonical. Calculating from the old record then merging pending repeat settings was rejected because its dates and reset behavior would be wrong.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

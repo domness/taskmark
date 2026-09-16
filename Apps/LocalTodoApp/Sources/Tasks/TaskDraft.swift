@@ -53,6 +53,14 @@ final class TaskDraft {
         didSet { markDirty(.notes) }
     }
 
+    var recurrence: TaskRecurrence? {
+        didSet { markDirty(.recurrence) }
+    }
+
+    var resetChecklistOnRepeat: Bool {
+        didSet { markDirty(.resetChecklistOnRepeat) }
+    }
+
     @ObservationIgnored var isResetting = false
     @ObservationIgnored var onChange: ((TaskDraft) -> Void)?
 
@@ -71,6 +79,8 @@ final class TaskDraft {
         area = task.area?.value ?? ""
         tags = task.tags.joined(separator: ", ")
         notes = task.body
+        recurrence = task.recurrence
+        resetChecklistOnRepeat = task.resetChecklistOnRepeat
     }
 
     func patch() throws -> TaskPatch {
@@ -103,7 +113,17 @@ final class TaskDraft {
         if notes != sourceTask.body {
             patch.body = .set(notes)
         }
+        applyRecurrence(to: &patch)
         return patch
+    }
+
+    private func applyRecurrence(to patch: inout TaskPatch) {
+        if recurrence != sourceTask.recurrence {
+            patch.recurrence = .set(recurrence)
+        }
+        if resetChecklistOnRepeat != sourceTask.resetChecklistOnRepeat {
+            patch.resetChecklistOnRepeat = .set(resetChecklistOnRepeat)
+        }
     }
 
     var validationError: Error? {
@@ -134,6 +154,8 @@ final class TaskDraft {
         area = task.area?.value ?? ""
         tags = task.tags.joined(separator: ", ")
         notes = task.body
+        recurrence = task.recurrence
+        resetChecklistOnRepeat = task.resetChecklistOnRepeat
         isDirty = false
         conflictedFields.removeAll()
         sourceUnavailableMessage = nil
@@ -167,21 +189,6 @@ final class TaskDraft {
         isSaving = false
     }
 
-    func transferCurrentValues(to draft: TaskDraft) {
-        draft.isResetting = true
-        draft.title = title
-        draft.status = status
-        draft.priority = priority
-        draft.scheduled = scheduled
-        draft.deadline = deadline
-        draft.project = project
-        draft.area = area
-        draft.tags = tags
-        draft.notes = notes
-        draft.isDirty = draft.hasChanges
-        draft.isResetting = false
-    }
-
     private func markDirty(_ field: TaskDraftField) {
         if !isResetting {
             conflictedFields.remove(field)
@@ -201,6 +208,8 @@ final class TaskDraft {
             || area != (sourceTask.area?.value ?? "")
             || tags.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) } != sourceTask.tags
             || notes != sourceTask.body
+            || recurrence != sourceTask.recurrence
+            || resetChecklistOnRepeat != sourceTask.resetChecklistOnRepeat
     }
 
     var tagValues: [String] {

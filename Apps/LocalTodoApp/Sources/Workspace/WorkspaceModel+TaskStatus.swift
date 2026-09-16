@@ -4,7 +4,7 @@ import LocalTodoDomain
 extension WorkspaceModel {
     func changeTaskStatus(_ draft: TaskDraft, to status: TaskStatus, now: Date = Date()) {
         guard draft.vaultSession == vaultSession, draft.status != status, let snapshot else { return }
-        guard status == .done, draft.sourceTask.recurrence != nil else {
+        guard status == .done, draft.recurrence != nil else {
             changeDraft(draft, keyPath: \.status, to: status, actionName: "Change Status")
             return
         }

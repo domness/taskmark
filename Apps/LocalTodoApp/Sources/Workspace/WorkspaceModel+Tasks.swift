@@ -87,6 +87,7 @@ extension WorkspaceModel {
             errorMessage = "The task changed before completion. Local Todo refreshed it; try again."
             return
         }
+        guard let record = await prepareCompletion(record, session: intentSession) else { return }
         guard beginMutation(at: path) else { return }
         do {
             let now = Date()
@@ -119,6 +120,20 @@ extension WorkspaceModel {
             endMutation(at: path)
             errorMessage = error.localizedDescription
         }
+    }
+
+    private func prepareCompletion(_ record: VaultRecord<TodoTask>, session: UUID) async -> VaultRecord<TodoTask>? {
+        guard let draft = taskDrafts[record.value.path] else { return record }
+        if draft.isDirty {
+            await updateTask(draft)
+        }
+        guard !draft.isDirty, !draft.hasConflicts, draft.sourceUnavailableMessage == nil,
+              session == vaultSession, let saved = snapshot?.tasks[record.value.path]
+        else {
+            errorMessage = "Save or resolve the task’s pending changes before completing it."
+            return nil
+        }
+        return saved
     }
 
     func updateTask(_ draft: TaskDraft, retryingConflict: Bool = true) async {
