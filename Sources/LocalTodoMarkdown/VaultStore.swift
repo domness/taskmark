@@ -14,7 +14,12 @@ public actor VaultStore {
 
     public func snapshot() throws -> VaultSnapshot {
         generation += 1
-        return try VaultScanner(root: root, fileSystem: fileSystem).scan(generation: generation)
+        let snapshot = try VaultScanner(root: root, fileSystem: fileSystem).scan(generation: generation)
+        return VaultSnapshot(
+            generation: snapshot.generation, configuration: snapshot.configuration,
+            tasks: snapshot.tasks, projects: snapshot.projects, areas: snapshot.areas,
+            diagnostics: snapshot.diagnostics + filterDiagnostics(in: snapshot)
+        )
     }
 
     public func fileExists(at path: VaultPath) -> Bool {

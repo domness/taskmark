@@ -119,6 +119,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: App and CLI need one predictable query contract, including boundary dates and tasks with only deadlines. Existing Today behavior must remain intact.
 - What was rejected and why: Mutually exclusive Today/Upcoming membership was rejected because it would hide a future deadline solely due to an overdue planned date. Client-specific sorting/filtering was rejected because results would diverge. Reversed ranges are rejected rather than silently returning misleading empty results.
 
+### 2026-09-16: Keep Saved Filters In Canonical Vault Markdown
+
+- What was decided: Store named queries in optional `.localtodo/filters.md` with a versioned frontmatter list and shared Domain/Markdown APIs. Preserve unknown top-level/entry keys and body notes; use exact-file coordination, exclusive creation, atomic replacement and whole-file optimistic revisions. Diagnose malformed definitions and missing project/area references. Expose the same definitions through CLI save/list/run/delete.
+- Why: Saved filters are user-authored data, not a disposable index. Keeping them in the vault makes reloads and CLI/app use consistent without hidden identifiers or a canonical database. The optional metadata file needs no migration of existing task notes.
+- What was rejected and why: UserDefaults-only storage was rejected because it would strand definitions outside the vault and CLI. Encoding Swift enum representations directly was rejected because the file format should remain legible. Automatic conflict overwrite/repair was rejected because another client's definitions and unknown metadata must survive.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

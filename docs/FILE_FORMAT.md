@@ -169,6 +169,37 @@ After-completion intervals use exactly `P<n>D`, `P<n>W`, `P<n>M`, or `P<n>Y`, wh
 
 Interactive checklist items use `-`, `*`, `+`, or a 1–9 digit ordered marker ending in `.` or `)`, followed by whitespace and `[ ]`, `[x]`, or `[X]`. The closing bracket must be followed by whitespace or the end of the line. Up to three leading spaces are supported (including lightweight nested lists). Four-space indented code, blockquotes, escaped markers, HTML comments, and fenced code blocks are not interactive. More complex Markdown remains editable as notes. Toggle and reset operations replace only the one-byte check marker, preserving Unicode, line endings, spacing, and unrelated Markdown.
 
+## Saved Filters
+
+Optional `.localtodo/filters.md` is canonical vault metadata, not a cache or task entity. It stores named query definitions in Markdown frontmatter:
+
+```markdown
+---
+schema: 1
+filters:
+  - name: Waiting work
+    view: waiting
+    project: Projects/Local Todo.md
+    statuses: [waiting]
+    priorities: [p1, p2]
+    includes_no_priority: false
+    tags: [work]
+    scheduled_from: 2026-09-01
+    scheduled_through: 2026-09-30
+    include_completed: false
+    sort: deadline
+---
+Optional notes about these views.
+```
+
+- The file uses its own `schema: 1`; missing file means no saved filters. Existing vaults require no migration. The `filters` list is required when the file exists, and may be empty.
+- Names are non-empty, unique and case-sensitive, without leading/trailing whitespace or newlines. They identify entries within this metadata document, not task/project/area entities. Task identity remains its exact path; no hidden IDs are introduced.
+- `view` is `all` (default), `today`, `inbox`, `next`, `upcoming`, `waiting`, or `someday`. Today/Upcoming resolve against the current vault-local day when run.
+- Optional `text`, `project`, `area`, `statuses`, `priorities`, `includes_no_priority`, `tags`, `scheduled_from`, `scheduled_through`, `deadline_from`, `deadline_through`, `include_completed`, and `sort` follow the shared query semantics above. Absent collections are empty, booleans false, text empty, and sort `path`. Date bounds are fixed inclusive calendar dates. Unknown enum values, malformed fields, reversed ranges and duplicate names are rejected.
+- Unknown frontmatter keys, unknown fields on retained named entries, and the full Markdown body survive edits. Explicitly deleting an entry removes its fields. Frontmatter formatting/comments may normalize as with task notes.
+- Writes coordinate the exact metadata file, reject symlink components and coordinator remaps, compare the whole-file revision, then exclusively create or atomically replace it. Stale revisions fail rather than merging or overwriting other clients' saved views. A malformed file is surfaced and never silently repaired. Missing project/area references are reported in vault diagnostics and by saved-filter execution.
+- Both app and CLI use the shared definition and query implementation. CLI commands: `filter list`, `filter save NAME [query options] [--replace]`, `filter run NAME`, and `filter delete NAME`; mutation commands support `--dry-run`.
+
 ## Mutation Guarantees
 
 - Validate a full mutation before writing any destination.
