@@ -129,6 +129,7 @@ Area status is `active` or `archived`.
 - Combined filters intersect project, area, status, priority, required tags, and inclusive scheduled/deadline ranges. Multiple statuses/priorities are alternatives; all selected tags are required and case-sensitive. A date range excludes undated tasks and its start must not exceed its end. Completed/canceled tasks require the include-completed option.
 - Sorting supports exact path, title, priority (P1 first), scheduled/deadline (earliest first, missing last), and creation/update time (newest first). Ties use exact path. CLI defaults to path order.
 - Completion updates the existing file in place; automatic archiving is outside V1.
+- Rescheduling an incomplete task moves its scheduled date (or deadline when scheduled is absent) to a chosen date, preserving the signed calendar-day offset of paired dates. Undated tasks gain a scheduled date. Rescheduling does not complete/repeat the task or change checklist markers. Explicit edits to an individual date remain independent.
 
 ## Recurrence
 

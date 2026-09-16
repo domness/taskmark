@@ -41,6 +41,10 @@ extension TaskDraft {
         let localChanges = fieldsChanged(from: original)
         let externalChanges = fieldsChanged(in: external, from: original)
         var conflicts = localChanges.intersection(externalChanges)
+        let planningInputs: Set<TaskDraftField> = [.status, .scheduled, .deadline, .recurrence, .resetChecklistOnRepeat]
+        if isPlanningTransition, !externalChanges.isDisjoint(with: planningInputs) {
+            conflicts.formUnion(localChanges.intersection([.status, .scheduled, .deadline, .notes]))
+        }
         if original.recurrence != nil || recurrence != nil {
             // Recurring planning edits depend on the repeat rule and completion eligibility, not just date fields.
             let repeatChanged = external.recurrence != original.recurrence

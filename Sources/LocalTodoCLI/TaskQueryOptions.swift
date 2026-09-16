@@ -56,16 +56,10 @@ struct TaskQueryOptions: ParsableArguments {
     }
 
     private func scope() throws -> TaskScope {
-        switch view {
-        case nil: .all
-        case "inbox": .inbox
-        case "next": .next
-        case "today": .today
-        case "upcoming": .upcoming
-        case "waiting": .waiting
-        case "someday": .someday
-        case let value?: throw CLIError.message("Invalid view: \(value)")
+        guard let taskView = TaskView(rawValue: view ?? "all") else {
+            throw CLIError.message("Invalid view: \(view ?? "")")
         }
+        return taskView.scope
     }
 
     private func dateRange(on: String?, from: String?, through: String?) throws -> DateRange {

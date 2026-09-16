@@ -131,6 +131,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Exploring task queries is ephemeral; changing a reusable vault definition should be intentional. Background refresh must not silently authorize an overwrite of another client's saved filters.
 - What was rejected and why: Autosaving every filter toggle into a named definition was rejected because exploratory changes would rewrite shared preferences unexpectedly. Making saved filters a cache or silently replacing duplicate names was rejected because they are user-authored vault data. Task/project document autosave remains unchanged.
 
+### 2026-09-16: Add Contextual Daily Capture And Paired-Date Rescheduling
+
+- What was decided: Add Upcoming/Waiting/Someday navigation and native task keyboard commands. Capture remembers its opening route: Today/Upcoming schedule today/tomorrow, Next/Waiting/Someday use their explicit status, and project/area capture assigns that collection. Search/filter capture remains Inbox. A shared reschedule transition shifts the existing planning anchor and paired dates by calendar days; independent inspector date edits retain their previous behavior.
+- Why: Daily routes need immediately usable capture, completion and planning without YAML. Shifting both dates preserves the user's planning separation, including negative offsets and DST. Workspace tests inject a clock and explicit timezone.
+- What was rejected and why: Reading the route only at submission was rejected because navigation could silently change the destination. Recalculating recurrence during rescheduling was rejected because planning is not completion. Merging external planning-input changes with an already-calculated transition was rejected; related drafts and undo/redo retain semantic conflict dependencies.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

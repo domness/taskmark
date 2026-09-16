@@ -87,7 +87,9 @@ import Testing
 }
 
 @MainActor
-func withReloadedWorkspace(_ root: URL, operation: (WorkspaceModel) async throws -> Void) async throws {
+func withReloadedWorkspace(
+    _ root: URL, now: Date? = nil, operation: (WorkspaceModel) async throws -> Void
+) async throws {
     let suite = "ReloadedWorkspace.\(UUID().uuidString)"
     let defaults = try #require(UserDefaults(suiteName: suite))
     defer { defaults.removePersistentDomain(forName: suite) }
@@ -95,7 +97,8 @@ func withReloadedWorkspace(_ root: URL, operation: (WorkspaceModel) async throws
     try bookmarks.save(root)
     let model = WorkspaceModel(
         bookmarks: bookmarks,
-        taskListDisplayPreferences: TaskListDisplayPreferencesStore(defaults: defaults)
+        taskListDisplayPreferences: TaskListDisplayPreferencesStore(defaults: defaults),
+        clock: { now ?? Date() }
     )
     await model.restoreVault()
     #expect(model.errorMessage == nil)

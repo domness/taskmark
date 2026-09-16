@@ -16,16 +16,16 @@ All automated vault workflows use disposable temporary directories.
 - Shared queries now support Upcoming/Waiting/Someday and stable sorting by path, title, priority, scheduled/deadline dates and newest creation/update. Domain/CLI tests cover inclusive combined filters, missing values, exact paths, date boundaries and invalid ranges/options.
 - Named filters persist in canonical `.localtodo/filters.md`, shared with CLI `filter save/list/run/delete`. Storage tests cover all query fields, fresh-store reload, unknown top-level/entry fields and Markdown notes, stale create/update/delete revisions, injected write failure, malformed definitions, missing-reference diagnostics, symlink refusal and coordinator remaps.
 - The app has combined-filter controls, saved-filter sidebar navigation, explicit Save/Update, sort choices, and conflict recovery. `WorkspaceFilterTests` and `WorkspaceFilterConflictTests` prove real task results, save/update and fresh-workspace reload, history, invalid/duplicate rejection, retention after write failure, missing/malformed definitions, and keeping a working filter without overwriting external definitions. Test workspaces now isolate display preferences as well as bookmarks and vault files.
+- Upcoming/Waiting/Someday are now sidebar and keyboard destinations. Contextual capture, selected-task completion/reopening, exact-date and today/tomorrow rescheduling are exposed through native menus, shortcuts and the command palette. Shared app/CLI rescheduling preserves paired-date offsets and notes. `WorkspaceDailyWorkflowTests`, `WorkspaceDailyFailureTests`, `TaskRescheduleTests` and `CLIRescheduleTests` cover each daily route, injected-clock capture/reload/completion/history, rescheduling/history, stale sessions, external planning-input conflicts, write-failure retry, and capture failure. [Daily workflow documentation](DAILY_WORK.md) lists the controls and shortcuts.
 
 ## Remaining Acceptance Gaps
 
-- Upcoming, Waiting, and Someday routes with keyboard-accessible capture, completion and rescheduling, and workflow tests.
-- Broader injected write-failure evidence for new mutations and final cross-workflow acceptance review.
+- Final cross-workflow acceptance review and any gaps exposed by that review.
 - Final documentation, passing quality gate, clean tree and remote synchronization after the remaining work.
 
 ## Verification Boundary
 
-Implementation checkpoints run `make check`: formatting, strict lint, shared domain/Markdown/CLI tests, macOS app tests, and app build. The app-filter checkpoint includes 38 domain tests, 57 Markdown tests, 11 CLI tests, and 54 macOS app tests (parameterized cases are additional to test-function counts).
+Implementation checkpoints run `make check`: formatting, strict lint, shared domain/Markdown/CLI tests, macOS app tests, and app build. The daily-workflow checkpoint includes 41 domain tests, 57 Markdown tests, 12 CLI tests, and 60 macOS app tests (parameterized cases are additional to test-function counts).
 No live UI inspection or screenshots have been performed. Rendered layout, VoiceOver traversal and physical keyboard focus behavior are not yet verified; native controls and accessible labels are implemented and compile-tested.
 
 Todoist migration, a real-use pilot, mobile/web clients, iCloud validation, and project/area file moves are excluded.

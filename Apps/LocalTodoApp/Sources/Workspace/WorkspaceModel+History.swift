@@ -78,6 +78,7 @@ extension WorkspaceModel {
         )
         undoManager?.registerUndo(withTarget: self) { model in
             MainActor.assumeIsolated {
+                action.draft.isPlanningTransition = action.draft.isPlanningTransition || action.planningTransition
                 model.changeDraft(
                     action.draft,
                     keyPath: action.keyPath,

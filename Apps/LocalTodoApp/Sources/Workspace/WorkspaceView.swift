@@ -44,6 +44,9 @@ struct WorkspaceView: View {
         .sheet(item: $model.newEntityKind) { kind in
             NewEntitySheet(model: model, kind: kind)
         }
+        .sheet(item: $model.rescheduleSelection) { selection in
+            TaskRescheduleSheet(model: model, selection: selection)
+        }
         .alert("Local Todo", isPresented: errorPresented) {
             Button("OK") { model.errorMessage = nil }
         } message: {

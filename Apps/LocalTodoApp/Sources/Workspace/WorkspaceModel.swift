@@ -25,6 +25,8 @@ final class WorkspaceModel {
     var isCommandPalettePresented = false
     var isQuickCapturePresented = false
     var quickCaptureTitle = ""
+    var quickCaptureRoute: WorkspaceRoute = .inbox
+    var rescheduleSelection: RescheduleSelection?
     var newEntityKind: NewEntityKind?
     var errorMessage: String?
     var isLoading = false
@@ -50,12 +52,15 @@ final class WorkspaceModel {
     @ObservationIgnored var taskDrafts = [VaultPath: TaskDraft]()
     @ObservationIgnored var projectDrafts = [VaultPath: ProjectDraft]()
     @ObservationIgnored let taskListDisplayPreferences: TaskListDisplayPreferencesStore
+    @ObservationIgnored let clock: () -> Date
 
     init(
         bookmarks: VaultBookmarkStore = VaultBookmarkStore(),
-        taskListDisplayPreferences: TaskListDisplayPreferencesStore = TaskListDisplayPreferencesStore()
+        taskListDisplayPreferences: TaskListDisplayPreferencesStore = TaskListDisplayPreferencesStore(),
+        clock: @escaping () -> Date = Date.init
     ) {
         self.bookmarks = bookmarks
+        self.clock = clock
         self.taskListDisplayPreferences = taskListDisplayPreferences
         taskListDisplayOptionsByRoute = taskListDisplayPreferences.load()
     }

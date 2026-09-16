@@ -33,6 +33,7 @@ extension WorkspaceModel {
 
     func beginQuickCapture() {
         guard snapshot != nil else { return }
+        quickCaptureRoute = route
         isQuickCapturePresented = true
     }
 

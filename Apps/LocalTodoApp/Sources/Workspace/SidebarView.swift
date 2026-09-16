@@ -10,6 +10,9 @@ struct SidebarView: View {
                 route(.today, "Today", "sun.max")
                 route(.inbox, "Inbox", "tray")
                 route(.next, "Next", "arrow.right.circle")
+                route(.upcoming, "Upcoming", "calendar")
+                route(.waiting, "Waiting", "hourglass")
+                route(.someday, "Someday", "archivebox")
                 route(.all, "All Tasks", "checklist")
                 route(.search, "Search", "magnifyingglass")
             }

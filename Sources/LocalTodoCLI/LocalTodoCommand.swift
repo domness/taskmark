@@ -14,6 +14,7 @@ struct LocalTodoCommand: AsyncParsableCommand {
             EditCommand.self,
             CompleteCommand.self,
             ReopenCommand.self,
+            RescheduleCommand.self,
             SearchCommand.self,
             FilterCommand.self,
             ProjectCommand.self,

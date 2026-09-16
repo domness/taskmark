@@ -8,7 +8,7 @@ extension WorkspaceModel {
     }
 
     var visibleTasks: [TodoTask] {
-        guard let snapshot, let today = try? today(configuration: snapshot.configuration) else {
+        guard let snapshot, let today = try? today(configuration: snapshot.configuration, now: clock()) else {
             return []
         }
         if route == .search, !hasActiveSearch {
@@ -31,19 +31,15 @@ extension WorkspaceModel {
         searchFocusRequest += 1
     }
 
-    func createTask(title: String, vaultSession intentSession: UUID) async {
+    func createTask(
+        title: String, vaultSession intentSession: UUID, captureRoute: WorkspaceRoute = .inbox, now: Date? = nil
+    ) async {
         guard intentSession == vaultSession, let store, let snapshot else { return }
         var mutationPath: VaultPath?
         do {
-            let now = Date()
+            let now = now ?? clock()
             let path = try nextTaskPath(title: title, snapshot: snapshot)
-            let task = try TodoTask(
-                path: path,
-                title: title,
-                status: .inbox,
-                createdAt: now,
-                updatedAt: now
-            )
+            let task = try capturedTask(at: path, title: title, route: captureRoute, now: now)
             mutationPath = path
             guard beginMutation(at: path) else { return }
             let record = try await store.create(.task(task))
@@ -76,7 +72,7 @@ extension WorkspaceModel {
         guard let record = await prepareCompletion(record, session: intentSession) else { return }
         guard beginMutation(at: path) else { return }
         do {
-            let now = Date()
+            let now = clock()
             let task = record.value
             let previousStatus = completedTaskStatuses[path] ?? .inbox
             let updated = task.status.isComplete

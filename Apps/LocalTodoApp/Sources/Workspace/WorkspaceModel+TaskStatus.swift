@@ -2,7 +2,7 @@ import Foundation
 import LocalTodoDomain
 
 extension WorkspaceModel {
-    func changeTaskStatus(_ draft: TaskDraft, to status: TaskStatus, now: Date = Date()) {
+    func changeTaskStatus(_ draft: TaskDraft, to status: TaskStatus, now: Date? = nil) {
         guard draft.vaultSession == vaultSession, draft.status != status, let snapshot else { return }
         guard status == .done, draft.recurrence != nil else {
             changeDraft(draft, keyPath: \.status, to: status, actionName: "Change Status")
@@ -13,6 +13,7 @@ extension WorkspaceModel {
             return
         }
         do {
+            let now = now ?? clock()
             let current = try draft.patch().applying(to: draft.sourceTask, now: now)
             let completed = try TaskTransition.complete(
                 current,
@@ -21,6 +22,7 @@ extension WorkspaceModel {
                 calendar: vaultCalendar
             )
             // Store the calculated dates in the draft: autosave retries and redo must not roll forward again.
+            draft.isPlanningTransition = true
             undoManager?.beginUndoGrouping()
             defer { undoManager?.endUndoGrouping() }
             changeDraft(draft, keyPath: \.status, to: completed.status, actionName: "Complete Task")

@@ -12,6 +12,7 @@ struct LocalTodoApp: App {
                 .task { await model.restoreVault() }
         }
         .commands {
+            DailyTaskCommands(model: model)
             CommandGroup(replacing: .undoRedo) {
                 Button("Undo") { model.performUndo() }
                     .keyboardShortcut("z", modifiers: .command)
@@ -34,6 +35,14 @@ struct LocalTodoApp: App {
                     .keyboardShortcut("2", modifiers: .command)
                 Button("Next") { model.route = .next }
                     .keyboardShortcut("3", modifiers: .command)
+                Button("Upcoming") { model.route = .upcoming }
+                    .keyboardShortcut("4", modifiers: .command)
+                Button("Waiting") { model.route = .waiting }
+                    .keyboardShortcut("5", modifiers: .command)
+                Button("Someday") { model.route = .someday }
+                    .keyboardShortcut("6", modifiers: .command)
+                Button("Filter Tasks") { model.beginFilterEditing() }
+                    .keyboardShortcut("f", modifiers: [.command, .shift])
                 Button("Search Tasks") { model.beginSearch() }
                     .keyboardShortcut("f", modifiers: .command)
             }

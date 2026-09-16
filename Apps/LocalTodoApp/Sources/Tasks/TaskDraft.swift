@@ -16,6 +16,7 @@ final class TaskDraft {
     var conflictedFields = Set<TaskDraftField>()
     var sourceUnavailableMessage: String?
     var canRecreateSource = false
+    var isPlanningTransition = false
 
     var title: String {
         didSet { markDirty(.title) }
@@ -157,6 +158,7 @@ final class TaskDraft {
         recurrence = task.recurrence
         resetChecklistOnRepeat = task.resetChecklistOnRepeat
         isDirty = false
+        isPlanningTransition = false
         conflictedFields.removeAll()
         sourceUnavailableMessage = nil
         canRecreateSource = false
