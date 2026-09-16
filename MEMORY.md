@@ -95,6 +95,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Completing late must produce usable future work rather than another overdue occurrence. This intentionally revises the one-step decision recorded on 2026-09-08. No persisted schema changes are needed for this transition change.
 - What was rejected and why: Anchoring fixed recurrence to today was rejected because it changes the cadence. Changing monthly clamping while skipping was rejected because it is a separate recurrence-rule change.
 
+### 2026-09-16: Record The macOS Personalization Wishlist
+
+- What was decided: Capture the user's requested vault CSS stylesheets in `.config/`, task Duplicate/Delete/Copy context actions, independent project/area drag ordering, and P1 red/P2 orange/P3 blue/P4 default highlighting in `docs/ROADMAP.md`. Delivery order and unresolved behavior are explicitly proposals.
+- Why: These improvements support daily use and personalization while making native UI and file-contract dependencies visible before implementation.
+- What was rejected and why: Treating CSS as directly supported by SwiftUI or silently reserving `.config/` was rejected because each requires an explicit implementation/contract design. Reordering by moving collection files was rejected because sidebar order is presentation and collection path moves remain disabled for safety.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".
