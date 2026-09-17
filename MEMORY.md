@@ -155,6 +155,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: A paused-filesystem regression reproduced successful task creation erasing newer capture input. Inactive projects also remained visible in the routine palette despite being collapsed in the sidebar.
 - What was rejected and why: Comparing text alone was rejected because a newly opened capture may intentionally use the same title. Disabling all typing during filesystem coordination was rejected because preserving input supports fast capture without unnecessary waiting. Inactive projects remain explicitly accessible through the sidebar's review section.
 
+### 2026-09-17: Require Explicit Xcode App Build Evidence
+
+- What was decided: Clarify that the full `make check` gate must pass before handoff or commits, and require a regenerated, normal signed clean Debug build when investigating Xcode Build/Run failures. Add a repository PR template recording toolchain, commands/results and separate launch/UI evidence.
+- Why: Swift package checks do not compile the macOS app, and the existing unsigned build gate does not exercise normal Xcode signing. The reported failure was not reproduced on this checkout with Xcode 27.0 (27A266a): the signed clean build and full quality gate passed.
+- What was rejected and why: Claiming a source fix without a reproduced failure was rejected because it would misrepresent the evidence. Checking in the generated Xcode project was unnecessary; `project.yml` remains the project configuration source and `make generate` refreshes local source membership.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

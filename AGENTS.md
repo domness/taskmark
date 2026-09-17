@@ -95,11 +95,22 @@ Do not create a catch-all `Utils`, `Helpers`, `Manager`, or `Services` module.
 - Test dates with an injected calendar, timezone, and clock.
 - Add regression tests before fixing a reproduced bug.
 
-Run the quality gate before handing work back:
+Run the complete quality gate before handing work back or committing changes:
 
 ```bash
 make check
 ```
+
+- `make check` regenerates the Xcode project, checks formatting/lint, runs Swift package and macOS app tests, and builds the `LocalTodoApp` Debug scheme. All stages must pass; `swift build` or `swift test` alone does not compile the app.
+- Run `make build` for a focused unsigned app-build check. The generated `LocalTodo.xcodeproj` is ignored by Git; change `project.yml` for project settings and regenerate with `make generate` after pulling source changes.
+- When investigating Xcode Build/Run failures, also validate the normal signed build used by Xcode, without `CODE_SIGNING_ALLOWED=NO`:
+
+  ```bash
+  make generate
+  xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoApp -configuration Debug -destination 'platform=macOS' clean build
+  ```
+
+- Record the Xcode version, commands and results in the PR or handoff. Distinguish build validation from launch/UI validation. If a reported failure cannot be reproduced, say so and request the failing command or Xcode diagnostic rather than claiming a fix.
 
 ## Design And Accessibility
 
