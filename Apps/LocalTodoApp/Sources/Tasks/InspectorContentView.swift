@@ -4,6 +4,13 @@ struct InspectorContentView: View {
     let model: WorkspaceModel
 
     var body: some View {
+        inspector
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .themeSurface("--inspector-background")
+    }
+
+    @ViewBuilder
+    private var inspector: some View {
         if let draft = model.selectedTaskDraft {
             TaskInspectorView(model: model, draft: draft)
                 .id(draft.path)

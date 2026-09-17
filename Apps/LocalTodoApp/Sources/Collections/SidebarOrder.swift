@@ -1,31 +1,8 @@
-import CoreTransferable
 import Foundation
 import LocalTodoDomain
-import UniformTypeIdentifiers
 
 enum SidebarCollection: String, Codable {
     case project, area
-}
-
-struct CollectionDragItem: Codable, Transferable {
-    let path: String
-    let collection: SidebarCollection
-    let session: UUID
-
-    static var transferRepresentation: some TransferRepresentation {
-        CodableRepresentation(contentType: UTType(exportedAs: "com.domness.localtodo.collection-reference"))
-            .visibility(.ownProcess)
-    }
-}
-
-enum SidebarDragItem: Transferable {
-    case task(TaskDragItem)
-    case collection(CollectionDragItem)
-
-    static var transferRepresentation: some TransferRepresentation {
-        ProxyRepresentation(importing: { (item: TaskDragItem) in Self.task(item) })
-        ProxyRepresentation(importing: { (item: CollectionDragItem) in Self.collection(item) })
-    }
 }
 
 enum SidebarOrder {
@@ -59,19 +36,22 @@ extension WorkspaceModel {
         saveSidebarOrder(paths.map(\.value), collection: collection)
     }
 
-    func reorderCollection(
-        _ item: CollectionDragItem,
-        before path: VaultPath,
-        in collection: SidebarCollection
+    func moveCollections(
+        from offsets: IndexSet,
+        to destination: Int,
+        in collection: SidebarCollection,
+        paths: [VaultPath],
+        session: UUID
     ) -> Bool {
-        var paths = orderedCollectionPaths(collection)
-        guard item.session == vaultSession, item.collection == collection,
-              let source = try? VaultPath(item.path), source != path,
-              paths.contains(source), paths.contains(path) else { return false }
-        paths.removeAll { $0 == source }
-        guard let index = paths.firstIndex(of: path) else { return false }
-        paths.insert(source, at: index)
-        saveSidebarOrder(paths.map(\.value), collection: collection)
+        guard session == vaultSession, paths == orderedCollectionPaths(collection),
+              !offsets.isEmpty, offsets.allSatisfy(paths.indices.contains),
+              (0 ... paths.count).contains(destination) else { return false }
+        let moved = offsets.map { paths[$0] }
+        var remaining = paths.enumerated().filter { !offsets.contains($0.offset) }.map(\.element)
+        let insertion = destination - offsets.filter { $0 < destination }.count
+        remaining.insert(contentsOf: moved, at: insertion)
+        guard remaining != paths else { return false }
+        saveSidebarOrder(remaining.map(\.value), collection: collection)
         return true
     }
 

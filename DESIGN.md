@@ -89,3 +89,11 @@ Motion is responsive and functional: immediate press feedback, 150-250 ms state 
 - **Don't** expose every control and piece of metadata at once.
 - **Don't** use decorative motion, nested cards, glass effects, gradient text, or colored side-stripe borders.
 - **Don't** use pure black, pure white, or chroma-free gray as final production colors.
+
+## 7. Implemented macOS Settings And Appearance
+
+The Settings surface inherits the native system font, sidebar navigation, visible keyboard focus and flat working plane. General uses native grouped form controls; Theme uses a segmented appearance picker and four compact selectable previews with text/checkmark selection cues. Preferences apply immediately.
+
+Appearance is independently System, Light or Dark. The default Local Todo palette uses light background `#f7f8fa`, sidebar `#edf0f3`, inspector `#f1f3f6`, accent `#365f99`; dark uses `#202226`, `#191b1f`, `#25282d`, `#92b8ee`. Slate, Forest and Sand extend this restrained surface language. All paired token values and extension rules are documented in [docs/THEMES.md](docs/THEMES.md), with code in `Settings/AppTheme.swift`.
+
+Native primary/secondary text and control state semantics remain adaptive. Custom vault styles override named surface/accent/priority tokens, task-title size (11–24 logical points, default 13, scaled relative to body), and row metadata spacing (2–16, default 3). They do not replace keyboard focus or selection behavior. Window rendering and contrast require visual acceptance; parser/model/build checks do not establish that evidence.

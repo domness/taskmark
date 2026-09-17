@@ -18,6 +18,7 @@ extension WorkspaceModel {
             reconcileProjectDrafts(nextSnapshot)
             await refreshSavedFilters()
             await refreshAppearance()
+            await refreshConfigurationSettings()
             if let selectedTaskPath, nextSnapshot.tasks[selectedTaskPath] == nil {
                 if taskDrafts[selectedTaskPath]?.isDirty != true {
                     self.selectedTaskPath = nil

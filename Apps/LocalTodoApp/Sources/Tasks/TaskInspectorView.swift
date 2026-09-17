@@ -24,7 +24,7 @@ struct TaskInspectorView: View {
                     label: "Scheduled",
                     systemImage: "calendar",
                     text: draft.scheduled,
-                    calendar: model.vaultCalendar,
+                    calendar: model.planningCalendar,
                     onCalendarChange: {
                         model.changeDraft(
                             draft,
@@ -38,7 +38,7 @@ struct TaskInspectorView: View {
                     label: "Deadline",
                     systemImage: "flag",
                     text: draft.deadline,
-                    calendar: model.vaultCalendar,
+                    calendar: model.planningCalendar,
                     onCalendarChange: {
                         model.changeDraft(draft, keyPath: \.deadline, to: $0, actionName: "Change Deadline")
                     }
@@ -75,6 +75,8 @@ struct TaskInspectorView: View {
                     .accessibilityLabel("Task notes, Markdown")
             }
             Section("File") {
+                LabeledContent("Created", value: model.formattedTimestamp(draft.sourceTask.createdAt))
+                LabeledContent("Updated", value: model.formattedTimestamp(draft.sourceTask.updatedAt))
                 Text(draft.path.value)
                     .font(.caption.monospaced())
                     .textSelection(.enabled)
@@ -109,6 +111,7 @@ struct TaskInspectorView: View {
             saveStatus
         }
         .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
         .disabled(model.deletingTaskPaths.contains(draft.path))
         .padding(.vertical)
         .onAppear { focusTitleIfRequested() }

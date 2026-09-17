@@ -5,6 +5,7 @@ import Testing
 
 @Test func calendarDateSuggestionsMatchTheReferenceWeek() throws {
     var calendar = Calendar(identifier: .gregorian)
+    calendar.firstWeekday = 2
     calendar.timeZone = try #require(TimeZone(secondsFromGMT: 0))
     let monday = try #require(ISO8601DateFormatter().date(from: "2026-07-27T12:00:00Z"))
 
@@ -23,6 +24,7 @@ import Testing
 
 @Test func calendarDateSuggestionsAvoidMislabelingAWeekendDate() throws {
     var calendar = Calendar(identifier: .gregorian)
+    calendar.firstWeekday = 2
     calendar.timeZone = try #require(TimeZone(secondsFromGMT: 0))
     let saturday = try #require(ISO8601DateFormatter().date(from: "2026-08-01T12:00:00Z"))
 

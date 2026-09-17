@@ -8,6 +8,7 @@ extension WorkspaceModel {
             && pendingMutationPaths.isEmpty
             && !hasDirtyDrafts
             && !filterState.isSaving
+            && !isSavingConfiguration
     }
 
     func setUndoManager(_ undoManager: UndoManager?) {
@@ -145,7 +146,7 @@ extension WorkspaceModel {
     }
 
     func beginMutation(at path: VaultPath) -> Bool {
-        guard !pendingMutationPaths.contains(path) else { return false }
+        guard !isSavingConfiguration, !pendingMutationPaths.contains(path) else { return false }
         pendingMutationPaths.insert(path)
         modelEpoch += 1
         return true

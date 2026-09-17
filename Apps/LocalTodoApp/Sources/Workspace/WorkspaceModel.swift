@@ -42,7 +42,15 @@ final class WorkspaceModel {
     var sidebarOrders = [String: [String]]()
     var vaultAppearance = VaultAppearance()
     var stylesheetDiagnostic: String?
-    var usesVaultStylesheet = true
+    var usesVaultStylesheet: Bool {
+        get { preferences.usesVaultStylesheet }
+        set { preferences.usesVaultStylesheet = newValue }
+    }
+
+    let preferences: AppPreferences
+    var configurationSettings: VaultConfigurationRecord?
+    var configurationSettingsError: String?
+    var isSavingConfiguration = false
     var deletingTaskPaths = Set<VaultPath>()
     @ObservationIgnored let sidebarPreferences: UserDefaults
 
@@ -68,9 +76,11 @@ final class WorkspaceModel {
         bookmarks: VaultBookmarkStore = VaultBookmarkStore(),
         taskListDisplayPreferences: TaskListDisplayPreferencesStore = TaskListDisplayPreferencesStore(),
         sidebarPreferences: UserDefaults = .standard,
+        preferences: AppPreferences = AppPreferences(),
         clock: @escaping () -> Date = Date.init
     ) {
         self.bookmarks = bookmarks
+        self.preferences = preferences
         self.sidebarPreferences = sidebarPreferences
         self.clock = clock
         self.taskListDisplayPreferences = taskListDisplayPreferences
@@ -140,7 +150,7 @@ final class WorkspaceModel {
 
     private func canChangeVault() -> Bool {
         guard !isLoading else { return false }
-        guard pendingMutationPaths.isEmpty, !isHistoryBusy, !filterState.isSaving else {
+        guard pendingMutationPaths.isEmpty, !isHistoryBusy, !filterState.isSaving, !isSavingConfiguration else {
             errorMessage = "Wait for the current change to finish before switching vaults."
             return false
         }
@@ -167,7 +177,7 @@ final class WorkspaceModel {
         guard !hasDirtyDrafts else {
             throw VaultSwitchError.unsavedTaskChanges
         }
-        guard pendingMutationPaths.isEmpty, !isHistoryBusy, !filterState.isSaving else {
+        guard pendingMutationPaths.isEmpty, !isHistoryBusy, !filterState.isSaving, !isSavingConfiguration else {
             throw VaultSwitchError.activeMutation
         }
         guard !isQuickCapturePresented else {
@@ -190,11 +200,10 @@ final class WorkspaceModel {
         pendingMutationPaths.removeAll()
         completedTaskStatuses.removeAll()
         filterState.reset()
-        route = .today
+        route = preferences.initialView.route
         selectedTaskPath = nil
         startRefreshLoop()
-        await refreshSavedFilters()
-        await refreshAppearance()
+        await refreshVaultPreferences()
         return true
     }
 
@@ -206,13 +215,6 @@ final class WorkspaceModel {
                 await self?.refresh()
             }
         }
-    }
-
-    private func resetPersonalization() {
-        loadSidebarOrder()
-        usesVaultStylesheet = true
-        vaultAppearance = VaultAppearance()
-        stylesheetDiagnostic = nil
     }
 }
 

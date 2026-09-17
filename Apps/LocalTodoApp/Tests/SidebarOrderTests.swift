@@ -27,16 +27,45 @@ import Testing
     model.moveCollection(projects[1], in: .project, offset: -1)
     #expect(model.orderedCollectionPaths(.project) == Array(projects.reversed()))
     #expect(model.orderedCollectionPaths(.area) == areas)
-    let item = CollectionDragItem(path: areas[1].value, collection: .area, session: model.vaultSession)
-    #expect(model.reorderCollection(item, before: areas[0], in: .area))
-    #expect(!model.reorderCollection(item, before: projects[0], in: .project))
+    let session = model.vaultSession
+    #expect(model.moveCollections(from: IndexSet(integer: 0), to: 2, in: .area, paths: areas, session: session))
+    #expect(!model.moveCollections(from: IndexSet(integer: 0), to: 2, in: .project, paths: areas, session: session))
     let restored = WorkspaceModel(bookmarks: bookmarks, sidebarPreferences: defaults)
     await restored.restoreVault()
     #expect(restored.orderedCollectionPaths(.project) == Array(projects.reversed()))
     #expect(restored.orderedCollectionPaths(.area) == Array(areas.reversed()))
-    #expect(!restored.reorderCollection(item, before: areas[0], in: .area))
+    #expect(!restored.moveCollections(
+        from: IndexSet(integer: 0), to: 2, in: .area,
+        paths: restored.orderedCollectionPaths(.area), session: session
+    ))
     restored.resetSidebarOrder(.project)
     #expect(restored.orderedCollectionPaths(.project) == projects)
     #expect(restored.orderedCollectionPaths(.area) == Array(areas.reversed()))
     #expect(try Data(contentsOf: root.appendingPathComponent(projects[1].value)) == bytes)
+}
+
+@MainActor
+@Test func nativeProjectMovesSupportBothEndsAndRejectStaleOrder() async throws {
+    try await withWorkspace { model, _ in
+        for name in ["a", "b", "c"] {
+            await model.createCollection(kind: .project, path: "Projects/\(name).md", title: name)
+        }
+        let paths = model.orderedCollectionPaths(.project)
+        let session = model.vaultSession
+        #expect(model.moveCollections(from: IndexSet(integer: 0), to: 3, in: .project, paths: paths, session: session))
+        #expect(model.orderedCollectionPaths(.project) == [paths[1], paths[2], paths[0]])
+        #expect(!model.moveCollections(from: IndexSet(integer: 0), to: 2, in: .project, paths: paths, session: session))
+        let reordered = model.orderedCollectionPaths(.project)
+        #expect(model.moveCollections(
+            from: IndexSet(integer: 2),
+            to: 0,
+            in: .project,
+            paths: reordered,
+            session: session
+        ))
+        #expect(model.orderedCollectionPaths(.project) == paths)
+        #expect(!model.moveCollections(from: IndexSet(integer: 3), to: 0, in: .project, paths: paths, session: session))
+        #expect(!model.moveCollections(from: IndexSet(integer: 0), to: 4, in: .project, paths: paths, session: session))
+        #expect(model.orderedCollectionPaths(.project) == paths)
+    }
 }

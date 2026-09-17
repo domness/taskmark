@@ -45,11 +45,18 @@ Natural-language capture, reminders, collaboration, and first-class child tasks 
 
 - P1 red, P2 orange and P3 blue completion indicators and priority labels; P4/unset remain default. Completed tasks use secondary styling; titles stay neutral.
 - Task-row and Task-menu Duplicate, Delete and explicitly labeled Copy Title/Markdown/Vault-Relative Path actions. Pending edits are saved first; conflicts block the action. Duplication retains unknown metadata and recurrence, reopens completed/canceled copies in Inbox, adds “(Copy)” and uses fresh timestamps. Delete has byte-preserving native Undo/Redo during the vault session.
-- Independent Projects/Areas ordering through drag-before-target and accessible Move Up/Move Down/Restore Default Order menus. Device-local preferences are keyed by vault URL; file paths and assignments stay unchanged. Task and collection drags use separate own-process representations and a shared drop destination.
+- Independent Projects/Areas ordering through native list insertion-position dragging and accessible Move Up/Move Down/Restore Default Order menus. Device-local preferences are keyed by vault URL; file paths and assignments stay unchanged. Native collection moves are scoped to their section and validate the vault session and source order; task assignment retains its own-process drop representation.
 - Optional `.config/style.css` maps a tested, limited CSS subset to native colors, task typography and row spacing. External edits reload with vault refresh; invalid input falls back to defaults with a visible View Options warning. See [personalization guide](PERSONALIZATION.md) for the supported syntax and sample.
 - Search/list headers stay at the top in empty states; Switch Vault has a separate footer outside the scrolling list; the task title, metadata and remaining row width form one edit button beside the completion control.
 
 Automated coverage includes unknown metadata, pending edits, delete Undo/Redo, external conflicts, occupied duplicate destinations, symlink rejection, independent order restoration, stale/cross-kind drags, stylesheet parsing and reload/fallback. Interactive macOS layout, drag gestures, VoiceOver and light/dark/high-contrast visual review remain manual acceptance checks.
+
+### macOS Settings — Implemented
+
+- Native Settings window with General and Theme sidebar sections.
+- Persistent week start, date/time display formats and initial view; canonical active-vault timezone editing shared with CLI.
+- System/Light/Dark appearance plus Local Todo, Slate, Forest and Sand paired palettes, layered custom vault styles and diagnostics.
+- See [settings behavior](SETTINGS.md) and [built-in/custom theme guide](THEMES.md). Native window visual/accessibility acceptance remains explicit follow-up.
 
 ## Next: iOS
 

@@ -14,10 +14,13 @@ struct SidebarView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .navigationTitle(model.vaultName ?? "Local Todo")
+        .themeSurface("--sidebar-background")
     }
 
     private var navigationList: some View {
-        List(selection: $model.route) {
+        let areas = model.orderedCollectionPaths(.area)
+        let session = model.vaultSession
+        return List(selection: $model.route) {
             Section("Focus") {
                 route(.today, "Today", "sun.max")
                 route(.inbox, "Inbox", "tray")
@@ -32,7 +35,7 @@ struct SidebarView: View {
                 FilterSidebarSection(model: model)
                 ProjectSidebarSection(model: model)
                 Section("Areas") {
-                    ForEach(model.orderedCollectionPaths(.area), id: \.self) { path in
+                    ForEach(areas, id: \.self) { path in
                         SidebarAssignmentRoute(
                             model: model,
                             route: .area(path),
@@ -43,6 +46,15 @@ struct SidebarView: View {
                         .contextMenu {
                             CollectionOrderActions(model: model, path: path, collection: .area)
                         }
+                    }
+                    .onMove { offsets, destination in
+                        _ = model.moveCollections(
+                            from: offsets,
+                            to: destination,
+                            in: .area,
+                            paths: areas,
+                            session: session
+                        )
                     }
                     Button("New Area", systemImage: "plus") { model.newEntityKind = .area }
                 }
@@ -66,6 +78,7 @@ struct SidebarView: View {
                 }
             }
         }
+        .scrollContentBackground(.hidden)
     }
 
     private func route(_ route: WorkspaceRoute, _ title: String, _ image: String) -> some View {

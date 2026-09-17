@@ -3,14 +3,30 @@ import SwiftUI
 struct ProjectListHeader: View {
     let model: WorkspaceModel
     let draft: ProjectDraft
+    let compact: Bool
 
     var body: some View {
-        HStack {
-            Text(draft.title).font(.headline)
-            Text(draft.status.rawValue.capitalized).foregroundStyle(.secondary)
-            Spacer()
-            Button("Edit Project") { model.editProject() }
+        HStack(spacing: 8) {
+            Text(draft.title)
+                .font(.headline)
+                .lineLimit(1)
+                .accessibilityAddTraits(.isHeader)
+                .help(draft.title)
+            Text(draft.status.rawValue.capitalized)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .fixedSize()
+            if compact {
+                editButton.labelStyle(.iconOnly)
+            } else {
+                editButton.labelStyle(.titleOnly)
+            }
         }
-        .padding(12)
+    }
+
+    private var editButton: some View {
+        Button("Edit Project", systemImage: "pencil") { model.editProject() }
+            .fixedSize()
+            .help("Edit Project")
     }
 }

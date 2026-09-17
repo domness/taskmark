@@ -8,10 +8,11 @@ extension WorkspaceModel {
             || !quickCaptureTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             || hasDirtyDrafts
             || filterState.isSaving
+            || isSavingConfiguration
     }
 
     func flushTaskChanges() async -> Bool {
-        for _ in 0 ..< 100 where !pendingMutationPaths.isEmpty || filterState.isSaving {
+        for _ in 0 ..< 100 where !pendingMutationPaths.isEmpty || filterState.isSaving || isSavingConfiguration {
             try? await Task.sleep(for: .milliseconds(50))
         }
         for task in autosaveTasks.values {
@@ -29,6 +30,7 @@ extension WorkspaceModel {
             && quickCaptureTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && !hasDirtyDrafts
             && !filterState.isSaving
+            && !isSavingConfiguration
     }
 
     func beginQuickCapture() {

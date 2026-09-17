@@ -273,6 +273,7 @@ func withWorkspace(
     let model = WorkspaceModel(
         bookmarks: VaultBookmarkStore(defaults: defaults),
         taskListDisplayPreferences: TaskListDisplayPreferencesStore(defaults: defaults),
+        preferences: AppPreferences(defaults: defaults),
         clock: { now ?? Date() }
     )
     await model.createVault(at: root)

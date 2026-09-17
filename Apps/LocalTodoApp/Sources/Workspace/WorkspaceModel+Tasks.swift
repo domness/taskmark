@@ -211,7 +211,7 @@ extension WorkspaceModel {
     }
 
     var vaultCalendar: Calendar {
-        snapshot.map { calendar(configuration: $0.configuration) } ?? Calendar(identifier: .gregorian)
+        calendar(configuration: snapshot?.configuration ?? VaultConfiguration())
     }
 
     func nextTaskPath(title: String, snapshot: VaultSnapshot) throws -> VaultPath {

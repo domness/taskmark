@@ -11,10 +11,6 @@ struct TaskListView: View {
             listHeader
             Divider()
             FilterRouteHeader(model: model)
-            if let draft = model.selectedProjectDraft {
-                ProjectListHeader(model: model, draft: draft)
-                Divider()
-            }
             if model.isQuickCapturePresented {
                 QuickCaptureRow(model: model)
                     .padding(.horizontal)
@@ -25,6 +21,7 @@ struct TaskListView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        .themeSurface()
         .onChange(of: model.route) { _, route in
             isSearchFocused = route == .search
         }
@@ -41,19 +38,25 @@ struct TaskListView: View {
         ViewThatFits(in: .horizontal) {
             headerContent(showsTitle: true, minimumSearchWidth: 120)
             headerContent(showsTitle: false, minimumSearchWidth: 80)
+            if let draft = model.selectedProjectDraft {
+                VStack(alignment: .leading, spacing: 8) {
+                    ProjectListHeader(model: model, draft: draft, compact: true)
+                    headerContent(showsTitle: false, minimumSearchWidth: 80, includesProject: false)
+                }
+            }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
     }
 
-    private func headerContent(showsTitle: Bool, minimumSearchWidth: CGFloat) -> some View {
+    private func headerContent(
+        showsTitle: Bool, minimumSearchWidth: CGFloat, includesProject: Bool = true
+    ) -> some View {
         HStack(spacing: 8) {
-            if showsTitle {
+            if includesProject, let draft = model.selectedProjectDraft {
+                ProjectListHeader(model: model, draft: draft, compact: !showsTitle)
+            } else if showsTitle {
                 routeHeading
-            } else {
-                routeHeading
-                    .frame(width: 0)
-                    .clipped()
             }
             Spacer(minLength: 8)
             TextField("Search tasks", text: $model.searchText)
@@ -65,11 +68,6 @@ struct TaskListView: View {
                 .labelStyle(.iconOnly)
                 .help("New Task (Command-N)")
             displayOptionsMenu
-            Button("Toggle Inspector", systemImage: "sidebar.trailing") {
-                model.isInspectorPresented.toggle()
-            }
-            .labelStyle(.iconOnly)
-            .help("Toggle Inspector")
         }
     }
 
@@ -130,6 +128,7 @@ struct TaskListView: View {
                 }
             }
             .listStyle(.inset)
+            .scrollContentBackground(.hidden)
         }
     }
 

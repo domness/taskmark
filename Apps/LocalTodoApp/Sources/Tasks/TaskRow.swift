@@ -113,10 +113,13 @@ struct TaskRow: View {
                     .accessibilityLabel("Priority \(priority.rawValue.uppercased())")
             }
             if let scheduled = task.scheduled {
-                Label(scheduled.description, systemImage: "calendar")
+                Label(
+                    model.preferences.dateFormat.string(scheduled, calendar: model.vaultCalendar),
+                    systemImage: "calendar"
+                )
             }
             if let deadline = task.deadline {
-                Label(deadline.description, systemImage: "flag")
+                Label(model.preferences.dateFormat.string(deadline, calendar: model.vaultCalendar), systemImage: "flag")
             }
         }
     }

@@ -18,7 +18,7 @@ struct FilterDateRangesView: View {
             label: title,
             systemImage: "calendar",
             text: text.wrappedValue,
-            calendar: model.vaultCalendar
+            calendar: model.planningCalendar
         ) {
             text.wrappedValue = $0
         }

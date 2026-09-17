@@ -167,6 +167,36 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: These choices address the reported interaction bugs and the recorded wishlist while retaining the native interface and Markdown ownership model. Duplicate preserves unknown frontmatter/notes/recurrence, gets fresh timestamps and reopens completed copies. Delete uses exact-byte native Undo/Redo after persistence. Ordering is presentation only and does not require collection moves.
 - What was rejected and why: System Trash was not chosen for this iteration; reversible deletion has explicit session-local recovery semantics. Implicit clipboard formats and batch actions were rejected in favor of three named copy actions on one task. Browser-style arbitrary CSS and reserving all of `.config/` were rejected because native tokens suffice and existing entity paths must remain valid. Full stylesheet syntax and manual visual acceptance checks are documented in `docs/PERSONALIZATION.md` and the roadmap.
 
+### 2026-09-17: Use Native List Moves For Sidebar Reordering
+
+- What was decided: Replace the custom collection drag payload and row drop handler with `ForEach.onMove` for Projects and Areas. Validate the captured source order, index bounds and vault session before saving the independent section order. Keep task-assignment drops on the collection rows.
+- Why: The user reported that collection rows could be dragged but not reordered. The custom drag exported a payload without enabling native List insertion handling; its before-target algorithm also could not move a row after the last item. This revises the earlier custom collection-drag approach while preserving the device-local ordering decision.
+- What was rejected and why: Retaining custom row dragging alongside native moves was rejected because it competes with the list's reorder gesture. Before-only insertion was rejected because downward and end-of-section moves must work naturally. Reordering by moving Markdown files remains prohibited.
+
+### 2026-09-17: Consolidate Project Headers
+
+- What was decided: Show the project draft title, status and Edit Project action once in the task-list header beside the list controls. Compact layouts use an edit icon and can wrap controls below the single project heading.
+- Why: The filename-based route header duplicated the project title and consumed an extra row. The project name is the useful navigation label; the exact path remains available in the inspector's File section.
+- What was rejected and why: Keeping a second filename heading was rejected as redundant. Removing the project status or edit action entirely was rejected because they remain useful project controls.
+
+### 2026-09-17: Move Inspector Toggle To The Window's Trailing Toolbar
+
+- What was decided: At the user's request, move the inspector toggle out of the middle-pane header and into the trailing window toolbar. When open, its toolbar item belongs to the inspector; when closed, it belongs to the main toolbar, keeping the action available at the window's right edge.
+- Why: The control changes window layout and should occupy the top-right corner. This intentionally revises the inspector-control placement from the 2026-07-27 list-column decision; search, capture and display controls remain list-local.
+- What was rejected and why: Keeping a duplicate middle-pane toggle or placing the only toggle inside a hidden inspector was rejected because it adds clutter or makes reopening inaccessible.
+
+### 2026-09-17: Add Native Settings With Canonical Vault Time Zones
+
+- What was decided: Add General/Theme sections in a native macOS Settings scene. Week start, date/time display formats, initial view, appearance, palette and stylesheet enablement are persistent device-local preferences. The user explicitly confirmed that time-zone edits update the active vault's canonical manifest through shared revision-checked storage. Unknown manifest values survive; dirty drafts and in-flight mutations block timezone changes.
+- Why: App and CLI must continue to share Today/recurrence semantics, while display and startup preferences belong to this Mac. Week-start preferences affect graphical calendars and “Next week” suggestions only; shared recurrence retains its prior calculation calendar. This intentionally revises the fixed-Monday planning choice from 2026-07-27. Native deletion undo survives timezone updates because no task content changed.
+- What was rejected and why: An app-only timezone was rejected by the user because it would diverge from CLI queries. Reformatting stored dates or changing recurrence week boundaries with a UI preference was rejected because it would alter the file/business contract. Clearing all undo history on timezone changes was removed after review because it discarded session-local deletion recovery.
+
+### 2026-09-17: Separate Appearance Mode, Palette And Custom Overrides
+
+- What was decided: System/Light/Dark appearance is independent of Local Todo, Slate, Forest and Sand palettes. Each palette has light/dark surface and accent tokens. Valid `.config/style.css` overrides merge over the selected palette; unsupported styles fall back to that palette with diagnostics. Add background/sidebar/inspector tokens while retaining native text, focus, selection and control semantics. Both workspace and Settings scene roots receive the same preferences.
+- Why: Explicit dark mode and three additional themes were requested, with documented customization. Paired surfaces keep native text legible across appearance changes. Stylesheet enablement now persists across launches and vault switches, intentionally replacing the earlier session-only toggle behavior.
+- What was rejected and why: Treating dark mode as a separate palette was rejected because every theme should support both modes. Arbitrary browser CSS and a custom text/control renderer remain rejected; native semantic states and bounded tokens keep the implementation understandable. `docs/SETTINGS.md` and `docs/THEMES.md` document behavior and extension points; full-window visual acceptance is not claimed because captures were unavailable.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

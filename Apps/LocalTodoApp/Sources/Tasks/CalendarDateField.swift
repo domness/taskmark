@@ -9,6 +9,7 @@ struct CalendarDateField: View {
     let calendar: Calendar
     let now: () -> Date
     let onCalendarChange: (String) -> Void
+    @Environment(\.displayDateFormat) private var displayDateFormat
 
     @State private var isCalendarPresented = false
     @State private var pickerDate: Date
@@ -173,7 +174,7 @@ struct CalendarDateField: View {
     }
 
     private func shortDate(_ value: CalendarDate) -> String {
-        formatted(value, template: value.year == currentYear ? "MMMd" : "yMMMd")
+        displayDateFormat.string(value, calendar: calendar)
     }
 
     private func longDate(_ value: CalendarDate) -> String {
@@ -187,10 +188,6 @@ struct CalendarDateField: View {
         formatter.timeZone = calendar.timeZone
         formatter.setLocalizedDateFormatFromTemplate(template)
         return formatter.string(from: date)
-    }
-
-    private var currentYear: Int {
-        calendar.component(.year, from: now())
     }
 
     private func suggestionAccessibilityTitle(_ suggestion: CalendarDateSuggestion) -> String {

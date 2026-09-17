@@ -5,11 +5,16 @@ struct ProjectSidebarSection: View {
     let model: WorkspaceModel
 
     var body: some View {
+        let paths = model.orderedCollectionPaths(.project)
+        let session = model.vaultSession
         Section("Projects") {
-            ForEach(model.orderedCollectionPaths(.project), id: \.self) { path in
+            ForEach(paths, id: \.self) { path in
                 if let project = model.snapshot?.projects[path]?.value {
                     projectRoute(project)
                 }
+            }
+            .onMove { offsets, destination in
+                _ = model.moveCollections(from: offsets, to: destination, in: .project, paths: paths, session: session)
             }
             if !model.inactiveProjects.isEmpty {
                 DisclosureGroup("Inactive Projects") {

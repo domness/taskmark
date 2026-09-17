@@ -35,7 +35,7 @@ struct TaskRescheduleSheet: View {
                 label: "Choose Date",
                 systemImage: "calendar",
                 text: date,
-                calendar: model.vaultCalendar
+                calendar: model.planningCalendar
             ) {
                 date = $0
             }

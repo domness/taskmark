@@ -28,7 +28,7 @@ struct CalendarDateSuggestion: Identifiable, Equatable {
                 date: adding(1, to: today, calendar: calendar)
             ),
         ]
-        if let offset = laterThisWeekOffset(for: weekday) {
+        if let offset = laterThisWeekOffset(for: weekday), offset < nextWeekOffset(weekday, calendar: calendar) {
             options.append(suggestion(
                 .laterThisWeek,
                 title: "Later this week",
@@ -45,9 +45,9 @@ struct CalendarDateSuggestion: Identifiable, Equatable {
         weekday: Int,
         calendar: Calendar
     ) -> [Self] {
-        // Local Todo's planning week starts Monday, and its weekend starts Saturday.
+        // Weekend suggestions retain Saturday/Sunday semantics independently of calendar layout.
         let weekendOffset = weekday == 1 || weekday == 7 ? 0 : 7 - weekday
-        let nextWeekOffset = weekday == 2 ? 7 : (9 - weekday) % 7
+        let nextWeekOffset = nextWeekOffset(weekday, calendar: calendar)
         return [
             suggestion(
                 .thisWeekend,
@@ -71,6 +71,11 @@ struct CalendarDateSuggestion: Identifiable, Equatable {
         case 5: 1
         default: nil
         }
+    }
+
+    private static func nextWeekOffset(_ weekday: Int, calendar: Calendar) -> Int {
+        let offset = (calendar.firstWeekday - weekday + 7) % 7
+        return offset == 0 ? 7 : offset
     }
 
     private static func suggestion(

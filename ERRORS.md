@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-17: Native Settings Screenshot Evidence
+
+- What did not work: NSHostingView bitmap capture omitted AppKit vibrancy/titlebar layers (black sidebar selection and missing header detail). Filtering a top-level Swift Testing function by its bare name selected zero tests. Target-level testing ran the capture, but full-window `screencapture` returned “could not create image from window” in this environment.
+- What worked instead: Use target-level execution for the opt-in capture utility; retain passing behavior/build evidence and explicitly leave live native appearance verification outstanding. Do not accept the incomplete bitmap captures as a visual pass. The OS capture path requires a window-server session with capture permission.
+- Note for next time: Verify that at least one Swift test actually runs and inspect the full native window capture before using it as evidence. Do not attempt to repair app visuals based on missing layers in an offscreen cache.
+
 ## 2026-09-17: Extending Near-Limit SwiftUI Views
 
 - What did not work: Adding appearance controls exceeded TaskListView's type-body limit; extracting only the appearance menu still left it two lines over the enforced limit on the next lint run.

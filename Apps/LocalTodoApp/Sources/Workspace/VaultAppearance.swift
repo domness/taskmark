@@ -5,7 +5,10 @@ struct VaultAppearance: Equatable {
     var light = [String: String]()
     var dark = [String: String]()
 
-    static let colorTokens: Set<String> = ["--accent", "--priority-1", "--priority-2", "--priority-3"]
+    static let colorTokens: Set<String> = [
+        "--accent", "--priority-1", "--priority-2", "--priority-3",
+        "--background", "--sidebar-background", "--inspector-background",
+    ]
     static let numberTokens: [String: ClosedRange<Double>] = ["--task-font-size": 11 ... 24, "--row-spacing": 2 ... 16]
 
     static func parse(_ source: String) throws -> Self {
@@ -73,6 +76,13 @@ struct VaultAppearance: Equatable {
         }
         return number
     }
+
+    func overriding(with other: Self) -> Self {
+        Self(
+            light: light.merging(other.light) { _, override in override },
+            dark: dark.merging(other.dark) { _, override in override }
+        )
+    }
 }
 
 enum AppearanceError: LocalizedError {
@@ -80,14 +90,15 @@ enum AppearanceError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
-        case let .invalid(message): "Stylesheet: \(message) Built-in appearance is in use."
+        case let .invalid(message): "Stylesheet: \(message) The selected built-in theme is in use."
         }
     }
 }
 
 extension WorkspaceModel {
     var effectiveAppearance: VaultAppearance {
-        usesVaultStylesheet ? vaultAppearance : VaultAppearance()
+        let base = preferences.theme.tokens
+        return usesVaultStylesheet ? base.overriding(with: vaultAppearance) : base
     }
 
     func refreshAppearance() async {

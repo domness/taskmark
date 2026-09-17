@@ -1,0 +1,54 @@
+import SwiftUI
+
+struct GeneralSettingsView: View {
+    let model: WorkspaceModel
+    @Bindable var preferences: AppPreferences
+
+    var body: some View {
+        Form {
+            Section("Calendar & Time") {
+                Picker("Start week on", selection: $preferences.weekStart) {
+                    ForEach(WeekStart.allCases) { Text($0.title).tag($0) }
+                }
+                Picker("Date format", selection: $preferences.dateFormat) {
+                    ForEach(DisplayDateFormat.allCases) { Text($0.title).tag($0) }
+                }
+                Picker("Time format", selection: $preferences.timeFormat) {
+                    ForEach(DisplayTimeFormat.allCases) { Text($0.title).tag($0) }
+                }
+                TimelineView(.periodic(from: .now, by: 60)) { context in
+                    LabeledContent("Preview", value: model.formattedTimestamp(context.date))
+                        .foregroundStyle(.secondary)
+                }
+                Text("Date display follows your preference. Exact date entry and Markdown files use YYYY-MM-DD.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            Section("Vault Time Zone") {
+                if model.snapshot != nil {
+                    TimezoneSetting(model: model)
+                    Text("Applies to \(model.vaultName ?? "this vault"), including Today, recurring tasks and the CLI.")
+                        .font(.caption).foregroundStyle(.secondary)
+                } else {
+                    Text("Open a vault to choose its time zone.").foregroundStyle(.secondary)
+                }
+                if let error = model.configurationSettingsError {
+                    Label(error, systemImage: "exclamationmark.triangle")
+                    Button("Reload Time Zone") {
+                        model.configurationSettingsError = nil
+                        Task { await model.refreshConfigurationSettings() }
+                    }
+                    .disabled(model.isSavingConfiguration)
+                }
+            }
+            Section("Startup") {
+                Picker("Initial view", selection: $preferences.initialView) {
+                    ForEach(InitialView.allCases) { Text($0.title).tag($0) }
+                }
+                Text("Used when opening the app or switching vaults.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+        }
+        .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
+    }
+}

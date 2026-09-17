@@ -4,7 +4,6 @@ struct WorkspaceView: View {
     @Bindable var model: WorkspaceModel
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.undoManager) private var undoManager
-    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Group {
@@ -35,11 +34,23 @@ struct WorkspaceView: View {
                 .inspector(isPresented: $model.isInspectorPresented) {
                     InspectorContentView(model: model)
                         .inspectorColumnWidth(min: 280, ideal: 340, max: 480)
+                        .toolbar {
+                            ToolbarItem(placement: .primaryAction) {
+                                inspectorToggle
+                            }
+                        }
+                }
+                .toolbar {
+                    if !model.isInspectorPresented {
+                        ToolbarItem(placement: .primaryAction) {
+                            inspectorToggle
+                        }
+                    }
                 }
             }
         }
         .frame(minWidth: 840, minHeight: 560)
-        .tint(model.effectiveAppearance.color("--accent", scheme: colorScheme, fallback: .accentColor))
+        .disabled(model.isSavingConfiguration)
         .sheet(isPresented: $model.isCommandPalettePresented) {
             CommandPaletteView(model: model)
         }
@@ -71,5 +82,13 @@ struct WorkspaceView: View {
                 }
             }
         )
+    }
+
+    private var inspectorToggle: some View {
+        Button(model.isInspectorPresented ? "Hide Inspector" : "Show Inspector", systemImage: "sidebar.trailing") {
+            model.isInspectorPresented.toggle()
+        }
+        .labelStyle(.iconOnly)
+        .help(model.isInspectorPresented ? "Hide Inspector" : "Show Inspector")
     }
 }

@@ -54,6 +54,7 @@ struct ProjectInspectorView: View {
             }
         }
         .formStyle(.grouped)
+        .scrollContentBackground(.hidden)
         .padding(.vertical)
     }
 }

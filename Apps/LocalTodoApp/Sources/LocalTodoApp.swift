@@ -8,6 +8,7 @@ struct LocalTodoApp: App {
     var body: some Scene {
         WindowGroup {
             WorkspaceView(model: model)
+                .modifier(AppAppearanceModifier(model: model))
                 .onAppear { appDelegate.model = model }
                 .task { await model.restoreVault() }
         }
@@ -46,6 +47,10 @@ struct LocalTodoApp: App {
                 Button("Search Tasks") { model.beginSearch() }
                     .keyboardShortcut("f", modifiers: .command)
             }
+        }
+        Settings {
+            SettingsView(model: model)
+                .modifier(AppAppearanceModifier(model: model))
         }
     }
 }
