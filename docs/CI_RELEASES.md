@@ -6,7 +6,7 @@
 
 - Pushes to `main` and manual runs use `[self-hosted, macOS]`, matching Lumelo (`domness/baby-journal`). The Mac Mini must be registered/available to **this repository**, not only Lumelo.
 - Pull requests keep GitHub-hosted `macos-15` validation and Ubuntu Conventional Commit checks. PR code does not execute on the personal signing runner.
-- The Swift job runs the actual `make check`: formatter, strict lint, release-script input/syntax tests, Swift package tests, macOS app tests, and unsigned Debug app build. This replaces the previous workflow that did not run the app tests.
+- The Swift job runs the actual `make check`: formatter, strict lint, release-script input/syntax tests, Swift package tests, macOS app tests, and unsigned Debug app build.
 - Each run has isolated DerivedData under `RUNNER_TEMP`, uploads its log and `.xcresult`, and removes only its own temporary build directory. It does not kill Xcode processes or purge another project's caches/keychains. Quality logs are retained for seven days.
 - Per-ref concurrency avoids overlapping validation for the same branch without interrupting an active run. GitHub may replace older pending runs with a newer pending commit.
 
@@ -85,7 +85,7 @@ GitHub's job-scoped `GITHUB_TOKEN` supplies release upload permission. The `gh` 
 
 ## Creating Or Retrying A Release
 
-After the workflows are merged to `main` and the runner/signing setup above is complete:
+The workflows are in `main`. After completing the runner/signing setup above:
 
 1. Create a tag containing the release workflow/scripts, e.g. `v1.0.0`, at the intended commit.
 2. Publish a GitHub release for that tag. Wait for **macOS Release** to finish; assets appear only after packaging/verification succeeds.
@@ -110,6 +110,6 @@ bash scripts/package-macos-release v1.2.3 42.1 dist
 
 `--validate-inputs` only validates/maps version strings; it does not build, sign, or publish. The normal packaging command always requires the pinned identity and notarization profile. `dist/` is ignored by Git.
 
-Implementation validation used Xcode 27.0 (`27A266a`): workflow validation with actionlint 1.7.7, Bash syntax/input-contract checks, and an unsigned universal Release archive with both architecture slices and correct `1.2.3`/`42.1` plist versions. This archive check validates compilation/layout, **not signing or notarization**. The Developer ID identity was not present on the implementation machine; runner-side signing/notarization and release upload remain to be exercised after setup. The connected GitHub account has push access but no repository-admin permission, so runner registration could not be inspected or configured here.
+Initial local validation on 2026-09-17 used Xcode 27.0 (`27A266a`): actionlint 1.7.7, Bash syntax/input-contract checks, and an unsigned universal Release archive with both architecture slices and correct `1.2.3`/`42.1` plist versions. The full `make check` also passed with the workflow's isolated DerivedData and `.xcresult` arguments. Use current Actions results and test output for subsequent runs rather than a fixed test count.
 
-The full `make check` also passed using the workflow's isolated DerivedData and `.xcresult` arguments: clean format/lint, four release-input tests, 121 Swift package tests, 83 executed app tests (one optional capture test skipped), and the unsigned Debug build. The `.xcresult` was written at the requested path. No GitHub release was created or uploaded during local validation.
+That archive check established compilation/layout, **not signing or notarization**. At initial setup, the implementation machine lacked the Developer ID identity and the connected GitHub account lacked repository-admin permission, so runner registration and end-to-end signed publication were not verified. No release was created or uploaded during that validation. Confirm the runner's present credentials and inspect a successful release run plus a downloaded-app launch before treating distribution as validated.

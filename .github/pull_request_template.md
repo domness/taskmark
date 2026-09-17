@@ -4,7 +4,7 @@
 
 ## Validation
 
-- [ ] `make check` passed in full (formatting, lint, package tests, macOS app tests, and the Xcode Debug app build).
+- [ ] `make check` passed in full (formatting, lint, release-script checks, package tests, macOS app tests, and the Xcode Debug app build).
 - [ ] Confirmed `LocalTodoApp` builds; package-only `swift build` / `swift test` results are insufficient.
 - [ ] For Xcode Build/Run fixes, regenerated the project and ran the normal signed clean build below.
 

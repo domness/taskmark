@@ -1,4 +1,3 @@
-<!-- SEED: re-run /impeccable document once there's code to capture the actual tokens and components. -->
 ---
 name: Local Todo
 description: A focused local-first task manager built on transparent Markdown files.
@@ -25,15 +24,15 @@ The product must not feel like a Jira issue editor. Task entry and review are wo
 
 ## 2. Colors
 
-The palette is an adaptive range of subtly tinted near-neutrals; exact values will be resolved during implementation.
+The palette uses adaptive, subtly tinted near-neutrals. The built-in Local Todo tokens below are implemented in `Apps/LocalTodoApp/Sources/Settings/AppTheme.swift`; [docs/THEMES.md](docs/THEMES.md) maintains all palette values and override rules.
 
 ### Primary
-- **Working Ink** (`[to be resolved during implementation]`): Primary text, selected states, and high-emphasis actions through contrast rather than hue.
+- **Working Ink**: Native `.primary` and `.secondary` text styles, with system-owned focus/selection/disabled semantics. Control accent is `#365f99` in light mode and `#92b8ee` in dark mode.
 
 ### Neutral
-- **Paper Surface** (`[to be resolved during implementation]`): Light-theme working surface, tinted rather than pure white.
-- **Night Surface** (`[to be resolved during implementation]`): Dark-theme working surface, tinted rather than pure black.
-- **Quiet Rule** (`[to be resolved during implementation]`): Dividers, inactive controls, and structural boundaries.
+- **Paper Surface**: Light background `#f7f8fa`, sidebar `#edf0f3`, inspector `#f1f3f6`.
+- **Night Surface**: Dark background `#202226`, sidebar `#191b1f`, inspector `#25282d`.
+- **Quiet Rule**: Native dividers and system control boundaries; no custom separator token.
 
 ### Named Rules
 
@@ -43,17 +42,17 @@ The palette is an adaptive range of subtly tinted near-neutrals; exact values wi
 
 ## 3. Typography
 
-**Display Font:** `[technical humanist sans to be chosen at implementation]`
-**Body Font:** `[same family to be chosen at implementation]`
+**Interface Font:** Native system typography (SF on macOS).
+**File Paths:** Native monospaced caption styling where exact identity is shown.
 
-**Character:** One technical humanist sans carries the entire interface. It should be precise at compact sizes, open enough for long task titles, and neutral enough to let content lead.
+**Character:** System text styles provide familiar density, legibility and hierarchy. Task-list title size defaults to 13 logical points and scales relative to body text; the stylesheet may set a bounded 11–24-point value.
 
 ### Hierarchy
-- **Display** (`[to be resolved]`): Reserved for empty states and rare onboarding moments, never routine task screens.
-- **Headline** (`[to be resolved]`): View titles and major navigation landmarks.
-- **Title** (`[to be resolved]`): Task titles, project names, and section headings.
-- **Body** (`[to be resolved]`): Notes and supporting content, capped at 65-75 characters where prose is continuous.
-- **Label** (`[to be resolved]`): Metadata, controls, dates, priorities, and compact navigation.
+- **Empty states**: Native `ContentUnavailableView` hierarchy.
+- **Headline**: Route/project headings and inspector title fields use `.headline`.
+- **Task titles**: Scaled system font in rows; neutral color with completion strikethrough.
+- **Body**: `.body` for notes and editors; prose line lengths should remain comfortable as views expand.
+- **Metadata**: `.caption` and secondary styling in rows; `.callout` for tag tokens and supporting Settings content.
 
 ### Named Rules
 
@@ -61,7 +60,7 @@ The palette is an adaptive range of subtly tinted near-neutrals; exact values wi
 
 ## 4. Elevation
 
-The system is flat by default. Tonal surface changes and one-pixel boundaries establish structure; elevation appears only for transient layers such as menus, command results, and dragged items. Exact shadow values will be resolved during implementation.
+The system is flat by default. Tonal surface changes and native dividers establish structure. Menus, popovers and drag previews use platform presentation; there is no app-defined shadow/elevation token system.
 
 ### Named Rules
 
@@ -69,16 +68,21 @@ The system is flat by default. Tonal surface changes and one-pixel boundaries es
 
 ## 5. Components
 
-Component tokens will be documented after the first implementation establishes real controls. Buttons, fields, task rows, navigation, metadata chips, menus, and the command palette must use one consistent state vocabulary across desktop and mobile.
+- **Workspace**: Sidebar, task-list header/list and collapsible inspector. Inbox appears above Today. The inspector toggle belongs to the trailing window toolbar; capture/search/display controls belong to the list header.
+- **Selection and editing**: A row's title/metadata area selects and opens details with list focus. Command-E explicitly focuses the title. Inspector task titles are placeholder-only multiline fields, expanding up to six visible lines. Date metadata participates in intrinsic row sizing.
+- **Organization**: Project, Area, Tags and Repeat are always visible in the task inspector. Tags use removable wrapping tokens and an add popover; advanced recurrence fields appear only when relevant to the selected mode. This direct-access inspector is the user-requested exception to progressive metadata disclosure.
+- **Dates**: Compact scheduled/deadline controls open native popovers with suggestions, exact ISO entry and a graphical calendar.
+- **Ordering**: Native List insertion gestures reorder collections and tasks in Custom mode. Automatic task sorts permit assignment drags to sidebar collections.
+- **Settings**: Fixed 170-point native sidebar beneath a compact titlebar; grouped General controls and a scrollable Theme grid.
 
-Motion is responsive and functional: immediate press feedback, 150-250 ms state transitions, exponential ease-out for entrances, faster exits, and reduced-motion alternatives without spatial movement.
+Native controls own interaction feedback. Any future custom motion should remain functional, respect Reduce Motion and avoid decorative transitions; no custom animation-duration token system is implemented.
 
 ## 6. Do's and Don'ts
 
 ### Do:
 - **Do** make capture the visually dominant action without turning every screen into a form.
 - **Do** preserve strong text and component contrast in both adaptive themes.
-- **Do** reveal dates, tags, priorities, and file details progressively.
+- **Do** keep routine metadata directly accessible in the inspector while reserving advanced controls and file details for their relevant context.
 - **Do** use familiar task-manager and platform affordances with precise spacing and focus behavior.
 - **Do** communicate every state with text, shape, or iconography in addition to any semantic color.
 
@@ -86,7 +90,7 @@ Motion is responsive and functional: immediate press feedback, 150-250 ms state 
 - **Don't** reproduce the metadata density, process rigidity, or form-like task editing of a Jira issue editor.
 - **Don't** introduce hidden storage behavior, opaque database semantics, or surprising file mutations.
 - **Don't** enforce GTD through blocking steps or a rigid navigation sequence.
-- **Don't** expose every control and piece of metadata at once.
+- **Don't** expose every advanced control in the task list or require organization during capture.
 - **Don't** use decorative motion, nested cards, glass effects, gradient text, or colored side-stripe borders.
 - **Don't** use pure black, pure white, or chroma-free gray as final production colors.
 
@@ -94,6 +98,6 @@ Motion is responsive and functional: immediate press feedback, 150-250 ms state 
 
 The Settings surface inherits the native system font, sidebar navigation, visible keyboard focus and flat working plane. General uses native grouped form controls; Theme uses a segmented appearance picker and four compact selectable previews with text/checkmark selection cues. Preferences apply immediately.
 
-Appearance is independently System, Light or Dark. The default Local Todo palette uses light background `#f7f8fa`, sidebar `#edf0f3`, inspector `#f1f3f6`, accent `#365f99`; dark uses `#202226`, `#191b1f`, `#25282d`, `#92b8ee`. Slate, Forest and Sand extend this restrained surface language. All paired token values and extension rules are documented in [docs/THEMES.md](docs/THEMES.md), with code in `Settings/AppTheme.swift`.
+Appearance is independently System, Light or Dark. Slate, Forest and Sand extend the default Local Todo palette's restrained surface language. All paired token values and extension rules are documented in [docs/THEMES.md](docs/THEMES.md), with code in `Apps/LocalTodoApp/Sources/Settings/AppTheme.swift`.
 
 Native primary/secondary text and control state semantics remain adaptive. Custom vault styles override named surface/accent/priority tokens, task-title size (11–24 logical points, default 13, scaled relative to body), and row metadata spacing (2–16, default 3). They do not replace keyboard focus or selection behavior. Window rendering and contrast require visual acceptance; parser/model/build checks do not establish that evidence.

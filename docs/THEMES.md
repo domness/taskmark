@@ -84,6 +84,8 @@ Selectors are exactly `:root`, `:root[data-appearance=light]` and `:root[data-ap
 
 ## Extending The Implementation
 
+Source paths below are relative to `Apps/LocalTodoApp/Sources/`. For window composition and behavior, see [Settings](SETTINGS.md); for ordering and task interactions, see [Personalization](PERSONALIZATION.md).
+
 - `Settings/AppPreferences.swift`: durable device-local choices, independently persisted stable keys and safe defaults. Inject a test UserDefaults suite; avoid global mutable appearance state.
 - `Settings/AppTheme.swift`: add palette cases here, each with explicit light/dark tokens and a useful preview label. The Settings grid derives from `allCases`.
 - `Workspace/VaultAppearance.swift`: validates the CSS subset and merges overrides. Add new tokens to its allowlist with validation, tests and an entry in this document; never silently accept unsupported declarations.

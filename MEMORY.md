@@ -215,6 +215,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Manual ordering is presentation, like existing sidebar ordering, and should not rewrite task Markdown or introduce a new canonical sort schema. Captured vault session, route, visible order and grouping reject stale drags.
 - What was rejected and why: A new shared `TaskSort.custom` case was rejected because CLI/canonical queries have no manual-order data. Custom transferable dragging on reorderable rows was rejected because it competes with native insertion gestures, as established by the sidebar fix; project/area assignment remains available in the inspector or by dragging under automatic sorts.
 
+### 2026-09-17: Consolidate Current Documentation And Remove The Acceptance Snapshot
+
+- What was decided: At the user's request, remove the standalone Run Your Day acceptance document. Keep current behavior in the daily-work, personalization, settings and theme guides; keep implemented/planned status and outstanding validation in the roadmap; retain historical decisions here and repeated-attempt lessons in `ERRORS.md`.
+- Why: The milestone snapshot and duplicated test counts had drifted behind the shipped UI. Documentation must describe the actual full-scan refresh, device-local Custom order, multiline/token-based inspector, guarded deletion and current CLI move/recurrence behavior.
+- What was rejected and why: A replacement acceptance-count document was rejected because it would duplicate current test output and drift again. Claiming physical drag/VoiceOver/full-window acceptance or successful signed distribution from build results was rejected because those remain distinct validation work.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

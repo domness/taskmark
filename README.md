@@ -2,9 +2,9 @@
 
 Local Todo is a local-first GTD task manager whose source of truth is a directory of human-readable Markdown files. The macOS app and CLI share the same domain rules and storage implementation, so every change remains inspectable outside the app.
 
-The macOS app supports Inbox, Today, Next, Upcoming, Waiting and Someday; project editing and completion; interactive note checklists; editable fixed/after-completion recurrence; saved combined filters; and keyboard capture, completion and rescheduling. Task and project edits autosave with conflict handling and native undo/redo. Project and area path moves remain disabled pending safe multi-file recovery.
+The macOS app supports Inbox, Today, Next, Upcoming, Waiting and Someday; project editing and completion; interactive note checklists; editable fixed/after-completion recurrence; saved combined filters; and keyboard capture, completion and rescheduling. Task and project edits autosave with conflict handling and native undo/redo. Custom drag ordering, token-based tags, multiline title editing, task context actions and reversible project/area deletion support daily use. Settings includes calendar/display preferences, vault timezone editing and native themes with optional stylesheet overrides. Project and area path moves remain disabled pending safe multi-file recovery.
 
-See the [daily workflow guide](docs/DAILY_WORK.md) for controls and shortcuts, and the [acceptance evidence](docs/RUN_YOUR_DAY.md) for automated verification and its limits. iOS/web clients, migration, a real-use pilot and iCloud validation are outside this milestone.
+See the [daily workflow guide](docs/DAILY_WORK.md) for controls and shortcuts, [personalization](docs/PERSONALIZATION.md) for ordering and context actions, and [settings](docs/SETTINGS.md) for preferences. The [roadmap](docs/ROADMAP.md) separates implemented work from remaining validation and planned platforms.
 
 ## Requirements
 
@@ -70,7 +70,7 @@ Entity identity is the exact, case-sensitive, vault-relative path. Use the CLI f
 
 ## Development
 
-Main-branch CI runs the full quality gate on the personal macOS runner. Published GitHub releases produce a Developer ID–signed, notarized universal app in DMG and ZIP form, using Dominic Wroblewski's Apple team. See [Mac Mini CI and release setup](docs/CI_RELEASES.md) for runner registration, signing/notarization prerequisites and installation instructions.
+Main-branch CI is configured to run the full quality gate on the personal macOS runner. The release workflow packages a Developer ID–signed, notarized universal app in DMG and ZIP form after runner/signing prerequisites are met. See [Mac Mini CI and release setup](docs/CI_RELEASES.md) for configuration, validation boundaries and installation instructions.
 
 ```bash
 make format
@@ -84,11 +84,11 @@ make check
 ```text
 Apps/LocalTodoApp/         macOS SwiftUI composition and app tests
 Sources/LocalTodoDomain/   domain values and rules
-Sources/LocalTodoMarkdown/ schema and transactional file storage
+Sources/LocalTodoMarkdown/ schema, revision checks and atomic file operations
 Sources/LocalTodoCLI/      localtodo command-line interface
 Tests/                     domain, storage, and CLI tests
 skills/local-todo/         portable agent skill
-docs/                      architecture, format, and roadmap
+docs/                      contracts, user guides, roadmap and CI/release setup
 ```
 
-See `docs/FILE_FORMAT.md` for the canonical vault contract and `docs/ROADMAP.md` for post-V1 work.
+See [FILE_FORMAT.md](docs/FILE_FORMAT.md) for the canonical vault contract and [ROADMAP.md](docs/ROADMAP.md) for current status and remaining work.

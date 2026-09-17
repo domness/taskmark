@@ -2,17 +2,29 @@
 
 ## Task Rows And Context Actions
 
-Click anywhere in the task content to the right of its completion control to open editing. Right-click a task for Duplicate, Delete and Copy actions. The **Task** menu exposes the same actions for the selected task through native keyboard menu navigation. Actions operate on one task at a time.
+Click anywhere in the task content to the right of its completion control to select the task and show its inspector. Focus stays in the list, where **Backspace** deletes the selection. Use **Command-E** or **Edit Task** to focus the title. Backspace inside an inspector text editor edits text normally. Right-click a task for Duplicate, Delete and Copy actions; the **Task** menu also exposes these for the selection. Actions operate on one task at a time.
+
+The title field uses **Title** only as a placeholder and expands from one to six visible lines. Project, area, token-based Tags and Repeat are always visible. Use the tag **+** button to enter a whole tag or select a suggestion, and **×** to remove one. Commas within a tag name are preserved. Task rows grow or shrink as date metadata is added or removed.
 
 - **Duplicate Task** saves valid pending edits, creates a collision-safe sibling `-copy.md` path and adds “(Copy)” to the title. Notes, checklist state, recurrence, organization, priority, dates and unknown frontmatter are retained. Creation/update timestamps are fresh. Done/canceled copies start in Inbox with no completion timestamp; other statuses are retained. Duplicate is undoable.
 - **Delete Task** saves pending edits before deleting. Use **Edit → Undo Delete Task** to restore the exact original Markdown bytes, including unknown fields and formatting; Redo deletes them again. Recovery is session-local native history, not system Trash: restore before switching vaults or quitting. External changes invalidate history, and occupied restoration paths are never overwritten.
 - **Copy Title**, **Copy Markdown**, and **Copy Vault-Relative Path** have explicit meanings. Markdown includes frontmatter and notes. Invalid/conflicting pending edits must be resolved before copying or mutating.
 
-## Sidebar Order
+## Custom Task Order
 
-Drag a project to an insertion position within Projects to reorder it, including the beginning or end of the section; areas work independently. This uses the native sidebar list's move interaction. Right-click for **Move Up**, **Move Down**, or **Restore Default Order** (also accessible through native contextual-menu keyboard navigation). Task drags onto a collection still assign the task rather than reordering collections.
+Choose **View Options → Sort → Custom**, then drag a task to an insertion position. Selecting Custom for the first time starts from the current visible order. Switching to an automatic sort and back restores the remembered order. New/unordered tasks follow ordered tasks in the underlying query order; temporarily hidden tasks retain their saved positions.
+
+Custom order is independent per route and vault, including search and saved-filter views. In grouped lists, moves stay within that project/area group. Orders and their enabled flags live in UserDefaults under `task-custom-order.<standardized-vault-path>`. They are device-local and do not rewrite entity files or canonical saved-filter sort values. Stale route/session/order/group drags are rejected.
+
+While Custom is active, row drags reorder tasks. Assign a project/area through the inspector, or select an automatic sort to restore task dragging onto sidebar destinations.
+
+## Sidebar Order And Collection Deletion
+
+Drag a project to an insertion position within Projects to reorder it, including the beginning or end of the section; areas work independently. This uses the native sidebar list's move interaction. Right-click for **Move Up**, **Move Down**, or **Restore Default Order** (also accessible through native contextual-menu keyboard navigation). Under automatic task sorts, task drags onto a collection assign the task rather than reordering collections.
 
 Order lives in macOS UserDefaults under `sidebar-order.<standardized-vault-path>` with independent project/area arrays. It is device-local presentation, not vault data. Newly discovered and externally moved paths append in exact path order. Missing paths are ignored. Inactive projects remain in the separate review section and cannot be reordered there; their saved position is retained until a subsequent active-section reorder omits them. Areas retain existing navigation membership, including archived areas. Restore Default Order returns that section to exact-path sorting. No Markdown files are moved or renamed.
+
+Right-click a collection for **Delete Project** or **Delete Area**. Pending project edits must save successfully first. Tasks, projects and saved filters that reference the collection block deletion with an actionable message; remove those references first. Deletion never cascades. Successful deletion has the same exact-byte, session-local Undo/Redo as task deletion, and deleting the open collection returns navigation to Inbox.
 
 ## Native Stylesheet
 
@@ -55,9 +67,8 @@ Supported selectors are exactly `:root`, `:root[data-appearance=light]`, and `:r
 
 The entry point is case-sensitive, UTF-8, at most 64 KiB, and cannot have symlink components below the vault root. `.config/` remains available for typed Markdown entities; it is not a newly reserved directory. `.localtodo/config.yml` remains the vault manifest.
 
-## Validation — 2026-09-17
+## Verification
 
-- Toolchain: Xcode 27.0 (`27A266a`).
-- `make format && make check`: passed after the native sidebar-reordering correction. Formatting and strict lint were clean; 118 Swift package tests and 75 macOS app tests passed; the generated LocalTodoApp Debug scheme built successfully with `CODE_SIGNING_ALLOWED=NO`. Regression coverage includes moving the first project to the end and back, order persistence, stale source orders/sessions, and invalid insertion indices.
-- `git diff --check`: passed.
-- Interactive UI evidence: not completed. The macOS System Events inspection timed out. Small-window layout, title/metadata/blank-area clicks, both drag payloads, VoiceOver, and light/dark/increased-contrast appearance still need hands-on acceptance. Automated tests above establish model/storage behavior and build validity, not live gesture or visual verification.
+Run `make check` for the full quality gate. Relevant app suites include `WorkspacePersonalizationTests`, `SidebarOrderTests`, `TaskCustomOrderTests`, `TaskTagsTests` and `WorkspaceCollectionDeletionTests`; storage suites cover exclusive restoration and collection-reference protection. `TaskRowLayoutTests` hosts native views to check date-driven row resizing and Backspace routing between the real inspector title field and task list.
+
+These automated checks do not establish full-window visual acceptance or physical drag behavior. Small-window layouts, native drag gestures, VoiceOver and light/dark/Increase Contrast appearance remain hands-on checks in the [roadmap](ROADMAP.md).

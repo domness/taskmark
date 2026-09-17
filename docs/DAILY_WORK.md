@@ -1,15 +1,17 @@
-# Run Your Day
+# Daily Workflows
 
 Open or create a **dedicated task vault** in the macOS app. Tasks stay in individual Markdown files; everyday editing does not require YAML.
 
 ## Capture And Plan
 
+- **Inbox** appears above Today in the sidebar and contains incomplete tasks with Inbox status.
 - **Today** shows tasks scheduled or due today or earlier.
 - **Upcoming** shows future scheduled dates or deadlines. A task with an overdue scheduled date and a future deadline can appear in both views.
 - **Waiting** and **Someday** follow the task's status, including undated tasks.
 - Capture in Today schedules today; Upcoming schedules tomorrow; Next, Waiting and Someday use their respective status. Project/area capture assigns that collection. Capture from search or filters goes to Inbox. The destination shown when capture opens is retained if you navigate before submitting.
 - If a save is delayed, text typed after submission remains in capture when that save finishes. Canceling and reopening capture also starts a new input session, even when the title is identical.
 - Select a task and use **Task → Reschedule Selected Task…** for an exact date. Reschedule moves scheduled and deadline dates together, preserving their signed calendar-day separation. For a deadline-only task, it moves the deadline; an undated task gains a scheduled date. To edit just one date, use its inspector control.
+- A row click selects the task and opens its details while keeping list focus. **Command-E** focuses the title for editing. The title uses a placeholder instead of a separate label, wraps across multiple lines and expands up to six visible lines; edits autosave.
 - **View Options → Sort** offers title, priority, scheduled date, deadline, newest created/updated, and exact file path. Missing dates/priorities sort last; ties use exact paths.
 - Choose **View Options → Sort → Custom** to drag tasks into your own order. Order is remembered separately for each view and vault on this Mac; switching to another sort and back retains it. New tasks appear after ordered tasks. Grouped views support reordering within each group, and temporarily hidden tasks retain their places. Custom sorting is a local display override, including for saved filters; it does not rewrite Markdown or change CLI sorting. While Custom is active, row drags reorder the list; use the inspector to assign projects/areas, or switch to another sort to drag onto sidebar destinations.
 
@@ -39,7 +41,7 @@ Right-click a project or area to delete it. Remove task, project and saved-filte
 
 Choose **New Filter** or press **Command-Shift-F**. Combine a view, project/area, statuses, required tags, priorities, text and scheduled/deadline ranges. All dimensions must match; statuses/priorities are alternatives, and every selected tag is required. Enable **Include completed and canceled tasks** when reviewing finished work.
 
-Results update as criteria change. Name the query and choose **Save Filter**. Select a saved filter in the sidebar and use **Edit Filter → Update Filter** to change it. A different, unused name saves a copy. Changing a saved filter's sort opens its working editor so the definition is updated intentionally.
+Results update as criteria change. Name the query and choose **Save Filter**. Select a saved filter in the sidebar and use **Edit Filter → Update Filter** to change it. A different, unused name saves a copy. Choosing an automatic sort for a saved filter opens its working editor so the definition is updated intentionally. **Custom** is a local display override and keeps the saved filter open without rewriting its definition.
 
 Working criteria are temporary until explicitly saved. Named definitions live in `.localtodo/filters.md` and are shared with the CLI. If another client changes that file, local criteria remain available: **Use File Version** loads the saved definition; **Keep Working Filter** reloads other definitions and permits an explicit subsequent save. Malformed definitions and missing references are surfaced rather than repaired.
 
@@ -59,13 +61,13 @@ Working criteria are temporary until explicitly saved. Named definitions live in
 | Reschedule for today / tomorrow | Command-Shift-T / Command-Shift-D |
 | Undo / redo | Command-Z / Command-Shift-Z |
 
-The sidebar, lists, pickers, checkbox controls, text fields and date popovers use native keyboard-accessible controls. Live focus traversal and VoiceOver behavior have not yet been manually verified.
+The sidebar, lists, pickers, checkbox controls, text fields and date popovers use native keyboard-accessible controls. Hosted keyboard tests cover Backspace editing in the inspector and deletion from the focused list. Complete live focus traversal and VoiceOver behavior remain manual acceptance work.
 
 ## Saving And Conflicts
 
 Task and project drafts autosave, survive navigation, and are flushed before quitting. Invalid input, missing files, write failures and overlapping external changes retain drafts for correction or recovery. Non-overlapping edits rebase onto the file. Completion, checklist reset and rescheduling group their related changes for undo/redo. External file changes invalidate stale history.
 
-The app never restores project/area file moves. iCloud validation, migration and a real-use pilot are outside this milestone's evidence.
+Project/area path moves are currently disabled in both clients; editing a title does not move its file. See the [roadmap](ROADMAP.md) for remaining iCloud, recovery and real-use validation.
 
 ## CLI Equivalents
 

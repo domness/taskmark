@@ -205,11 +205,15 @@ Optional notes about these views.
 - Writes coordinate the exact metadata file, reject symlink components and coordinator remaps, compare the whole-file revision, then exclusively create or atomically replace it. Stale revisions fail rather than merging or overwriting other clients' saved views. A malformed file is surfaced and never silently repaired. Missing project/area references are reported in vault diagnostics and by saved-filter execution.
 - Both app and CLI use the shared definition and query implementation. CLI commands: `filter list`, `filter save NAME [query options] [--replace]`, `filter run NAME`, and `filter delete NAME`; mutation commands support `--dry-run`.
 
-## Mutation Guarantees
+## Device-Local Presentation And Optional Appearance
+
+The macOS app stores display preferences and manual ordering in UserDefaults, outside the vault schema. Sidebar project/area order and Custom task order are scoped to the vault URL; Custom task order is also scoped to its view. They use exact paths, do not move files, and are not canonical task fields or CLI sort modes. A saved filter's canonical `sort` remains one of the shared query sorts even when the app displays it in Custom order. See [personalization](PERSONALIZATION.md).
 
 ### Optional Native Appearance
 
 The macOS app optionally reads `.config/style.css`, a UTF-8 file up to 64 KiB. It is user-authored appearance configuration, not a manifest or entity. `.config/` remains available to typed Markdown files; no existing entity paths become reserved. Symlink components below the vault root are rejected. Missing or invalid styles use built-in appearance; diagnostics never cause stylesheet rewrites. The documented selectors, tokens, precedence and reload behavior are in [PERSONALIZATION.md](PERSONALIZATION.md). Styles do not change task semantics or Markdown mutations.
+
+## Mutation Guarantees
 
 ### Task Copies And Reversible Deletion
 

@@ -28,16 +28,23 @@ Owns command definitions, argument validation, human output, JSON output, and pr
 
 ### LocalTodoApp
 
-Owns SwiftUI composition, macOS document selection, security-scoped access, keyboard commands, and presentation state. The planned desktop shell is a navigation sidebar, task list, and collapsible inspector.
+Owns SwiftUI composition, macOS vault selection, security-scoped access, keyboard commands, and presentation state. The desktop shell has a navigation sidebar, task list, collapsible task/project inspector, command palette and native Settings scene. `WorkspaceModel` owns task/project drafts, autosave, conflict handling, native history and vault-session state.
 
 ## Data Flow
 
 1. The user selects a vault containing `.localtodo/config.yml`.
 2. The Markdown target discovers typed files and reports parse failures without dropping them.
-3. Domain values drive Today, Inbox, Next, project, area, tag, and priority views.
+3. Domain queries drive Inbox, Today, Next, Upcoming, Waiting, Someday, All Tasks, collection/tag/priority views, search and saved filters. The app may apply device-local Custom ordering after shared query evaluation.
 4. User actions produce explicit mutations.
 5. The Markdown target applies mutations through coordinated atomic replacement.
-6. Filesystem changes invalidate and rebuild only affected derived state.
+6. An approximately two-second app refresh loop obtains a full vault snapshot, reconciles drafts and reloads saved filters, stylesheet and configuration. Successful app mutations merge their result immediately and refresh. Incremental filesystem indexing is not implemented.
+
+## Persistence And Presentation
+
+- Entity Markdown, `.localtodo/config.yml` and optional `.localtodo/filters.md` are canonical vault data. The optional `.config/style.css` is user-authored appearance configuration; the app only reads it.
+- UserDefaults holds device-local settings, list display preferences, independent sidebar ordering and Custom task ordering. Manual order uses exact paths, scoped per vault URL and route; it does not change Markdown, CLI sorting or saved-filter definitions.
+- Custom task ordering uses native List moves within the current group. Transferable task drags assign sidebar collections under automatic sorts; they are omitted in Custom mode to avoid competing gestures.
+- The app's stylesheet adapter maps a bounded CSS-token syntax to native colors and spacing. It does not embed a browser or replace native control semantics. See [themes](THEMES.md) and [personalization](PERSONALIZATION.md).
 
 ## Boundary Rules
 
@@ -49,7 +56,9 @@ Owns SwiftUI composition, macOS document selection, security-scoped access, keyb
 
 ## Concurrency
 
-Use Swift 6 strict concurrency. A vault-scoped actor will serialize indexing and mutations. Parsing may run concurrently on immutable file snapshots, but writes to related paths and references must commit as one coordinated operation or fail without partial changes.
+Use Swift 6 strict concurrency. The vault-scoped `VaultStore` actor serializes its scans and filesystem operations. The main-actor workspace owns observable UI state and drafts, reserves mutation paths, and checks vault sessions/model epochs before publishing asynchronous results. Draft generations preserve edits made while a save is in flight. Actor isolation does not serialize separate app/CLI processes or external editors; file coordination and optimistic revisions provide the filesystem boundary.
+
+Multi-file reference changes must satisfy the all-or-nothing contract. No enabled operation is represented as a general multi-file transaction; collection path moves remain disabled until that guarantee can be met.
 
 ## Storage Safety
 
@@ -59,3 +68,4 @@ Use Swift 6 strict concurrency. A vault-scoped actor will serialize indexing and
 - Coordinate reads and writes with platform file coordination where iCloud may be involved.
 - Report conflicts and invalid references through the app, CLI JSON, and non-zero exit codes.
 - Task moves coordinate both exact URLs and use an exclusive atomic rename. Project/area moves are currently disabled: sequential replacement with best-effort rollback does not meet the multi-file mutation contract. Re-enabling them requires an explicit recovery and visibility design for external Markdown readers and writers.
+- Project/area deletion rejects known task, project and saved-filter references rather than cascading. This scan is not a transaction against concurrent external reference changes. App deletion captures exact bytes for session-local Undo; restoration refuses occupied paths. See [the file contract](FILE_FORMAT.md#task-copies-and-reversible-deletion).

@@ -114,7 +114,7 @@ make check
 
 ## Design And Accessibility
 
-- Follow the seed direction in `DESIGN.md`; replace placeholders only after implementation establishes real tokens.
+- Follow the implemented native patterns and design direction in `DESIGN.md`; keep token documentation aligned with the source.
 - Preserve keyboard access, visible focus, reduced motion, scalable text, and non-color state cues.
 - Keep core interactions familiar. Do not use decorative motion, nested cards, glass effects, gradient text, or colored side stripes.
 
