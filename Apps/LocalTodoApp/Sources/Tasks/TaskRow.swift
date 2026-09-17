@@ -51,10 +51,7 @@ struct TaskRow: View {
             .accessibilityLabel("Select \(task.title)")
         }
         .fixedSize(horizontal: false, vertical: true)
-        .draggable(TaskDragItem(path: task.path.value, vaultSession: model.vaultSession)) {
-            Label(task.title, systemImage: "checklist")
-                .padding(8)
-        }
+        .modifier(TaskAssignmentDrag(model: model, task: task))
         .contextMenu {
             Button("Edit Task") { model.editTask(at: task.path) }
             Button("Reschedule…") {

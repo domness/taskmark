@@ -12,8 +12,10 @@ extension WorkspaceModel {
     }
 
     func setTaskSort(_ sort: TaskSort) {
+        disableCustomTaskOrder()
         if case let .savedFilter(name) = route {
             beginFilterEditing(name: name)
+            disableCustomTaskOrder()
         }
         if route == .filters {
             filterState.editor.sort = sort

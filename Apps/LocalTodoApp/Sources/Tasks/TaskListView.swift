@@ -74,9 +74,7 @@ struct TaskListView: View {
 
     private var displayOptionsMenu: some View {
         Menu {
-            Picker("Sort", selection: Binding(get: { model.currentTaskSort }, set: { model.setTaskSort($0) })) {
-                ForEach(TaskSort.allCases, id: \.self) { Text($0.title).tag($0) }
-            }
+            TaskSortPicker(model: model)
             Section("Show in Rows") {
                 Toggle("Project", isOn: metadataBinding(.project))
                 Toggle("Area", isOn: metadataBinding(.area))
@@ -144,14 +142,17 @@ struct TaskListView: View {
     }
 
     private func taskRows(_ tasks: [TodoTask]) -> some View {
-        ForEach(tasks, id: \.path) { task in
+        let context = model.taskReorderContext(for: tasks)
+        return ForEach(tasks, id: \.path) { task in
             TaskRow(model: model, task: task, displayOptions: model.currentTaskListDisplayOptions) {
                 model.selectTask(task.path)
                 model.isInspectorPresented = true
                 isListFocused = true
             }
             .tag(task.path)
+            .moveDisabled(!model.isCustomTaskOrder)
         }
+        .onMove { offsets, destination in model.moveTasks(from: offsets, to: destination, context: context) }
     }
 
     private var taskSections: [TaskListSection] {

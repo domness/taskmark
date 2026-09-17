@@ -15,7 +15,8 @@ extension WorkspaceModel {
             return []
         }
         guard let query = currentTaskQuery else { return [] }
-        return query.results(from: snapshot.tasks.values.map(\.value), today: today)
+        let tasks = query.results(from: snapshot.tasks.values.map(\.value), today: today)
+        return taskCustomOrders[route.listPreferencesKey]?.applying(to: tasks) ?? tasks
     }
 
     var allTags: [String] {

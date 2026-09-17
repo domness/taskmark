@@ -4,6 +4,7 @@ import LocalTodoMarkdown
 extension WorkspaceModel {
     func resetPersonalization() {
         loadSidebarOrder()
+        loadTaskCustomOrders()
         configurationSettings = nil
         configurationSettingsError = nil
         vaultAppearance = VaultAppearance()

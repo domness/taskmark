@@ -11,6 +11,7 @@ Open or create a **dedicated task vault** in the macOS app. Tasks stay in indivi
 - If a save is delayed, text typed after submission remains in capture when that save finishes. Canceling and reopening capture also starts a new input session, even when the title is identical.
 - Select a task and use **Task → Reschedule Selected Task…** for an exact date. Reschedule moves scheduled and deadline dates together, preserving their signed calendar-day separation. For a deadline-only task, it moves the deadline; an undated task gains a scheduled date. To edit just one date, use its inspector control.
 - **View Options → Sort** offers title, priority, scheduled date, deadline, newest created/updated, and exact file path. Missing dates/priorities sort last; ties use exact paths.
+- Choose **View Options → Sort → Custom** to drag tasks into your own order. Order is remembered separately for each view and vault on this Mac; switching to another sort and back retains it. New tasks appear after ordered tasks. Grouped views support reordering within each group, and temporarily hidden tasks retain their places. Custom sorting is a local display override, including for saved filters; it does not rewrite Markdown or change CLI sorting. While Custom is active, row drags reorder the list; use the inspector to assign projects/areas, or switch to another sort to drag onto sidebar destinations.
 
 ## Repeat And Checklists
 

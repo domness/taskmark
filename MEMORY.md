@@ -209,6 +209,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: List selection must support keyboard deletion without stealing text-editing Backspace, metadata should be directly accessible, and tag names containing commas must survive unrelated edits. The fixed two-section Settings layout avoids the displaced sidebar toolbar and redundant top inset shown in the screenshot. Native table-layout coverage verifies row growth/shrinkage as dates change.
 - What was rejected and why: Global bare-Backspace shortcuts were rejected because they interfere with text editors. Keeping comma-separated drafts behind token visuals was rejected because it corrupts valid tag names. Cascading collection deletion was rejected in favor of the existing reference-protection rule: task, project and saved-filter references must be removed first. Successful project/area deletion shares exact-byte, exclusive-restoration Undo/Redo with tasks; full-window visual acceptance remains manual.
 
+### 2026-09-17: Add Per-View Custom Task Ordering
+
+- What was decided: Add an app-only Custom sort overlay with native List moves. Persist ordered exact task paths and the enabled flag per vault URL and route in device-local preferences. Preserve hidden positions, append new tasks, retain order across automatic-sort switches, and limit grouped moves to their current group. Saved filters retain their canonical query sort underneath the local override.
+- Why: Manual ordering is presentation, like existing sidebar ordering, and should not rewrite task Markdown or introduce a new canonical sort schema. Captured vault session, route, visible order and grouping reject stale drags.
+- What was rejected and why: A new shared `TaskSort.custom` case was rejected because CLI/canonical queries have no manual-order data. Custom transferable dragging on reorderable rows was rejected because it competes with native insertion gestures, as established by the sidebar fix; project/area assignment remains available in the inspector or by dragging under automatic sorts.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

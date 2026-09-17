@@ -40,6 +40,7 @@ final class WorkspaceModel {
     var taskListDisplayOptionsByRoute: [String: TaskListDisplayOptions]
     let filterState = FilterWorkspaceState()
     var sidebarOrders = [String: [String]]()
+    var taskCustomOrders = [String: TaskCustomOrder]()
     var vaultAppearance = VaultAppearance()
     var stylesheetDiagnostic: String?
     var usesVaultStylesheet: Bool {
