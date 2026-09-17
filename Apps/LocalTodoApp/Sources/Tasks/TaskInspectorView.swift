@@ -9,7 +9,9 @@ struct TaskInspectorView: View {
 
     var body: some View {
         Form {
-            TextField("Title", text: $draft.title)
+            TextField("Title", text: $draft.title, axis: .vertical)
+                .labelsHidden()
+                .lineLimit(1 ... 6)
                 .font(.headline)
                 .focused($isTitleFocused)
             Picker("Status", selection: status) {
