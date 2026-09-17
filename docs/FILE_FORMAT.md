@@ -13,6 +13,8 @@ timezone: Europe/London
 
 `timezone` is optional. When omitted, Today uses the current system timezone. The app may store disposable indexes under `.localtodo/cache/`; cache content is never canonical and must be safe to delete.
 
+macOS General Settings edits this canonical timezone through a coordinated, whole-file revision-checked atomic replacement. Unknown manifest YAML values survive; formatting and comments may normalize. Selecting System removes the timezone key. Invalid schemas, malformed YAML, symlink components and stale revisions fail without rewriting the file. App-only week-start/date/time-format/theme/startup preferences live in device-local UserDefaults and do not alter the entity schema or CLI formatting.
+
 Creating a vault requires an empty directory. Opening an existing vault requires a valid manifest and never reinitializes the folder.
 
 Typed Markdown files may live anywhere below the vault except `.localtodo/`. Folder names do not define workflow semantics.

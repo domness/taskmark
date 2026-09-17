@@ -92,6 +92,8 @@ public actor VaultStore {
             return try operation()
         } catch let error as VaultStoreError {
             throw error
+        } catch let error as VaultConfigurationError {
+            throw error
         } catch {
             throw VaultStoreError.inputOutput(error.localizedDescription)
         }
