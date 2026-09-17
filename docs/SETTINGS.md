@@ -2,6 +2,8 @@
 
 Open **Local Todo → Settings…** or press **Command-comma**. The native Settings window has General and Theme sections. Changes apply immediately; there is no Apply button. Settings uses the same appearance as the main window.
 
+The window opens at 760 × 620 logical points and can be resized, with a 700 × 560 minimum. Both sections align short content to the top of the right-hand panel and scroll when content exceeds the available height.
+
 ## General
 
 | Setting | Choices / default | Scope and effect |

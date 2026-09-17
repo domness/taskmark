@@ -52,5 +52,7 @@ struct LocalTodoApp: App {
             SettingsView(model: model)
                 .modifier(AppAppearanceModifier(model: model))
         }
+        .windowResizability(.contentMinSize)
+        .defaultSize(width: 760, height: 620)
     }
 }

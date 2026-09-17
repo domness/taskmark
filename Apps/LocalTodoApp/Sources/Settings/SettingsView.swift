@@ -29,7 +29,7 @@ struct SettingsView: View {
             .themeSurface()
             .navigationTitle((section ?? .general).title)
         }
-        .frame(minWidth: 700, idealWidth: 760, minHeight: 560, idealHeight: 620)
+        .frame(minWidth: 700, maxWidth: .infinity, minHeight: 560, maxHeight: .infinity, alignment: .topLeading)
         .task { await model.refreshConfigurationSettings() }
     }
 }

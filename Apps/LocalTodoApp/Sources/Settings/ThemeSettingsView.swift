@@ -53,7 +53,9 @@ struct ThemeSettingsView: View {
                     }
                 }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding(24)
         }
+        .defaultScrollAnchor(.top, for: .alignment)
     }
 }

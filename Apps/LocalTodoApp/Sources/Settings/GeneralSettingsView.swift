@@ -50,5 +50,6 @@ struct GeneralSettingsView: View {
         }
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)
+        .defaultScrollAnchor(.top, for: .alignment)
     }
 }
