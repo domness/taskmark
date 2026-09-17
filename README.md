@@ -70,12 +70,14 @@ Entity identity is the exact, case-sensitive, vault-relative path. Use the CLI f
 
 ## Development
 
+Main-branch CI runs the full quality gate on the personal macOS runner. Published GitHub releases produce a Developer ID–signed, notarized universal app in DMG and ZIP form, using Dominic Wroblewski's Apple team. See [Mac Mini CI and release setup](docs/CI_RELEASES.md) for runner registration, signing/notarization prerequisites and installation instructions.
+
 ```bash
 make format
 make check
 ```
 
-`make check` runs strict formatting and lint checks, Swift package and macOS app tests, and an unsigned debug app build.
+`make check` runs strict formatting and lint checks, release-script input/syntax checks, Swift package and macOS app tests, and an unsigned debug app build.
 
 ## Repository Map
 

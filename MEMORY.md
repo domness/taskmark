@@ -197,6 +197,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Explicit dark mode and three additional themes were requested, with documented customization. Paired surfaces keep native text legible across appearance changes. Stylesheet enablement now persists across launches and vault switches, intentionally replacing the earlier session-only toggle behavior.
 - What was rejected and why: Treating dark mode as a separate palette was rejected because every theme should support both modes. Arbitrary browser CSS and a custom text/control renderer remain rejected; native semantic states and bounded tokens keep the implementation understandable. `docs/SETTINGS.md` and `docs/THEMES.md` document behavior and extension points; full-window visual acceptance is not claimed because captures were unavailable.
 
+### 2026-09-17: Use The Mac Mini For Main Validation And Signed Releases
+
+- What was decided: Match Lumelo's `[self-hosted, macOS]` labels for main/manual quality runs and published-release packaging; keep PR checks on hosted runners. Both validation paths call the full `make check`. Releases archive a universal macOS 15+ app, explicitly sign with `Developer ID Application: Dominic Wroblewski (4K4TD4WZ4C)`, notarize/staple the app and DMG, then upload a DMG, app ZIP and checksums to the existing GitHub release.
+- Why: The user requested personal Mac Mini automation, selected signed/notarized distribution, and explicitly required Dominic's Apple account. Lumelo's project and local Apple Distribution identities confirmed team `4K4TD4WZ4C`. Keychain-based signing/notary credentials reuse the runner account without exposing private keys in the repo. Isolated temporary build paths avoid clearing another project's files.
+- What was rejected and why: Automatic account selection, Apple Development/App Store distribution signatures and unsigned release fallbacks were rejected because they do not guarantee the requested Developer ID download identity. Globally deleting keychains/caches or killing Xcode processes was rejected because this Mac also builds other apps. Runner registration and end-to-end signed publication remain setup-dependent: the connected GitHub account lacks admin access and the implementation machine has no Developer ID Application identity. See `docs/CI_RELEASES.md`.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

@@ -4,6 +4,14 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: quality-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   commits:
@@ -13,24 +21,51 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          persist-credentials: false
       - name: Validate Conventional Commits
-        run: scripts/validate-commit-range "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}"
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: scripts/validate-commit-range "$BASE_SHA" "$HEAD_SHA"
 
   swift:
-    runs-on: macos-15
+    # Match Lumelo's Mac Mini labels for main/manual runs. PRs retain hosted runners.
+    runs-on: ${{ github.event_name == 'pull_request' && fromJSON('["macos-15"]') || fromJSON('["self-hosted", "macOS"]') }}
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: bash
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Add Homebrew tools to PATH
+        run: |
+          echo /opt/homebrew/bin >> "$GITHUB_PATH"
+          echo /usr/local/bin >> "$GITHUB_PATH"
       - name: Install quality tools
+        if: runner.environment == 'github-hosted'
         run: brew install swiftformat swiftlint xcodegen
-      - name: Resolve packages
-        run: swift package resolve
-      - name: Check formatting
-        run: swiftformat Apps Sources Tests Package.swift --lint
-      - name: Lint
-        run: swiftlint lint --strict
-      - name: Test packages
-        run: swift test
-      - name: Generate app project
-        run: xcodegen generate
-      - name: Build app
-        run: xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoApp -configuration Debug build CODE_SIGNING_ALLOWED=NO
+      - name: Check Mac toolchain
+        run: bash scripts/check-macos-runner
+      - name: Run full quality gate
+        run: |
+          output="$RUNNER_TEMP/local-todo-quality-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mkdir -p "$output"
+          make check \
+            XCODEBUILD_ARGS="-destination 'platform=macOS' -derivedDataPath '$output/DerivedData'" \
+            XCODE_TEST_ARGS="-resultBundlePath '$output/LocalTodoApp.xcresult'" \
+            2>&1 | tee "$output/check.log"
+      - name: Upload validation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-todo-quality-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/local-todo-quality-${{ github.run_id }}-${{ github.run_attempt }}/check.log
+            ${{ runner.temp }}/local-todo-quality-${{ github.run_id }}-${{ github.run_attempt }}/LocalTodoApp.xcresult
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Clean this run's build products
+        if: always()
+        run: rm -rf -- "$RUNNER_TEMP/local-todo-quality-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"

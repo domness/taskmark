@@ -1,0 +1,89 @@
+name: macOS Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing published release tag to package (e.g. v1.0.0)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: macos-release-${{ github.event.release.tag_name || inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  package:
+    name: Sign, notarize and publish macOS app
+    runs-on: [self-hosted, macOS]
+    timeout-minutes: 90
+    permissions:
+      contents: write
+    defaults:
+      run:
+        shell: bash
+    env:
+      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      # Dominic's personal team, also used by Lumelo. Never use automatic identity selection.
+      APPLE_DEVELOPER_TEAM_ID: 4K4TD4WZ4C
+      MACOS_SIGNING_IDENTITY: 'Developer ID Application: Dominic Wroblewski (4K4TD4WZ4C)'
+      NOTARYTOOL_PROFILE: ${{ vars.NOTARYTOOL_PROFILE || 'local-todo-dominic' }}
+    steps:
+      - name: Check out the release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || inputs.tag }}
+          persist-credentials: false
+      - name: Add Homebrew tools to PATH
+        run: |
+          echo /opt/homebrew/bin >> "$GITHUB_PATH"
+          echo /usr/local/bin >> "$GITHUB_PATH"
+      - name: Validate release and signing configuration
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash scripts/check-macos-runner release
+          bash scripts/package-macos-release --validate-inputs "$RELEASE_TAG" "$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT"
+          draft=$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)
+          if [[ "$draft" != false ]]; then
+            echo "Publish the release before packaging it." >&2
+            exit 1
+          fi
+      - name: Validate release sources
+        run: |
+          output="$RUNNER_TEMP/local-todo-release-check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          mkdir -p "$output" dist
+          make check \
+            XCODEBUILD_ARGS="-destination 'platform=macOS' -derivedDataPath '$output/DerivedData'" \
+            XCODE_TEST_ARGS="-resultBundlePath '$output/LocalTodoApp.xcresult'" \
+            2>&1 | tee dist/release-check.log
+      - name: Build signed and notarized universal app
+        run: bash scripts/package-macos-release "$RELEASE_TAG" "$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT" dist
+      - name: Attach installers to the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "$RELEASE_TAG" \
+            "dist/LocalTodo-$RELEASE_TAG-universal.zip" \
+            "dist/LocalTodo-$RELEASE_TAG-universal.dmg" \
+            "dist/LocalTodo-$RELEASE_TAG-SHA256SUMS.txt" \
+            --repo "$GITHUB_REPOSITORY" --clobber
+      - name: Upload packaging logs and test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: local-todo-release-logs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            dist/*.log
+            dist/notary-*.json
+            ${{ runner.temp }}/local-todo-release-check-${{ github.run_id }}-${{ github.run_attempt }}/LocalTodoApp.xcresult
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Clean this run's test build products
+        if: always()
+        run: rm -rf -- "$RUNNER_TEMP/local-todo-release-check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"

@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-17: Universal Archive Architecture Verification
+
+- What did not work: Xcode 27's `lipo -verify_arch arm64 x86_64` rejected the single quoted app-binary input with “requires exactly one input file,” whether the input preceded or followed the command.
+- What worked instead: `xcrun lipo -archs` successfully reported `x86_64 arm64`; validate each complete architecture token in that output. The Release archive itself built successfully, with the expected marketing/build versions.
+- Note for next time: Verify the architecture-inspection command against a real universal archive rather than assuming the documented flag form works with the selected toolchain.
+
 ## 2026-09-17: Native Settings Screenshot Evidence
 
 - What did not work: NSHostingView bitmap capture omitted AppKit vibrancy/titlebar layers (black sidebar selection and missing header detail). Filtering a top-level Swift Testing function by its bare name selected zero tests. Target-level testing ran the capture, but full-window `screencapture` returned “could not create image from window” in this environment.

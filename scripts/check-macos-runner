@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+[[ "$(uname -s)" == Darwin ]] || { echo "A macOS runner is required." >&2; exit 1; }
+
+for tool in make python3 swift xcodebuild xcodegen swiftformat swiftlint; do
+  command -v "$tool" >/dev/null || {
+    echo "Missing $tool. Install the prerequisites in docs/CI_RELEASES.md on the runner." >&2
+    exit 1
+  }
+done
+
+xcodebuild -version
+xcode-select -p
+swift --version
+xcodegen --version
+swiftformat --version
+swiftlint version
+
+if [[ "${1:-}" == release ]]; then
+  for tool in gh codesign security hdiutil ditto; do
+    command -v "$tool" >/dev/null || { echo "Missing release tool: $tool" >&2; exit 1; }
+  done
+  : "${APPLE_DEVELOPER_TEAM_ID:?Set APPLE_DEVELOPER_TEAM_ID to the Dominic Wroblewski team, 4K4TD4WZ4C}"
+  : "${MACOS_SIGNING_IDENTITY:?Set MACOS_SIGNING_IDENTITY to the Dominic Wroblewski Developer ID Application certificate}"
+  : "${NOTARYTOOL_PROFILE:?Set NOTARYTOOL_PROFILE to the notarytool keychain profile on the runner}"
+  expected_identity='Developer ID Application: Dominic Wroblewski (4K4TD4WZ4C)'
+  [[ "$APPLE_DEVELOPER_TEAM_ID" == 4K4TD4WZ4C && "$MACOS_SIGNING_IDENTITY" == "$expected_identity" ]] || {
+    echo "Release signing must use $expected_identity and team 4K4TD4WZ4C." >&2
+    exit 1
+  }
+  identities=$(security find-identity -v -p codesigning)
+  [[ "$identities" == *"\"$MACOS_SIGNING_IDENTITY\""* ]] || {
+    echo "The runner cannot access the requested signing identity and private key. Check its login keychain." >&2
+    exit 1
+  }
+  xcrun --find notarytool
+  xcrun --find stapler
+fi

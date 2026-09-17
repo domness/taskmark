@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+# Builds only Developer ID–signed, notarized distributions. No unsigned fallback.
+set -euo pipefail
+
+validate_only=false
+if [[ "${1:-}" == --validate-inputs ]]; then
+  validate_only=true
+  shift
+fi
+if [[ $# -lt 2 || $# -gt 3 ]]; then
+  echo "Usage: bash scripts/package-macos-release [--validate-inputs] TAG BUILD_NUMBER [OUTPUT_DIRECTORY]" >&2
+  exit 2
+fi
+
+tag=$1
+build=$2
+tag_pattern='^v?([0-9]+)\.([0-9]+)\.([0-9]+)(-[0-9A-Za-z][0-9A-Za-z.-]*)?(\+[0-9A-Za-z][0-9A-Za-z.-]*)?$'
+if [[ ! "$tag" =~ $tag_pattern ]]; then
+  echo "Release tag must be vMAJOR.MINOR.PATCH (optional prerelease/build suffix), without paths or whitespace." >&2
+  exit 2
+fi
+version="${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
+if [[ ! "$build" =~ ^[1-9][0-9]{0,3}(\.[0-9]{1,2}){0,2}$ ]]; then
+  echo "Build number must have 1–4 major digits and up to two 1–2 digit components (e.g. 42.1)." >&2
+  exit 2
+fi
+if [[ "$validate_only" == true ]]; then
+  printf '%s\n' "$version"
+  exit 0
+fi
+
+root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+bash "$root/scripts/check-macos-runner" release
+if [[ ! "$APPLE_DEVELOPER_TEAM_ID" =~ ^[A-Z0-9]{10}$ ]]; then
+  echo "APPLE_DEVELOPER_TEAM_ID must be the ten-character Apple team identifier." >&2
+  exit 2
+fi
+if [[ "$MACOS_SIGNING_IDENTITY" != *"($APPLE_DEVELOPER_TEAM_ID)" ]]; then
+  echo "The signing certificate must belong to APPLE_DEVELOPER_TEAM_ID." >&2
+  exit 2
+fi
+
+mkdir -p "${3:-$root/dist}"
+output=$(cd "${3:-$root/dist}" && pwd)
+work=$(mktemp -d "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/local-todo-release.XXXXXX")
+trap 'rm -rf -- "$work"' EXIT
+archive="$work/LocalTodo.xcarchive"
+app="$archive/Products/Applications/Local Todo.app"
+zip="$output/LocalTodo-$tag-universal.zip"
+dmg="$output/LocalTodo-$tag-universal.dmg"
+
+make -C "$root" generate
+xcodebuild archive \
+  -project "$root/LocalTodo.xcodeproj" -scheme LocalTodoApp -configuration Release \
+  -destination 'generic/platform=macOS' -archivePath "$archive" \
+  -derivedDataPath "$work/DerivedData" -clonedSourcePackagesDirPath "$work/SourcePackages" \
+  "MARKETING_VERSION=$version" "CURRENT_PROJECT_VERSION=$build" \
+  'ARCHS=arm64 x86_64' ONLY_ACTIVE_ARCH=NO \
+  CODE_SIGN_STYLE=Manual "CODE_SIGN_IDENTITY=$MACOS_SIGNING_IDENTITY" \
+  "DEVELOPMENT_TEAM=$APPLE_DEVELOPER_TEAM_ID" ENABLE_HARDENED_RUNTIME=YES \
+  CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO 'OTHER_CODE_SIGN_FLAGS=--timestamp' \
+  2>&1 | tee "$output/archive.log"
+
+[[ -d "$app" ]] || { echo "Archive contains no Local Todo.app." >&2; exit 1; }
+architectures=" $(xcrun lipo -archs "$app/Contents/MacOS/Local Todo") "
+[[ "$architectures" == *" arm64 "* && "$architectures" == *" x86_64 "* ]] || {
+  echo "Release app must contain arm64 and x86_64 slices; found:$architectures" >&2
+  exit 1
+}
+codesign --verify --deep --strict --verbose=2 "$app"
+# Reject development/ad-hoc signatures even if the archive command completed.
+requirement="anchor apple generic and certificate leaf[field.1.2.840.113635.100.6.1.13] exists and certificate leaf[subject.OU] = \"$APPLE_DEVELOPER_TEAM_ID\""
+codesign --verify --strict -R="$requirement" "$app"
+
+notarize() {
+  local file=$1 report=$2
+  xcrun notarytool submit "$file" --keychain-profile "$NOTARYTOOL_PROFILE" \
+    --wait --timeout 30m --output-format json > "$report"
+  python3 - "$report" <<'PY'
+import json
+import sys
+with open(sys.argv[1], encoding="utf-8") as source:
+    result = json.load(source)
+if result.get("status") != "Accepted":
+    raise SystemExit(f"Notarization failed: {result}. Retrieve the submission log with xcrun notarytool log.")
+PY
+}
+
+# Notarize/staple the app first so the ZIP and the copy inside the DMG both work offline.
+ditto -c -k --sequesterRsrc --keepParent "$app" "$work/notarization.zip"
+notarize "$work/notarization.zip" "$output/notary-app.json"
+xcrun stapler staple "$app"
+xcrun stapler validate "$app"
+spctl --assess --type execute --verbose=2 "$app"
+ditto -c -k --sequesterRsrc --keepParent "$app" "$zip"
+
+mkdir -p "$work/disk-image"
+ditto "$app" "$work/disk-image/Local Todo.app"
+ln -s /Applications "$work/disk-image/Applications"
+hdiutil create -volname 'Local Todo' -srcfolder "$work/disk-image" -ov -format UDZO "$dmg"
+codesign --force --sign "$MACOS_SIGNING_IDENTITY" --timestamp "$dmg"
+notarize "$dmg" "$output/notary-dmg.json"
+xcrun stapler staple "$dmg"
+xcrun stapler validate "$dmg"
+spctl --assess --type open --context context:primary-signature --verbose=2 "$dmg"
+
+(
+  cd "$output"
+  shasum -a 256 "LocalTodo-$tag-universal.zip" "LocalTodo-$tag-universal.dmg" > "LocalTodo-$tag-SHA256SUMS.txt"
+)
+printf 'Packaged %s (%s):\n%s\n%s\n' "$version" "$build" "$zip" "$dmg"

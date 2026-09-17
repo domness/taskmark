@@ -1,4 +1,7 @@
-.PHONY: bootstrap generate format lint test build check run-cli
+.PHONY: bootstrap generate format lint test test-release-scripts build check run-cli
+
+XCODEBUILD_ARGS ?= -destination 'platform=macOS'
+XCODE_TEST_ARGS ?=
 
 bootstrap:
 	swift package resolve
@@ -17,12 +20,17 @@ lint:
 
 test: generate
 	swift test
-	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoApp -configuration Debug test CODE_SIGNING_ALLOWED=NO
+	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoApp -configuration Debug test CODE_SIGNING_ALLOWED=NO $(XCODEBUILD_ARGS) $(XCODE_TEST_ARGS)
 
 build: generate
-	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoApp -configuration Debug build CODE_SIGNING_ALLOWED=NO
+	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoApp -configuration Debug build CODE_SIGNING_ALLOWED=NO $(XCODEBUILD_ARGS)
 
-check: lint test build
+test-release-scripts:
+	python3 scripts/test-release-scripts.py
+	bash -n scripts/check-macos-runner
+	bash -n scripts/package-macos-release
+
+check: lint test-release-scripts test build
 
 run-cli:
 	swift run localtodo --help
