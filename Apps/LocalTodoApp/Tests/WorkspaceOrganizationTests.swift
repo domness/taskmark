@@ -16,7 +16,7 @@ import Testing
         model.selectTask(taskPath)
         let draft = try #require(model.selectedTaskDraft)
         draft.notes = "Keep these notes"
-        draft.tags = "launch, work"
+        draft.tags = ["launch", "work"]
         draft.scheduled = "2026-08-03"
         await model.updateTask(draft)
 

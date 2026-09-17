@@ -41,6 +41,10 @@ struct ProjectSidebarSection: View {
                 model.editProject()
             }
             CollectionOrderActions(model: model, path: project.path, collection: .project)
+            Divider()
+            Button("Delete Project", role: .destructive) {
+                Task { await model.deleteCollection(at: project.path) }
+            }
         }
     }
 }

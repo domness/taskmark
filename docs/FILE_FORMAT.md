@@ -215,6 +215,8 @@ The macOS app optionally reads `.config/style.css`, a UTF-8 file up to 64 KiB. I
 
 Task duplication uses exclusive publication at a new sibling path, preserves body and unknown metadata, and refreshes creation/update timestamps. Completed/canceled copies reopen in Inbox; other statuses, recurrence and planning metadata remain. App deletion uses revision-checked deletion plus an in-memory exact-byte undo payload. Restoration is exclusive and refuses occupied paths; recovery history is local to the open vault session. These operations do not change the entity schema.
 
+Project and area context-menu deletion uses the same exact-byte Undo/Redo recovery. Deletion is refused while tasks, projects, or saved filters reference the collection; remove those references first. It never cascades into other files. As with the existing collection-reference scan, this does not promise a multi-file transaction against concurrent external writers.
+
 ### Shared Guarantees
 
 - Validate a full mutation before writing any destination.

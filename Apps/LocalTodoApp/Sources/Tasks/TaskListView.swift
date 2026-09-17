@@ -5,6 +5,7 @@ import SwiftUI
 struct TaskListView: View {
     @Bindable var model: WorkspaceModel
     @FocusState private var isSearchFocused: Bool
+    @FocusState private var isListFocused: Bool
 
     var body: some View {
         VStack(spacing: 0) {
@@ -128,14 +129,28 @@ struct TaskListView: View {
                 }
             }
             .listStyle(.inset)
+            .focused($isListFocused)
+            .onKeyPress(characters: CharacterSet(charactersIn: "\u{8}\u{7F}")) { press in
+                guard press.modifiers.isEmpty, let path = model.selectedTaskPath else { return .ignored }
+                Task { await model.deleteTask(at: path) }
+                return .handled
+            }
             .scrollContentBackground(.hidden)
+            .onDeleteCommand {
+                guard let path = model.selectedTaskPath else { return }
+                Task { await model.deleteTask(at: path) }
+            }
         }
     }
 
     private func taskRows(_ tasks: [TodoTask]) -> some View {
         ForEach(tasks, id: \.path) { task in
-            TaskRow(model: model, task: task, displayOptions: model.currentTaskListDisplayOptions)
-                .tag(task.path)
+            TaskRow(model: model, task: task, displayOptions: model.currentTaskListDisplayOptions) {
+                model.selectTask(task.path)
+                model.isInspectorPresented = true
+                isListFocused = true
+            }
+            .tag(task.path)
         }
     }
 
@@ -182,8 +197,10 @@ struct TaskListView: View {
             return titleOrder == .orderedSame ? lhs.id < rhs.id : titleOrder == .orderedAscending
         }
     }
+}
 
-    private func metadataBinding(_ field: TaskListMetadataField) -> Binding<Bool> {
+private extension TaskListView {
+    func metadataBinding(_ field: TaskListMetadataField) -> Binding<Bool> {
         Binding(
             get: {
                 let options = model.currentTaskListDisplayOptions

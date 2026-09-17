@@ -4,7 +4,7 @@ Open **Local Todo → Settings…** or press **Command-comma**. The native Setti
 
 The window opens at 760 × 620 logical points and can be resized, with a 700 × 560 minimum. Both sections align short content to the top of the right-hand panel and scroll when content exceeds the available height.
 
-Settings explicitly uses the native unified window toolbar so the traffic-light controls, title and sidebar toggle share macOS title-bar layout instead of separate title/toolbar rows. Window-button positions remain system-managed.
+Settings uses a fixed 170-point sidebar beneath a compact native titlebar. The two sections remain visible without a sidebar-collapse toolbar row or its extra top inset. Window-button positions remain system-managed.
 
 ## General
 

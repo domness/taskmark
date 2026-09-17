@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-17: Hosted SwiftUI Keyboard Event Tests
+
+- What did not work: Direct `NSWindow.sendEvent` and `NSTableView.keyDown` calls did not traverse SwiftUI’s application-level key handling, even with native selection and first responder confirmed. Adding alternate SwiftUI key handlers did not fix the bypassed dispatch path.
+- What worked instead: Post the synthetic key through `NSApp.postEvent` and await event processing to exercise normal keyboard dispatch. Handle Backspace explicitly with list-scoped `onKeyPress` for the delete control characters; `onDeleteCommand` alone did not delete. The regression also verifies that Backspace in the real inspector title field edits text instead.
+- Note for next time: Verify native selection and first responder, then use the application event queue rather than calling lower-level key handlers directly.
+
 ## 2026-09-17: Universal Archive Architecture Verification
 
 - What did not work: Xcode 27's `lipo -verify_arch arm64 x86_64` rejected the single quoted app-binary input with “requires exactly one input file,” whether the input preceded or followed the command.

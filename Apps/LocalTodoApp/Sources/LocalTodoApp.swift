@@ -53,7 +53,7 @@ struct LocalTodoApp: App {
                 .modifier(AppAppearanceModifier(model: model))
         }
         .windowResizability(.contentMinSize)
-        .windowToolbarStyle(.unified)
+        .windowToolbarStyle(.unifiedCompact)
         .defaultSize(width: 760, height: 620)
     }
 }

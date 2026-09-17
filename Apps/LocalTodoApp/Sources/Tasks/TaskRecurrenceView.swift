@@ -10,7 +10,7 @@ struct TaskRecurrenceView: View {
     }
 
     var body: some View {
-        DisclosureGroup(draft.recurrence == nil ? "Repeat: Never" : "Repeat") {
+        Section {
             Picker("Repeat", selection: binding(\.mode)) {
                 ForEach(RecurrenceEditorValue.Mode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
             }

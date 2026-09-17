@@ -46,7 +46,7 @@ final class TaskDraft {
         didSet { markDirty(.area) }
     }
 
-    var tags: String {
+    var tags: [String] {
         didSet { markDirty(.tags) }
     }
 
@@ -78,7 +78,7 @@ final class TaskDraft {
         deadline = task.deadline?.description ?? ""
         project = task.project?.value ?? ""
         area = task.area?.value ?? ""
-        tags = task.tags.joined(separator: ", ")
+        tags = task.tags
         notes = task.body
         recurrence = task.recurrence
         resetChecklistOnRepeat = task.resetChecklistOnRepeat
@@ -107,9 +107,8 @@ final class TaskDraft {
         if area != (sourceTask.area?.value ?? "") {
             patch.area = try .set(optionalPath(area))
         }
-        let tagValues = tags.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
-        if tagValues != sourceTask.tags {
-            patch.tags = .set(tagValues)
+        if tags != sourceTask.tags {
+            patch.tags = .set(tags)
         }
         if notes != sourceTask.body {
             patch.body = .set(notes)
@@ -153,7 +152,7 @@ final class TaskDraft {
         deadline = task.deadline?.description ?? ""
         project = task.project?.value ?? ""
         area = task.area?.value ?? ""
-        tags = task.tags.joined(separator: ", ")
+        tags = task.tags
         notes = task.body
         recurrence = task.recurrence
         resetChecklistOnRepeat = task.resetChecklistOnRepeat
@@ -208,14 +207,10 @@ final class TaskDraft {
             || deadline != (sourceTask.deadline?.description ?? "")
             || project != (sourceTask.project?.value ?? "")
             || area != (sourceTask.area?.value ?? "")
-            || tags.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) } != sourceTask.tags
+            || tags != sourceTask.tags
             || notes != sourceTask.body
             || recurrence != sourceTask.recurrence
             || resetChecklistOnRepeat != sourceTask.resetChecklistOnRepeat
-    }
-
-    var tagValues: [String] {
-        tags.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
     }
 
     private func optionalDate(_ value: String) throws -> CalendarDate? {

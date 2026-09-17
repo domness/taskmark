@@ -4,9 +4,7 @@ import LocalTodoDomain
 public extension VaultStore {
     /// Captures exact Markdown for clipboard export and reversible deletion.
     func taskContent(at path: VaultPath, expectedRevision: FileRevision) throws -> Data {
-        try validateEntityPath(path)
-        let data = try performIO { try fileSystem.read(at: fileURL(for: path)) }
-        guard FileRevision(data: data) == expectedRevision else { throw VaultStoreError.conflict(path) }
+        let data = try entityContent(at: path, expectedRevision: expectedRevision)
         guard case .task = try EntityDocumentCodec.decode(parseDocument(data, at: path), at: path) else {
             throw VaultStoreError.wrongEntityType(path)
         }
@@ -15,9 +13,24 @@ public extension VaultStore {
 
     /// Exclusive publication never replaces an occupied path, including malformed files.
     func restoreTaskContent(_ data: Data, at path: VaultPath) throws -> VaultRecord<LocalTodoEntity> {
+        guard case .task = try EntityDocumentCodec.decode(parseDocument(data, at: path), at: path) else {
+            throw VaultStoreError.wrongEntityType(path)
+        }
+        return try restoreEntityContent(data, at: path)
+    }
+
+    func entityContent(at path: VaultPath, expectedRevision: FileRevision) throws -> Data {
+        try validateEntityPath(path)
+        let data = try performIO { try fileSystem.read(at: fileURL(for: path)) }
+        guard FileRevision(data: data) == expectedRevision else { throw VaultStoreError.conflict(path) }
+        _ = try EntityDocumentCodec.decode(parseDocument(data, at: path), at: path)
+        return data
+    }
+
+    /// Restores exact bytes for any entity, without replacing an occupied path.
+    func restoreEntityContent(_ data: Data, at path: VaultPath) throws -> VaultRecord<LocalTodoEntity> {
         try validateEntityPath(path)
         let entity = try EntityDocumentCodec.decode(parseDocument(data, at: path), at: path)
-        guard case .task = entity else { throw VaultStoreError.wrongEntityType(path) }
         let url = fileURL(for: path)
         guard !fileSystem.exists(at: url) else { throw VaultStoreError.destinationExists(path) }
         try performIO { try fileSystem.createDirectory(at: url.deletingLastPathComponent()) }

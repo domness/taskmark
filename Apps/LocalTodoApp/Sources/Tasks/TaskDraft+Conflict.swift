@@ -90,7 +90,7 @@ extension TaskDraft {
             area = task.area?.value ?? ""
         }
         if !fields.contains(.tags) {
-            tags = task.tags.joined(separator: ", ")
+            tags = task.tags
         }
         if !fields.contains(.notes) {
             notes = task.body
@@ -116,7 +116,7 @@ extension TaskDraft {
         case .deadline: deadline
         case .project: project
         case .area: area
-        case .tags: tagValues.joined(separator: "\n")
+        case .tags: tags.joined(separator: "\n")
         case .notes: notes
         case .recurrence, .resetChecklistOnRepeat:
             repeatValue(for: field, recurrence: recurrence, reset: resetChecklistOnRepeat)

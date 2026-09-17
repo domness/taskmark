@@ -233,7 +233,7 @@ extension WorkspaceModel {
         }
     }
 
-    private func entityRecord(at path: VaultPath) -> VaultRecord<LocalTodoEntity>? {
+    func entityRecord(at path: VaultPath) -> VaultRecord<LocalTodoEntity>? {
         if let record = snapshot?.tasks[path] {
             return VaultRecord(value: .task(record.value), revision: record.revision)
         }

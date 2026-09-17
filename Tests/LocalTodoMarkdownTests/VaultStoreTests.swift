@@ -151,7 +151,10 @@ import Testing
     let created = try await store.create(.project(project))
     _ = try await store.create(.task(testTask(path: "Tasks/Test.md", project: project.path)))
 
-    await #expect(throws: VaultStoreError.invalidVault("Cannot delete referenced entity at Projects/Test.md")) {
+    await #expect(throws: VaultStoreError.invalidVault(
+        "Cannot delete Projects/Test.md while tasks, projects, or saved filters reference it. "
+            + "Remove those references first."
+    )) {
         try await store.delete(at: project.path, expectedRevision: created.revision)
     }
 }

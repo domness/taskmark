@@ -22,8 +22,8 @@ struct SidebarView: View {
         let session = model.vaultSession
         return List(selection: $model.route) {
             Section("Focus") {
-                route(.today, "Today", "sun.max")
                 route(.inbox, "Inbox", "tray")
+                route(.today, "Today", "sun.max")
                 route(.next, "Next", "arrow.right.circle")
                 route(.upcoming, "Upcoming", "calendar")
                 route(.waiting, "Waiting", "hourglass")
@@ -45,6 +45,10 @@ struct SidebarView: View {
                         )
                         .contextMenu {
                             CollectionOrderActions(model: model, path: path, collection: .area)
+                            Divider()
+                            Button("Delete Area", role: .destructive) {
+                                Task { await model.deleteCollection(at: path) }
+                            }
                         }
                     }
                     .onMove { offsets, destination in

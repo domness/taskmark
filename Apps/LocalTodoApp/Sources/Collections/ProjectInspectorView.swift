@@ -55,6 +55,7 @@ struct ProjectInspectorView: View {
         }
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)
+        .disabled(model.deletingCollectionPaths.contains(draft.path))
         .padding(.vertical)
     }
 }

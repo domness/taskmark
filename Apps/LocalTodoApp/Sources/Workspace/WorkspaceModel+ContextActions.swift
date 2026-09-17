@@ -16,7 +16,7 @@ extension WorkspaceModel {
             let copy = try await store.duplicateTask(at: path, expectedRevision: record.revision, now: clock())
             merge(copy)
             let content = try await store.taskContent(at: copy.value.path, expectedRevision: copy.revision)
-            registerTaskContentHistory(content, at: copy.value.path, deleting: true, actionName: "Duplicate Task")
+            registerEntityContentHistory(content, at: copy.value.path, deleting: true, actionName: "Duplicate Task")
             await refresh()
             editTask(at: copy.value.path)
         } catch { errorMessage = error.localizedDescription }
@@ -35,7 +35,7 @@ extension WorkspaceModel {
             _ = try await store.delete(at: path, expectedRevision: record.revision)
             autosaveTasks.removeValue(forKey: path)?.cancel()
             removeEntity(at: path)
-            registerTaskContentHistory(content, at: path, deleting: false, actionName: "Delete Task")
+            registerEntityContentHistory(content, at: path, deleting: false, actionName: "Delete Task")
             await refresh()
         } catch { errorMessage = error.localizedDescription }
     }
@@ -72,19 +72,19 @@ extension WorkspaceModel {
         return snapshot?.tasks[path]
     }
 
-    private func registerTaskContentHistory(_ data: Data, at path: VaultPath, deleting: Bool, actionName: String) {
+    func registerEntityContentHistory(_ data: Data, at path: VaultPath, deleting: Bool, actionName: String) {
         undoManager?.registerUndo(withTarget: self) { model in
             MainActor.assumeIsolated {
                 guard model.canPerformHistory, model.beginMutation(at: path) else { return }
-                model.registerTaskContentHistory(data, at: path, deleting: !deleting, actionName: actionName)
+                model.registerEntityContentHistory(data, at: path, deleting: !deleting, actionName: actionName)
                 model.isHistoryBusy = true
-                Task { await model.applyTaskContentHistory(data, at: path, deleting: deleting) }
+                Task { await model.applyEntityContentHistory(data, at: path, deleting: deleting) }
             }
         }
         undoManager?.setActionName(actionName)
     }
 
-    private func applyTaskContentHistory(_ data: Data, at path: VaultPath, deleting: Bool) async {
+    private func applyEntityContentHistory(_ data: Data, at path: VaultPath, deleting: Bool) async {
         defer {
             endMutation(at: path)
             isHistoryBusy = false
@@ -92,11 +92,11 @@ extension WorkspaceModel {
         guard let store else { return }
         do {
             if deleting {
-                guard let revision = snapshot?.tasks[path]?.revision else { throw VaultStoreError.notFound(path) }
+                guard let revision = entityRecord(at: path)?.revision else { throw VaultStoreError.notFound(path) }
                 _ = try await store.delete(at: path, expectedRevision: revision)
                 removeEntity(at: path)
             } else {
-                try await merge(store.restoreTaskContent(data, at: path))
+                try await merge(store.restoreEntityContent(data, at: path))
             }
             await refresh()
         } catch {

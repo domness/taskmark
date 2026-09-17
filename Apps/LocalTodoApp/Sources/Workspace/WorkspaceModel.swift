@@ -52,6 +52,7 @@ final class WorkspaceModel {
     var configurationSettingsError: String?
     var isSavingConfiguration = false
     var deletingTaskPaths = Set<VaultPath>()
+    var deletingCollectionPaths = Set<VaultPath>()
     @ObservationIgnored let sidebarPreferences: UserDefaults
 
     @ObservationIgnored var store: VaultStore?

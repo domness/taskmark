@@ -14,7 +14,9 @@ Open or create a **dedicated task vault** in the macOS app. Tasks stay in indivi
 
 ## Repeat And Checklists
 
-Open **Repeat** in the task inspector. Choose a fixed schedule (frequency, interval and optional weekly weekdays) or an interval after completion.
+Use the always-visible **Repeat** picker in the task inspector. Choose a fixed schedule (frequency, interval and optional weekly weekdays) or an interval after completion.
+
+Project, area and **Tags** are also always visible. Use the **+** beside Tags to enter a tag or choose an existing one, and a token’s **×** to remove it. Each entry is one tag, including names containing commas.
 
 Fixed completion follows the existing cadence until the next occurrence is after the completion day. After-completion recurrence starts its interval on that day in the vault timezone. Monthly/yearly recurrence retains calendar clamping; see [the file contract](FILE_FORMAT.md#recurrence).
 
@@ -29,6 +31,8 @@ Choose a project in the sidebar to edit its title, status and notes in the inspe
 Complete/Reopen changes only the project, not its tasks. Someday, done and canceled projects appear under **Inactive Projects**, collapsed by default. An inactive project already assigned to a task remains visible in that task's inspector.
 
 Routine project destinations in the command palette include active projects only; use the sidebar's Inactive Projects section for review or reopening.
+
+Right-click a project or area to delete it. Remove task, project and saved-filter references first; deletion never cascades. Native Undo restores the exact Markdown during the current vault session.
 
 ## Combined And Saved Filters
 
@@ -49,6 +53,7 @@ Working criteria are temporary until explicitly saved. Named definitions live in
 | Command palette | Command-K |
 | Complete or reopen selection | Command-Return |
 | Edit selected task | Command-E |
+| Delete selected task (task list focused) | Backspace |
 | Reschedule to an exact date | Command-D |
 | Reschedule for today / tomorrow | Command-Shift-T / Command-Shift-D |
 | Undo / redo | Command-Z / Command-Shift-Z |

@@ -10,15 +10,15 @@ struct SettingsView: View {
     }
 
     var body: some View {
-        NavigationSplitView {
+        HStack(spacing: 0) {
             List(SettingsSection.allCases, selection: $section) { section in
                 Label(section.title, systemImage: section.symbol).tag(section)
             }
             .listStyle(.sidebar)
             .scrollContentBackground(.hidden)
-            .navigationSplitViewColumnWidth(ideal: 170)
+            .frame(width: 170)
             .themeSurface("--sidebar-background")
-        } detail: {
+            Divider()
             Group {
                 switch section ?? .general {
                 case .general: GeneralSettingsView(model: model, preferences: model.preferences)

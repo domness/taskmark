@@ -45,7 +45,7 @@ struct TaskInspectorView: View {
                 )
                 Spacer()
             }
-            DisclosureGroup("Organize") {
+            Section {
                 Picker("Project", selection: project) {
                     Text("None").tag("")
                     ForEach(projects, id: \.path) { project in
@@ -64,7 +64,7 @@ struct TaskInspectorView: View {
                         Text("Missing: \(draft.area)").tag(draft.area)
                     }
                 }
-                TextField("Tags, comma separated", text: $draft.tags)
+                TaskTagsView(model: model, draft: draft)
             }
             TaskRecurrenceView(model: model, draft: draft)
             TaskChecklistView(model: model, draft: draft)

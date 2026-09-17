@@ -94,18 +94,27 @@ extension VaultStore {
     }
 
     private func ensureNotReferenced(_ entity: LocalTodoEntity) throws {
+        if case .task = entity {
+            return
+        }
         let snapshot = try snapshot()
+        let filters = try savedFilters().filters
         let isReferenced = switch entity {
         case .task:
             false
         case let .project(project):
             snapshot.tasks.values.contains { $0.value.project == project.path }
+                || filters.contains { $0.query.filters.project == project.path }
         case let .area(area):
             snapshot.tasks.values.contains { $0.value.area == area.path }
                 || snapshot.projects.values.contains { $0.value.area == area.path }
+                || filters.contains { $0.query.filters.area == area.path }
         }
         if isReferenced {
-            throw VaultStoreError.invalidVault("Cannot delete referenced entity at \(entity.path.value)")
+            throw VaultStoreError.invalidVault(
+                "Cannot delete \(entity.path.value) while tasks, projects, or saved filters reference it. "
+                    + "Remove those references first."
+            )
         }
     }
 }

@@ -5,6 +5,7 @@ struct TaskRow: View {
     let model: WorkspaceModel
     let task: TodoTask
     let displayOptions: TaskListDisplayOptions
+    let onSelect: () -> Void
     @Environment(\.colorScheme) private var colorScheme
     @ScaledMetric(relativeTo: .body) private var baseFontSize = 13.0
 
@@ -28,7 +29,7 @@ struct TaskRow: View {
             .accessibilityLabel(task.status.isComplete ? "Reopen task" : "Mark complete")
 
             Button {
-                model.editTask(at: task.path)
+                onSelect()
             } label: {
                 VStack(
                     alignment: .leading,
@@ -37,15 +38,19 @@ struct TaskRow: View {
                     Text(task.title)
                         .font(.system(size: taskFontSize))
                         .strikethrough(task.status.isComplete)
-                    metadata
+                    if hasMetadata {
+                        metadata
+                    }
                 }
+                .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.leading, 10)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .accessibilityLabel("Edit \(task.title)")
+            .accessibilityLabel("Select \(task.title)")
         }
+        .fixedSize(horizontal: false, vertical: true)
         .draggable(TaskDragItem(path: task.path.value, vaultSession: model.vaultSession)) {
             Label(task.title, systemImage: "checklist")
                 .padding(8)
@@ -147,6 +152,10 @@ struct TaskRow: View {
 
     private var hasPlanningMetadata: Bool {
         task.priority != nil || task.scheduled != nil || task.deadline != nil
+    }
+
+    private var hasMetadata: Bool {
+        hasPlanningMetadata || hasOrganizationMetadata || displayOptions.showsTags && !task.tags.isEmpty
     }
 
     private var hasOrganizationMetadata: Bool {

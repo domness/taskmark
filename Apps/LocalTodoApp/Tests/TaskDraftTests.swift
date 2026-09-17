@@ -31,7 +31,7 @@ import Testing
     draft.title = "Updated"
     draft.status = .waiting
     draft.scheduled = "2026-08-01"
-    draft.tags = "work, launch"
+    draft.tags = ["work", "launch"]
     draft.notes = "Preserved notes"
 
     let updated = try draft.patch().applying(
