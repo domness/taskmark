@@ -205,6 +205,16 @@ Optional notes about these views.
 
 ## Mutation Guarantees
 
+### Optional Native Appearance
+
+The macOS app optionally reads `.config/style.css`, a UTF-8 file up to 64 KiB. It is user-authored appearance configuration, not a manifest or entity. `.config/` remains available to typed Markdown files; no existing entity paths become reserved. Symlink components below the vault root are rejected. Missing or invalid styles use built-in appearance; diagnostics never cause stylesheet rewrites. The documented selectors, tokens, precedence and reload behavior are in [PERSONALIZATION.md](PERSONALIZATION.md). Styles do not change task semantics or Markdown mutations.
+
+### Task Copies And Reversible Deletion
+
+Task duplication uses exclusive publication at a new sibling path, preserves body and unknown metadata, and refreshes creation/update timestamps. Completed/canceled copies reopen in Inbox; other statuses, recurrence and planning metadata remain. App deletion uses revision-checked deletion plus an in-memory exact-byte undo payload. Restoration is exclusive and refuses occupied paths; recovery history is local to the open vault session. These operations do not change the entity schema.
+
+### Shared Guarantees
+
 - Validate a full mutation before writing any destination.
 - Use atomic replacement and never leave a partially written entity.
 - A path move and its reference updates succeed together or leave the vault unchanged.

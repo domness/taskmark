@@ -4,6 +4,7 @@ struct WorkspaceView: View {
     @Bindable var model: WorkspaceModel
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.undoManager) private var undoManager
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Group {
@@ -38,6 +39,7 @@ struct WorkspaceView: View {
             }
         }
         .frame(minWidth: 840, minHeight: 560)
+        .tint(model.effectiveAppearance.color("--accent", scheme: colorScheme, fallback: .accentColor))
         .sheet(isPresented: $model.isCommandPalettePresented) {
             CommandPaletteView(model: model)
         }

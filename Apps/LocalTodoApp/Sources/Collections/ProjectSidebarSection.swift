@@ -6,8 +6,10 @@ struct ProjectSidebarSection: View {
 
     var body: some View {
         Section("Projects") {
-            ForEach(model.activeProjects, id: \.path) { project in
-                projectRoute(project)
+            ForEach(model.orderedCollectionPaths(.project), id: \.self) { path in
+                if let project = model.snapshot?.projects[path]?.value {
+                    projectRoute(project)
+                }
             }
             if !model.inactiveProjects.isEmpty {
                 DisclosureGroup("Inactive Projects") {
@@ -33,6 +35,7 @@ struct ProjectSidebarSection: View {
                 model.route = .project(project.path)
                 model.editProject()
             }
+            CollectionOrderActions(model: model, path: project.path, collection: .project)
         }
     }
 }

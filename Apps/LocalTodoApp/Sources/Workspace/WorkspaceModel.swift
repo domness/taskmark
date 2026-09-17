@@ -39,6 +39,12 @@ final class WorkspaceModel {
     var searchFocusRequest = 0
     var taskListDisplayOptionsByRoute: [String: TaskListDisplayOptions]
     let filterState = FilterWorkspaceState()
+    var sidebarOrders = [String: [String]]()
+    var vaultAppearance = VaultAppearance()
+    var stylesheetDiagnostic: String?
+    var usesVaultStylesheet = true
+    var deletingTaskPaths = Set<VaultPath>()
+    @ObservationIgnored let sidebarPreferences: UserDefaults
 
     @ObservationIgnored var store: VaultStore?
     @ObservationIgnored weak var undoManager: UndoManager?
@@ -61,9 +67,11 @@ final class WorkspaceModel {
     init(
         bookmarks: VaultBookmarkStore = VaultBookmarkStore(),
         taskListDisplayPreferences: TaskListDisplayPreferencesStore = TaskListDisplayPreferencesStore(),
+        sidebarPreferences: UserDefaults = .standard,
         clock: @escaping () -> Date = Date.init
     ) {
         self.bookmarks = bookmarks
+        self.sidebarPreferences = sidebarPreferences
         self.clock = clock
         self.taskListDisplayPreferences = taskListDisplayPreferences
         taskListDisplayOptionsByRoute = taskListDisplayPreferences.load()
@@ -173,6 +181,7 @@ final class WorkspaceModel {
         modelEpoch += 1
         vaultSession = UUID()
         scopedVault = access
+        resetPersonalization()
         self.store = store
         self.snapshot = snapshot
         taskDrafts.removeAll()
@@ -185,6 +194,7 @@ final class WorkspaceModel {
         selectedTaskPath = nil
         startRefreshLoop()
         await refreshSavedFilters()
+        await refreshAppearance()
         return true
     }
 
@@ -196,6 +206,13 @@ final class WorkspaceModel {
                 await self?.refresh()
             }
         }
+    }
+
+    private func resetPersonalization() {
+        loadSidebarOrder()
+        usesVaultStylesheet = true
+        vaultAppearance = VaultAppearance()
+        stylesheetDiagnostic = nil
     }
 }
 

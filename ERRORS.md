@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-17: Extending Near-Limit SwiftUI Views
+
+- What did not work: Adding appearance controls exceeded TaskListView's type-body limit; extracting only the appearance menu still left it two lines over the enforced limit on the next lint run.
+- What worked instead: Extract the appearance menu and move route-heading/selection projections into a focused extension, then rerun the formatter and strict lint.
+- Note for next time: Check the existing type/function size before extending a view near the limit; extract a complete responsibility rather than shaving individual lines.
+
 ## 2026-09-16: Checklist Byte Projection Linting
 
 - What did not work: Direct non-failable UTF-8 conversions triggered the optional-data-string rule; a file-wide exemption then triggered the blanket-disable rule.

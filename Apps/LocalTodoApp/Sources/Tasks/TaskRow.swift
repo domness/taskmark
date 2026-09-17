@@ -5,9 +5,11 @@ struct TaskRow: View {
     let model: WorkspaceModel
     let task: TodoTask
     let displayOptions: TaskListDisplayOptions
+    @Environment(\.colorScheme) private var colorScheme
+    @ScaledMetric(relativeTo: .body) private var baseFontSize = 13.0
 
     var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 10) {
+        HStack(alignment: .firstTextBaseline, spacing: 0) {
             Button {
                 guard let revision = model.snapshot?.tasks[task.path]?.revision else { return }
                 let vaultSession = model.vaultSession
@@ -22,15 +24,27 @@ struct TaskRow: View {
                 Image(systemName: completionImage)
             }
             .buttonStyle(.plain)
+            .foregroundStyle(priorityColor)
             .accessibilityLabel(task.status.isComplete ? "Reopen task" : "Mark complete")
 
-            VStack(alignment: .leading, spacing: 3) {
-                Text(task.title)
-                    .strikethrough(task.status.isComplete)
-                metadata
+            Button {
+                model.editTask(at: task.path)
+            } label: {
+                VStack(
+                    alignment: .leading,
+                    spacing: model.effectiveAppearance.number("--row-spacing", scheme: colorScheme, fallback: 3)
+                ) {
+                    Text(task.title)
+                        .font(.system(size: taskFontSize))
+                        .strikethrough(task.status.isComplete)
+                    metadata
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.leading, 10)
+                .contentShape(Rectangle())
             }
-            .contentShape(Rectangle())
-            .onTapGesture(count: 2) { model.editTask(at: task.path) }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Edit \(task.title)")
         }
         .draggable(TaskDragItem(path: task.path.value, vaultSession: model.vaultSession)) {
             Label(task.title, systemImage: "checklist")
@@ -43,6 +57,8 @@ struct TaskRow: View {
                 model.beginRescheduling()
             }
             .disabled(task.status.isComplete)
+            Divider()
+            TaskContextActions(model: model, path: task.path)
         }
     }
 
@@ -51,6 +67,20 @@ struct TaskRow: View {
         case .done: "checkmark.circle.fill"
         case .canceled: "xmark.circle.fill"
         default: "circle"
+        }
+    }
+
+    private var taskFontSize: Double {
+        baseFontSize * model.effectiveAppearance.number("--task-font-size", scheme: colorScheme, fallback: 13) / 13
+    }
+
+    private var priorityColor: Color {
+        guard !task.status.isComplete else { return .secondary }
+        switch task.priority {
+        case .p1: return model.effectiveAppearance.color("--priority-1", scheme: colorScheme, fallback: .red)
+        case .p2: return model.effectiveAppearance.color("--priority-2", scheme: colorScheme, fallback: .orange)
+        case .p3: return model.effectiveAppearance.color("--priority-3", scheme: colorScheme, fallback: .blue)
+        default: return .primary
         }
     }
 
@@ -79,6 +109,8 @@ struct TaskRow: View {
         HStack(spacing: 8) {
             if let priority = task.priority {
                 Text(priority.rawValue.uppercased())
+                    .foregroundStyle(priorityColor)
+                    .accessibilityLabel("Priority \(priority.rawValue.uppercased())")
             }
             if let scheduled = task.scheduled {
                 Label(scheduled.description, systemImage: "calendar")

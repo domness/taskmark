@@ -109,6 +109,7 @@ struct TaskInspectorView: View {
             saveStatus
         }
         .formStyle(.grouped)
+        .disabled(model.deletingTaskPaths.contains(draft.path))
         .padding(.vertical)
         .onAppear { focusTitleIfRequested() }
         .onChange(of: model.titleEditRequest) { _, _ in focusTitleIfRequested() }

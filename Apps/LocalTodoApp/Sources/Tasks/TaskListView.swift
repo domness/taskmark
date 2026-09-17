@@ -22,7 +22,9 @@ struct TaskListView: View {
                 Divider()
             }
             listContent
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .onChange(of: model.route) { _, route in
             isSearchFocused = route == .search
         }
@@ -81,13 +83,15 @@ struct TaskListView: View {
                 Toggle("Area", isOn: metadataBinding(.area))
                 Toggle("Tags", isOn: metadataBinding(.tags))
             }
+            AppearanceMenu(model: model)
             Picker("Group By", selection: groupingBinding) {
                 ForEach(TaskListGrouping.allCases) { grouping in
                     Text(grouping.title).tag(grouping)
                 }
             }
         } label: {
-            Image(systemName: "line.3.horizontal.decrease")
+            Image(systemName: model
+                .stylesheetDiagnostic == nil ? "line.3.horizontal.decrease" : "exclamationmark.triangle")
                 .accessibilityLabel("View Options")
         }
         .menuStyle(.borderlessButton)
@@ -200,15 +204,17 @@ struct TaskListView: View {
             set: { model.setTaskListGrouping($0) }
         )
     }
+}
 
-    private var routeHeading: some View {
+private extension TaskListView {
+    var routeHeading: some View {
         Text(model.route.title)
             .font(.headline)
             .lineLimit(1)
             .accessibilityAddTraits(.isHeader)
     }
 
-    private var selection: Binding<VaultPath?> {
+    var selection: Binding<VaultPath?> {
         Binding(
             get: { model.selectedTaskPath },
             set: { model.selectTask($0) }

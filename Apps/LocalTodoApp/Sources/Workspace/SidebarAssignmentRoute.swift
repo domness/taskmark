@@ -21,12 +21,22 @@ struct SidebarAssignmentRoute: View {
                         .fill(Color.accentColor.opacity(0.14))
                 }
             }
-            .dropDestination(for: TaskDragItem.self) { values, _ in
-                assign(values)
+            .dropDestination(for: SidebarDragItem.self) { values, _ in
+                guard values.count == 1, let item = values.first else { return false }
+                switch item {
+                case let .task(task): return assign([task])
+                case let .collection(collection):
+                    return model.reorderCollection(collection, before: target.path, in: target.collection)
+                }
             } isTargeted: {
                 isTargeted = $0
             }
             .help(target.helpText)
+            .draggable(CollectionDragItem(
+                path: target.path.value,
+                collection: target.collection,
+                session: model.vaultSession
+            ))
             .tag(route)
     }
 
@@ -52,6 +62,19 @@ struct SidebarAssignmentRoute: View {
 enum SidebarAssignmentTarget {
     case project(VaultPath)
     case area(VaultPath)
+
+    var path: VaultPath {
+        switch self {
+        case let .project(path), let .area(path): path
+        }
+    }
+
+    var collection: SidebarCollection {
+        switch self {
+        case .project: .project
+        case .area: .area
+        }
+    }
 
     var helpText: String {
         switch self {

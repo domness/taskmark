@@ -5,6 +5,18 @@ struct SidebarView: View {
     @Bindable var model: WorkspaceModel
 
     var body: some View {
+        VStack(spacing: 0) {
+            navigationList
+            Divider()
+            Button("Switch Vault", systemImage: "folder") { Task { await model.chooseVault() } }
+                .buttonStyle(.plain)
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .navigationTitle(model.vaultName ?? "Local Todo")
+    }
+
+    private var navigationList: some View {
         List(selection: $model.route) {
             Section("Focus") {
                 route(.today, "Today", "sun.max")
@@ -20,7 +32,7 @@ struct SidebarView: View {
                 FilterSidebarSection(model: model)
                 ProjectSidebarSection(model: model)
                 Section("Areas") {
-                    ForEach(snapshot.areas.keys.sorted(by: { $0.value < $1.value }), id: \.self) { path in
+                    ForEach(model.orderedCollectionPaths(.area), id: \.self) { path in
                         SidebarAssignmentRoute(
                             model: model,
                             route: .area(path),
@@ -28,6 +40,9 @@ struct SidebarView: View {
                             systemImage: "circle.grid.2x2",
                             target: .area(path)
                         )
+                        .contextMenu {
+                            CollectionOrderActions(model: model, path: path, collection: .area)
+                        }
                     }
                     Button("New Area", systemImage: "plus") { model.newEntityKind = .area }
                 }
@@ -50,13 +65,6 @@ struct SidebarView: View {
                     }
                 }
             }
-        }
-        .navigationTitle(model.vaultName ?? "Local Todo")
-        .safeAreaInset(edge: .bottom) {
-            Button("Switch Vault", systemImage: "folder") { Task { await model.chooseVault() } }
-                .buttonStyle(.plain)
-                .padding()
-                .frame(maxWidth: .infinity, alignment: .leading)
         }
     }
 

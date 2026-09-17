@@ -161,6 +161,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Swift package checks do not compile the macOS app, and the existing unsigned build gate does not exercise normal Xcode signing. The reported failure was not reproduced on this checkout with Xcode 27.0 (27A266a): the signed clean build and full quality gate passed.
 - What was rejected and why: Claiming a source fix without a reproduced failure was rejected because it would misrepresent the evidence. Checking in the generated Xcode project was unnecessary; `project.yml` remains the project configuration source and `make generate` refreshes local source membership.
 
+### 2026-09-17: Deliver Native Personalization And Row Interaction Fixes
+
+- What was decided: Implement the four pending personalization requests with priority-colored indicators/labels, single-task context and Task-menu actions, per-vault device-local sidebar ordering, and an optional native CSS-token adapter at `.config/style.css`. Keep neutral titles and native focus behavior. Search consumes the available list height with a top-pinned header, sidebar navigation and its footer have separate layout space, and a full-width task-content button handles editing.
+- Why: These choices address the reported interaction bugs and the recorded wishlist while retaining the native interface and Markdown ownership model. Duplicate preserves unknown frontmatter/notes/recurrence, gets fresh timestamps and reopens completed copies. Delete uses exact-byte native Undo/Redo after persistence. Ordering is presentation only and does not require collection moves.
+- What was rejected and why: System Trash was not chosen for this iteration; reversible deletion has explicit session-local recovery semantics. Implicit clipboard formats and batch actions were rejected in favor of three named copy actions on one task. Browser-style arbitrary CSS and reserving all of `.config/` were rejected because native tokens suffice and existing entity paths must remain valid. Full stylesheet syntax and manual visual acceptance checks are documented in `docs/PERSONALIZATION.md` and the roadmap.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

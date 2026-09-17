@@ -5,6 +5,10 @@ struct DailyTaskCommands: Commands {
 
     var body: some Commands {
         CommandMenu("Task") {
+            if let path = model.selectedTaskPath {
+                TaskContextActions(model: model, path: path)
+                Divider()
+            }
             Button(model.selectedTaskIsComplete ? "Reopen Selected Task" : "Complete Selected Task") {
                 Task { await model.completeSelectedTask() }
             }

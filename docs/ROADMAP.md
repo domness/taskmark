@@ -41,43 +41,15 @@ Live UI/VoiceOver checks, screenshots, a real-use pilot and iCloud validation ar
 
 Natural-language capture, reminders, collaboration, and first-class child tasks are outside V1.
 
-## Nice To Have: macOS Polish And Personalization
+## macOS Polish And Personalization — Implemented
 
-Requested enhancements, with a proposed delivery order. These are planned ideas, not implemented capabilities; settle the open questions below before implementation.
+- P1 red, P2 orange and P3 blue completion indicators and priority labels; P4/unset remain default. Completed tasks use secondary styling; titles stay neutral.
+- Task-row and Task-menu Duplicate, Delete and explicitly labeled Copy Title/Markdown/Vault-Relative Path actions. Pending edits are saved first; conflicts block the action. Duplication retains unknown metadata and recurrence, reopens completed/canceled copies in Inbox, adds “(Copy)” and uses fresh timestamps. Delete has byte-preserving native Undo/Redo during the vault session.
+- Independent Projects/Areas ordering through drag-before-target and accessible Move Up/Move Down/Restore Default Order menus. Device-local preferences are keyed by vault URL; file paths and assignments stay unchanged. Task and collection drags use separate own-process representations and a shared drop destination.
+- Optional `.config/style.css` maps a tested, limited CSS subset to native colors, task typography and row spacing. External edits reload with vault refresh; invalid input falls back to defaults with a visible View Options warning. See [personalization guide](PERSONALIZATION.md) for the supported syntax and sample.
+- Search/list headers stay at the top in empty states; Switch Vault has a separate footer outside the scrolling list; the task title, metadata and remaining row width form one edit button beside the completion control.
 
-### 1. Priority Highlights
-
-- Highlight tasks using the requested mapping: **P1 red**, **P2 orange**, **P3 blue**, **P4 no custom color**. Tasks without a priority also retain the default appearance.
-- Start with a restrained priority indicator in the task row; decide whether the title should also be tinted during visual review. Avoid colored side stripes, in keeping with `DESIGN.md`.
-- Retain a text or icon cue and accessible priority label so color is never the only signal. Check light/dark appearance, selection, completed tasks, and increased contrast.
-- Acceptance: changing priority updates the row consistently across task views without changing task order or other metadata.
-
-### 2. Task Context Menu: Duplicate, Delete, Copy
-
-- Add native right-click actions to task rows, with equivalent keyboard/menu access.
-- **Duplicate:** create an independent task at a new, collision-safe path, preserving notes, checklists, unknown frontmatter, and relevant task metadata. Use fresh creation/update timestamps. Decide how titles, completed/canceled state, completion timestamps, and recurrence should be handled before implementation.
-- **Delete:** remove the selected task with native undo and a clear recovery path. Choose Trash versus reversible deletion explicitly; account for unsaved drafts and external edits.
-- **Copy:** copy task content to the clipboard. Decide whether the default is the title, a Markdown representation, or the vault-relative path; label distinct copy actions clearly if more than one is offered.
-- Acceptance: actions target the right-clicked task, preserve pending edits appropriately, surface write conflicts, and register mutation undo only after persistence succeeds. Define multi-selection behavior before enabling batch actions.
-
-### 3. Drag To Reorder Projects And Areas
-
-- Allow manual reordering within the sidebar's Projects section and, independently, within its Areas section.
-- Share the ordering interaction and persistence approach across both collection types. Provide keyboard-accessible Move Up/Move Down actions and a way to restore the default order.
-- Reordering changes presentation only: it must not move or rename Markdown files, change entity identity, or assign a project to an area.
-- Persist the chosen order across launches. Before implementation, decide whether order is device-local or vault-portable, document its storage, and define behavior for newly added, missing, externally moved, or archived collections.
-- Acceptance: each section restores its order independently, task-to-collection drag assignment still works, and stale or cross-vault drags cannot reorder the active vault.
-
-### 4. Vault Stylesheets In `.config/`
-
-- Explore user-authored CSS stylesheets inside the vault's `.config/` folder to customize the native UI.
-- SwiftUI has no browser CSS engine. First validate a documented, limited CSS subset mapped to native appearance tokens, such as semantic colors, typography, and spacing. Keep the Apple-native architecture; arbitrary browser selectors and layout rules are not assumed to work.
-- Define the stylesheet entry point, supported selectors/properties, light/dark overrides, precedence, reload behavior, and diagnostics before committing to a format.
-- Surface invalid or unsupported styles without editing the user's stylesheet; provide a way to return to the built-in appearance. Preserve keyboard focus visibility, scalable text, and non-color state cues.
-- `.config/` is a requested future location, not currently a reserved directory in the vault contract. Document discovery and path rules before introducing it; keep the existing `.localtodo/config.yml` manifest role intact.
-- Acceptance: a documented sample stylesheet changes supported native tokens, external edits reload predictably, and a missing or invalid stylesheet leaves the app usable.
-
-Priority highlights and context actions offer immediate daily-use value. Project and area ordering should ship together because they share behavior. Stylesheets come last because they require a native styling adapter and a new configuration contract.
+Automated coverage includes unknown metadata, pending edits, delete Undo/Redo, external conflicts, occupied duplicate destinations, symlink rejection, independent order restoration, stale/cross-kind drags, stylesheet parsing and reload/fallback. Interactive macOS layout, drag gestures, VoiceOver and light/dark/high-contrast visual review remain manual acceptance checks.
 
 ## Next: iOS
 
