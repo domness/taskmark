@@ -2,6 +2,8 @@
 
 Open **Taskmark → Settings…** or press **Command-comma**. The native Settings window has General and Theme sections. Changes apply immediately; there is no Apply button. Settings uses the same appearance as the main window.
 
+With multiple vault windows, device-local preferences apply to all of them. Vault-specific timezone and stylesheet controls use the most recently active vault window; the timezone description identifies its vault. Closing that window selects another open workspace, or shows no active vault if all are closed.
+
 The window opens at 760 × 620 logical points and can be resized, with a 700 × 560 minimum. Both sections align short content to the top of the right-hand panel and scroll when content exceeds the available height.
 
 `SettingsWindowResizing` enables the underlying NSWindow's native resizable style after scene setup. SwiftUI's `.contentMinSize` controls sizing constraints but did not, by itself, make this Settings scene user-resizable. `SettingsWindowTests` opens the actual scene and verifies its style, upper size bounds and expanded content size.

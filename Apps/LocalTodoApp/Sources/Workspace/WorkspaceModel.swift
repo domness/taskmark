@@ -33,6 +33,7 @@ final class WorkspaceModel {
     var newEntityKind: NewEntityKind?
     var errorMessage: String?
     var isLoading = false
+    var isClosingWindow = false
     var isHistoryBusy = false
     var titleEditRequest = 0
     var titleEditingPath: VaultPath?
@@ -217,6 +218,26 @@ final class WorkspaceModel {
                 await self?.refresh()
             }
         }
+    }
+}
+
+extension WorkspaceModel {
+    func releaseWindowResources() {
+        openRequest = UUID()
+        refreshLoop?.cancel()
+        refreshLoop = nil
+        for task in autosaveTasks.values {
+            task.cancel()
+        }
+        autosaveTasks.removeAll()
+        clearHistory()
+        taskDrafts.removeAll()
+        projectDrafts.removeAll()
+        snapshot = nil
+        store = nil
+        scopedVault = nil
+        vaultSession = UUID()
+        modelEpoch += 1
     }
 }
 

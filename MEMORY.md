@@ -263,6 +263,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Past deadlines and missed scheduled dates both need visible attention, while tasks dated today remain on time. An explicit warning label provides a non-color cue; the injected clock and vault timezone keep presentation consistent with daily queries.
 - What was rejected and why: Comparing calendar dates to wall-clock timestamps or treating today as already overdue was rejected because planning dates have no time-of-day. Persisting an overdue flag was unnecessary because it is derived from existing dates and status.
 
+### 2026-09-18: Own Vault Sessions Per Window
+
+- What was decided: Move workspace ownership from the app to each WindowGroup root. Add File → New Vault Window on Command-Shift-N while preserving Command-N capture. Route task/navigation/history commands through focused scene values, share one AppPreferences instance, and retain the last active workspace as Settings context. Validate and flush the affected model before window close and all models before application termination; release refresh/security-scope resources on close.
+- Why: One app-wide model made every window show the same vault and allowed menu/history actions to target the wrong workspace. Independent models isolate exact paths that may be identical in different vaults; native per-window UndoManagers and close validation preserve edits.
+- What was rejected and why: Merely exposing WindowGroup's new-window action was rejected because it retained shared vault state. Dropping view-owned drafts on close was rejected because autosave may be pending. Full multi-vault session restoration is deferred: the first window restores the last bookmark and subsequent windows start at the chooser. The AppKit delegate bridge forwards SwiftUI's existing callbacks instead of replacing its scene lifecycle.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

@@ -10,6 +10,7 @@ Status reviewed against the repository on 2026-09-17. Implemented features below
 - Safe empty-folder initialization, vault selection and security-scoped restoration, full-scan snapshots and periodic external-change refresh.
 - Revision-checked atomic updates, preservation of unknown frontmatter and Markdown bodies, visible malformed-file and missing-reference diagnostics.
 - Workspace-owned task/project autosave, non-overlapping rebases, explicit conflict resolution, task-file recovery and native Undo/Redo.
+- Independent vault windows through File → New Vault Window, focused-window commands and per-window Undo/Redo. Closing flushes the affected workspace; quitting checks all open workspaces. Full multi-vault session restoration remains outside the implemented behavior.
 - CLI entity/query/lifecycle commands, task moves, JSON output, mutation dry runs and `doctor`; a portable CLI agent skill.
 
 ### Daily Workflows
@@ -26,6 +27,7 @@ See [daily workflows and shortcuts](DAILY_WORK.md).
 ### Task Editing And Personalization
 
 - A row click selects the task and opens its details while retaining list focus. Backspace deletes from the list, while inspector text editing retains normal Backspace behavior.
+- Incomplete tasks past their scheduled date or deadline are highlighted with semantic red and an Overdue label, using the vault-local day.
 - Placeholder-only, multiline title entry; always-visible project, area, tag and repeat controls. Tags are removable tokens with an add button and existing-tag suggestions.
 - Task rows resize as planning metadata appears or disappears. Search/list headers stay top-aligned; Switch Vault has its own footer; the inspector toggle is at the trailing window toolbar.
 - Task Duplicate/Delete/Copy actions; project/area context-menu deletion with reference protection. Successful deletions support exact-byte Undo/Redo during the vault session.

@@ -2,18 +2,15 @@ import AppKit
 
 @MainActor
 final class LocalTodoAppDelegate: NSObject, NSApplicationDelegate {
-    weak var model: WorkspaceModel?
+    weak var windows: WorkspaceWindows?
     private var isFinishingTermination = false
 
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
-        guard let model, model.hasPendingDocumentChanges else { return .terminateNow }
+        guard let windows, windows.hasPendingChanges else { return .terminateNow }
         guard !isFinishingTermination else { return .terminateLater }
         isFinishingTermination = true
         Task {
-            let saved = await model.flushTaskChanges()
-            if !saved {
-                model.errorMessage = "Fix conflicting or invalid task changes before quitting."
-            }
+            let saved = await windows.flushAll()
             isFinishingTermination = false
             sender.reply(toApplicationShouldTerminate: saved)
         }

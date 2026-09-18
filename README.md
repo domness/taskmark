@@ -34,6 +34,8 @@ Open `LocalTodo.xcodeproj` and run the `LocalTodoApp` scheme to build **Taskmark
 
 Taskmark was previously named Local Todo. The `localtodo` CLI command, `.localtodo` vault metadata, bundle identifier and internal Swift/Xcode target names remain stable, so existing vaults, preferences and scripts continue to work without migration.
 
+Use **File → New Vault Window** (`Command-Shift-N`) to work with multiple vaults at once. Each window keeps its own selection, drafts and undo history; appearance preferences are shared.
+
 ## CLI
 
 Run `swift build -c release` to build `.build/release/localtodo`, or use `swift run localtodo` during development.

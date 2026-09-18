@@ -32,6 +32,8 @@ Owns command definitions, argument validation, human output, JSON output, and pr
 
 Owns SwiftUI composition, macOS vault selection, security-scoped access, keyboard commands, and presentation state. The desktop shell has a navigation sidebar, task list, collapsible task/project inspector, command palette and native Settings scene. `WorkspaceModel` owns task/project drafts, autosave, conflict handling, native history and vault-session state.
 
+Each `WorkspaceWindowRoot` owns a distinct `WorkspaceModel`. The app-scoped `WorkspaceWindows` coordinates shared `AppPreferences`, open-model lifetime, the last active Settings context and all-window termination flushing. `WorkspaceCommands` uses SwiftUI focused scene values rather than a single app-wide model. A main-actor AppKit window-delegate bridge validates close requests, supplies a per-window UndoManager, forwards SwiftUI's scene callbacks and releases vault resources after closing. Only the initial window restores the last bookmark; newly requested windows start unbound.
+
 ## Data Flow
 
 1. The user selects a vault containing `.localtodo/config.yml`.

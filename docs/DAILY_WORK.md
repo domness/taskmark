@@ -2,6 +2,12 @@
 
 Open or create a **dedicated task vault** in the macOS app. Tasks stay in individual Markdown files; everyday editing does not require YAML.
 
+## Multiple Vault Windows
+
+Choose **File → New Vault Window** (`Command-Shift-N`) to open another independent window, then choose **Open Existing Vault** or **Create New Vault** there. Each window has its own vault, navigation, selection, drafts and Undo/Redo. **Switch Vault** changes only that window. Task/navigation commands follow the focused vault window; `Command-N` still captures a task.
+
+Appearance/calendar-display preferences are shared across windows. Settings uses the most recently active vault window for its vault timezone and stylesheet context. Closing a window flushes its pending document edits; unresolved edits or unsubmitted capture text keep it open. Quitting checks all open workspaces. The first window at launch restores the most recently opened vault; additional windows start with the vault chooser. Restoring a full set of previous vault windows is not implemented.
+
 ## Capture And Plan
 
 - **Inbox** appears above Today in the sidebar and contains incomplete tasks with Inbox status.
@@ -51,6 +57,7 @@ Working criteria are temporary until explicitly saved. Named definitions live in
 | Action | Shortcut |
 | --- | --- |
 | Capture / submit / cancel | Command-N / Return / Escape |
+| New vault window | Command-Shift-N |
 | Today / Inbox / Next | Command-1 / Command-2 / Command-3 |
 | Upcoming / Waiting / Someday | Command-4 / Command-5 / Command-6 |
 | Search / filter editor | Command-F / Command-Shift-F |

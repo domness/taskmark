@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-18: Multi-Window AppKit Boundaries In Swift 6 Tests
+
+- What did not work: Returning the non-Sendable NSWindowDelegate through `MainActor.assumeIsolated`, including via a captured variable, failed strict concurrency checking. Standalone hosted windows also had no environment UndoManager and did not reliably become OS key windows in the test runner, so global-menu activation was not a valid focus test there.
+- What worked instead: A narrowly documented weak delegate reference is accessed only on the main actor, with runtime main-actor preconditions at Objective-C forwarding entry points. Each window delegate owns its UndoManager. Tests exercise the actual WindowGroup creation action, isolated native-window close/save behavior, and the delegate's Settings-context routing without pretending a background test host has OS focus.
+- Note for next time: Distinguish scene-level integration from standalone hosting. Preserve SwiftUI delegate forwarding, validate per-window history ownership, and do not weaken Sendable checking for the entire AppKit import.
+
 ## 2026-09-18: Hosted Native Drag Tests
 
 - What did not work: A pasteboard-writer check alone passed even while a row-wide Button intercepted mouse tracking. SwiftUI accessibility traversal did not expose that button reliably. Posting a sequence of mouse events through NSApp failed to complete a reorder, and removing the button could leave the synthetic test in native drag tracking until timeout.
