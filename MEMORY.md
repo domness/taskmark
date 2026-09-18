@@ -251,6 +251,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: A regression opening the actual Settings scene reproduced a window whose content bounds allowed resizing but whose style mask omitted `.resizable`. The earlier `.contentMinSize` scene modifier did not fix that native capability.
 - What was rejected and why: Replacing Settings with a separately managed window or changing global window styles was rejected as unnecessary. Testing only an explicitly resizable NSHostingView test window was rejected because it would bypass the failing scene setup.
 
+### 2026-09-18: Keep One Inspector Toolbar Item Across Visibility Changes
+
+- What was decided: Declare the inspector toggle once in the inspector toolbar with a stable ID. Remove the conditional main-toolbar fallback, revising the two-location implementation recorded on 2026-09-17 while preserving the trailing placement.
+- Why: Hosted native-toolbar inspection reproduced two Show Inspector items after closing the pane: SwiftUI retains the inspector's toolbar contribution while hidden. Tests now start both open and closed and repeatedly toggle, asserting one correctly labeled item throughout.
+- What was rejected and why: Moving between separately declared toolbar items was rejected because their lifetimes overlap. Removing native sidebar controls or changing the inspector's presentation model was unnecessary; the duplicated items were both app-owned inspector toggles.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

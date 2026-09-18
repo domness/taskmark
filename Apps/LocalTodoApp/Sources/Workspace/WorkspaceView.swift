@@ -35,17 +35,10 @@ struct WorkspaceView: View {
                     InspectorContentView(model: model)
                         .inspectorColumnWidth(min: 280, ideal: 340, max: 480)
                         .toolbar {
-                            ToolbarItem(placement: .primaryAction) {
+                            ToolbarItem(id: "taskmark.inspector-toggle", placement: .primaryAction) {
                                 inspectorToggle
                             }
                         }
-                }
-                .toolbar {
-                    if !model.isInspectorPresented {
-                        ToolbarItem(placement: .primaryAction) {
-                            inspectorToggle
-                        }
-                    }
                 }
             }
         }
