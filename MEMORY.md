@@ -245,6 +245,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The native drag source existed, but the full-width Button consumed the mouse interaction over the useful drag region. Model-only ordering tests did not exercise that event ownership. Hosted coverage now checks native drag items and selection-to-inspector wiring.
 - What was rejected and why: Adding another competing transferable drag was rejected because native List insertion already owns reordering. A synthetic in-process mouse sequence was not accepted as end-to-end drag evidence because it could enter system drag tracking without receiving a real WindowServer mouse release.
 
+### 2026-09-18: Enable Native Resizing On The Settings Scene
+
+- What was decided: Add a Settings-only NSViewRepresentable anchor that enables the containing NSWindow's resizable style after scene initialization, retaining SwiftUI's existing size constraints and native Settings command.
+- Why: A regression opening the actual Settings scene reproduced a window whose content bounds allowed resizing but whose style mask omitted `.resizable`. The earlier `.contentMinSize` scene modifier did not fix that native capability.
+- What was rejected and why: Replacing Settings with a separately managed window or changing global window styles was rejected as unnecessary. Testing only an explicitly resizable NSHostingView test window was rejected because it would bypass the failing scene setup.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

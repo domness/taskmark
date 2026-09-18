@@ -30,6 +30,11 @@ struct SettingsView: View {
             .navigationTitle((section ?? .general).title)
         }
         .frame(minWidth: 700, maxWidth: .infinity, minHeight: 560, maxHeight: .infinity, alignment: .topLeading)
+        .background {
+            SettingsWindowResizing()
+                .frame(width: 0, height: 0)
+                .accessibilityHidden(true)
+        }
         .task { await model.refreshConfigurationSettings() }
     }
 }
