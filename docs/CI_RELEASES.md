@@ -25,6 +25,8 @@ Notary Keychain:   $HOME/Library/Keychains/login.keychain-db (explicit path)
 
 The team matches Lumelo's project and the available Dominic Wroblewski distribution identities. The workflow uses manual identity selection, enables hardened runtime and secure timestamps, verifies the resulting Developer ID certificate/team requirement, notarizes and staples the app, and packages it. It then signs, notarizes and staples the DMG too. Both distribution paths include the stapled `.app`. Missing credentials, signing, architecture, notarization, stapling, or Gatekeeper-assessment failures stop publishing; there is **no unsigned fallback**.
 
+The archive also embeds the standalone `taskmark` command in `Contents/Helpers/`. Packaging verifies its universal architecture and Developer ID signature before notarization. Users export it through **Taskmark → Install Command-Line Tool…**; see the [CLI installation guide](../README.md#cli).
+
 The release receives:
 
 | Asset | Purpose |

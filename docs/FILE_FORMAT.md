@@ -82,7 +82,7 @@ area: Areas/Personal Systems.md
 - Absolute paths, `..`, and paths escaping the vault are invalid.
 - App-driven moves update known references atomically.
 - Current safety restriction: only task moves are enabled. Project and area moves are rejected before mutation until multi-file reference updates have a safe recovery design. Editing a collection title does not require a path move.
-- External moves can break references; clients report them and `localtodo doctor` will diagnose them.
+- External moves can break references; clients report them and `taskmark doctor` will diagnose them.
 - Changing only a file title does not change identity. Renaming or moving its path does.
 - `.config/` and its case variants are reserved and cannot contain entity paths, including on case-sensitive volumes so vaults remain portable. Entity identity otherwise remains exact and case-sensitive. Mutation paths cannot contain NUL or symbolic-link components below the vault root, including dangling links. This check is not a sandbox against malicious concurrent filesystem changes.
 

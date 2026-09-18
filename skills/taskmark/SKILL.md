@@ -1,20 +1,20 @@
 ---
-name: local-todo
-description: Manage a Taskmark Markdown vault through the localtodo CLI. Use when an agent needs to inspect, create, update, complete, search, organize, move, or validate Taskmark tasks, projects, areas, tags, priorities, dates, deadlines, and recurrence without editing frontmatter directly.
+name: taskmark
+description: Manage a Taskmark Markdown vault through the taskmark CLI. Use when an agent needs to inspect, create, update, complete, search, organize, move, or validate Taskmark tasks, projects, areas, tags, priorities, dates, deadlines, and recurrence without editing frontmatter directly.
 ---
 
 # Taskmark
 
-Use `localtodo` for mutations. Markdown is user-owned, exact path identity is significant, and direct YAML edits can break references or discard unknown fields.
+Use `taskmark` for mutations. Markdown is user-owned, exact path identity is significant, and direct YAML edits can break references or discard unknown fields.
 
-Taskmark was previously named Local Todo. The CLI command remains `localtodo`. Vault schema 2 uses `.config/` for metadata and shared preferences; there is no migration or fallback for the earlier development layout.
+Taskmark was previously named Local Todo. The command is now `taskmark`, without a `localtodo` alias. Install it from **Taskmark → Install Command-Line Tool…**, choosing a writable folder on the shell's PATH. Reinstall after app updates to refresh the exported command. Vault schema 2 uses `.config/` for metadata and shared preferences; there is no migration or fallback for the earlier development layout.
 
 ## Establish Context
 
-1. Run `localtodo --version` and `localtodo --help`.
+1. Run `taskmark --version` and `taskmark --help`.
 2. Use an explicit user-provided vault with `--vault PATH`, or run inside a vault so the CLI resolves the nearest ancestor containing `.config/config.yml`. Never search unrelated home-directory content.
-3. Run `localtodo schema --json` before relying on field or status values.
-4. Run `localtodo doctor --vault PATH --json` before broad changes. Exit status 10 means diagnostics were found.
+3. Run `taskmark schema --json` before relying on field or status values.
+4. Run `taskmark doctor --vault PATH --json` before broad changes. Exit status 10 means diagnostics were found.
 5. Preserve every returned vault-relative path exactly, including case.
 
 ## Read
@@ -22,10 +22,10 @@ Taskmark was previously named Local Todo. The CLI command remains `localtodo`. V
 Prefer JSON for reads:
 
 ```bash
-localtodo list --vault PATH --json
-localtodo show --vault PATH --json "Tasks/Exact Name.md"
-localtodo search --vault PATH --json "launch"
-localtodo doctor --vault PATH --json
+taskmark list --vault PATH --json
+taskmark show --vault PATH --json "Tasks/Exact Name.md"
+taskmark search --vault PATH --json "launch"
+taskmark doctor --vault PATH --json
 ```
 
 Combine `list` and `search` filters as needed: `--view all|inbox|next|today|upcoming|waiting|someday`, repeated `--status`, `--project`, `--area`, repeated `--tag`, repeated `--priority` including `none`, `--scheduled-on`, `--scheduled-from`, `--scheduled-through`, `--deadline-on`, `--deadline-from`, and `--deadline-through`. Add `--all` only when completed and canceled tasks should be included. `--view all` selects the broad scope but does not itself include completed tasks. Use `--sort path|title|priority|scheduled|deadline|created|updated`; the app's shared Custom order is stored in the vault config and has no CLI sort equivalent.
@@ -47,11 +47,11 @@ For each mutation:
 Examples:
 
 ```bash
-localtodo add --vault PATH --dry-run --json "Tasks/Review.md" --title "Review" --status next
-localtodo edit --vault PATH --dry-run --json "Tasks/Review.md" --priority p1 --scheduled 2026-08-01
-localtodo complete --vault PATH --dry-run --json "Tasks/Review.md"
-localtodo reschedule --vault PATH --dry-run --json "Tasks/Review.md" --to 2026-08-03
-localtodo move --vault PATH --dry-run --json "Tasks/Review.md" "Tasks/Review launch.md"
+taskmark add --vault PATH --dry-run --json "Tasks/Review.md" --title "Review" --status next
+taskmark edit --vault PATH --dry-run --json "Tasks/Review.md" --priority p1 --scheduled 2026-08-01
+taskmark complete --vault PATH --dry-run --json "Tasks/Review.md"
+taskmark reschedule --vault PATH --dry-run --json "Tasks/Review.md" --to 2026-08-03
+taskmark move --vault PATH --dry-run --json "Tasks/Review.md" "Tasks/Review launch.md"
 ```
 
 Use repeated `--tag` to replace tags. Use explicit `--clear-priority`, `--clear-scheduled`, `--clear-deadline`, `--clear-project`, `--clear-area`, `--clear-tags`, or `--clear-recurrence` when clearing values. Project/area moves are disabled, including dry runs; change their display titles without renaming files. Only task moves are enabled, using an exclusive atomic rename. Never bypass the collection-move restriction with filesystem tools.

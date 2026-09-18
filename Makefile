@@ -34,4 +34,4 @@ test-release-scripts:
 check: lint test-release-scripts test build
 
 run-cli:
-	swift run localtodo --help
+	swift run taskmark --help

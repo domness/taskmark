@@ -12,6 +12,7 @@ struct LocalTodoApp: App {
         }
         .commands {
             WorkspaceCommands(windows: windows)
+            CLIInstallationCommands()
         }
         Settings {
             SettingsView(model: windows.settingsWorkspace)

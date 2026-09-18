@@ -10,7 +10,7 @@ let package = Package(
     products: [
         .library(name: "LocalTodoDomain", targets: ["LocalTodoDomain"]),
         .library(name: "LocalTodoMarkdown", targets: ["LocalTodoMarkdown"]),
-        .executable(name: "localtodo", targets: ["LocalTodoCLI"]),
+        .executable(name: "taskmark", targets: ["LocalTodoCLI"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.5.0"),

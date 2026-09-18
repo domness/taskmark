@@ -275,6 +275,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: A vault copied or synchronized between machines should bring its preferences. This intentionally replaces the earlier device-local ordering/settings decisions and the shared app-wide appearance object from the multi-window decision. Each window now projects its vault configuration; different vaults can use different themes. Only bookmarks/window geometry remain machine-local.
 - What was rejected and why: Continuing to use UserDefaults for vault preferences would make machines diverge. Last-writer-wins was rejected: configuration writes check whole-file revisions, rebase distinct top-level fields, preserve unknown nested keys and retain conflicting local edits until resolved. Migration scaffolding was removed at the user's explicit direction. No file synchronization service is implied by configuration portability.
 
+### 2026-09-18: Rename And Bundle The Taskmark CLI
+
+- What was decided: At the user's explicit confirmation, rename the CLI executable and companion skill to `taskmark`, without a `localtodo` alias. This revises the earlier CLI-name retention decision. Compile the same CLI sources into an Xcode tool target and embed it in the app; expose Taskmark → Install Command-Line Tool… using a native Save panel and coordinated atomic export. Keep existing internal modules and the app bundle identifier.
+- Why: The command and agent-facing instructions should match the app name, and app users should install the CLI without a developer toolchain. A user-selected destination works with the app sandbox and avoids administrator privileges. Exported copies run independently of the app location and are refreshed by reinstalling after updates.
+- What was rejected and why: Retaining the old command alias was explicitly not selected. Privileged installation and automatic shell-profile edits add unnecessary system changes; a symlink into the app would break when the app moves. Only the specific user-selected-executable entitlement is added rather than removing the app sandbox.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

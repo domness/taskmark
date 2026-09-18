@@ -37,7 +37,7 @@ enum CLIErrorRenderer {
 
     static func write(_ error: Error, arguments: [String]) {
         let commands = Set(LocalTodoCommand.configuration.subcommands.map { $0.configuration.commandName ?? "" })
-        let command = arguments.first(where: commands.contains) ?? "localtodo"
+        let command = arguments.first(where: commands.contains) ?? "taskmark"
         guard let data = try? data(for: error, command: command, dryRun: arguments.contains("--dry-run")) else {
             return
         }

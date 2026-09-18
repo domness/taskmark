@@ -3,7 +3,7 @@ import ArgumentParser
 @main
 struct LocalTodoCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
-        commandName: "localtodo",
+        commandName: "taskmark",
         abstract: "Manage a Taskmark Markdown vault.",
         version: "0.1.0",
         subcommands: [

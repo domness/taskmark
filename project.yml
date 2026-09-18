@@ -8,6 +8,9 @@ options:
 packages:
   LocalTodoKit:
     path: .
+  ArgumentParser:
+    url: https://github.com/apple/swift-argument-parser
+    from: 1.5.0
 
 settings:
   base:
@@ -16,6 +19,23 @@ settings:
     ENABLE_USER_SCRIPT_SANDBOXING: NO
 
 targets:
+  TaskmarkCLI:
+    type: tool
+    platform: macOS
+    sources:
+      - path: Sources/LocalTodoCLI
+    dependencies:
+      - package: LocalTodoKit
+        product: LocalTodoDomain
+      - package: LocalTodoKit
+        product: LocalTodoMarkdown
+      - package: ArgumentParser
+    settings:
+      base:
+        PRODUCT_NAME: taskmark
+        PRODUCT_MODULE_NAME: LocalTodoCLI
+        SKIP_INSTALL: YES
+        ENABLE_HARDENED_RUNTIME: YES
   LocalTodoApp:
     type: application
     platform: macOS
@@ -24,6 +44,13 @@ targets:
       - path: Apps/LocalTodoApp/Sources
       - path: Apps/LocalTodoApp/Resources
     dependencies:
+      - target: TaskmarkCLI
+        link: false
+        embed: true
+        codeSign: true
+        copy:
+          destination: wrapper
+          subpath: Contents/Helpers
       - package: LocalTodoKit
         product: LocalTodoDomain
       - package: LocalTodoKit

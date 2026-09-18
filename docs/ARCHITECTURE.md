@@ -8,7 +8,7 @@ Markdown is canonical. Any index or cache is derived, disposable, and rebuildabl
 
 ## Targets
 
-The macOS product is `Taskmark.app`. Existing `LocalTodo*` target/module names, the `localtodo` executable and bundle identifier remain stable. Vault schema 2 stores metadata under `.config/`.
+The macOS product is `Taskmark.app`, and the CLI executable is `taskmark`. Existing `LocalTodo*` modules and the app bundle identifier remain stable. Vault schema 2 stores metadata under `.config/`.
 
 ```text
 LocalTodoApp ---> LocalTodoMarkdown <--- LocalTodoCLI
@@ -27,6 +27,8 @@ Owns frontmatter translation, body preservation, vault discovery, path-reference
 ### LocalTodoCLI
 
 Owns command definitions, argument validation, human output, JSON output, and process exit codes. Commands call shared domain and Markdown APIs rather than editing YAML directly.
+
+SwiftPM exposes the `taskmark` executable. Xcode's `TaskmarkCLI` tool target compiles the same CLI sources and embeds the signed executable at `Taskmark.app/Contents/Helpers/taskmark`, separate from the app's `Taskmark` executable on case-insensitive volumes. The app does not link the CLI target. Release archives validate both architecture slices and the CLI's Developer ID signature. The app-menu installer uses a native Save panel, scoped access and coordinated atomic export to a user-selected path; the app's user-selected-executable entitlement permits executable exports while retaining its sandbox. The standalone CLI has no app-sandbox entitlement and uses normal shell filesystem permissions. Installation and shell PATH are machine-local, outside the vault contract.
 
 ### LocalTodoApp
 

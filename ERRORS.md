@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-18: Bundled CLI Export And Case-Insensitive App Paths
+
+- What did not work: Initial installer validation hit a formatter/linter disagreement around a compact catch and FileWrapper's string-keyed attributes. Embedding lowercase `taskmark` beside uppercase `Taskmark` overwrote the app executable on the default case-insensitive filesystem, causing the app test host to run the CLI.
+- What worked instead: Use a multiline do/catch and string-keyed attributes including both file type and POSIX permissions (FileWrapper raises an Objective-C exception if the type is omitted); put the CLI in the standard nested-code directory `Contents/Helpers/`, and clean the old build products before revalidating.
+- Note for next time: Never colocate product names distinguished only by case. FileWrapper attributes are string-keyed, unlike FileManager attributes. Verify the actual bundled executable and an exported standalone copy, not just SwiftPM output.
+
 ## 2026-09-18: Shared-Configuration Test And Settings Lifecycle Updates
 
 - What did not work: A closure whose only throwing operations were inside Swift Testing macros was inferred as nonthrowing during several test-compilation passes. Adding a Settings save-status inset also caused SwiftUI to reapply a nonresizable window style after the one-time anchor callback.

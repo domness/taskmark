@@ -80,12 +80,12 @@ Project/area path moves are currently disabled in both clients; editing a title 
 ## CLI Equivalents
 
 ```sh
-localtodo list --view upcoming --sort deadline
-localtodo list --view waiting --tag work --priority p1
-localtodo reschedule Tasks/review.md --to 2026-09-20 --dry-run
-localtodo filter save "Waiting work" --view waiting --tag work --sort priority
-localtodo filter run "Waiting work"
-localtodo filter delete "Waiting work" --dry-run
+taskmark list --view upcoming --sort deadline
+taskmark list --view waiting --tag work --priority p1
+taskmark reschedule Tasks/review.md --to 2026-09-20 --dry-run
+taskmark filter save "Waiting work" --view waiting --tag work --sort priority
+taskmark filter run "Waiting work"
+taskmark filter delete "Waiting work" --dry-run
 ```
 
 Run these inside the vault or supply `--vault PATH`. CLI mutations support `--dry-run`; the app and CLI share domain transitions and storage validation.

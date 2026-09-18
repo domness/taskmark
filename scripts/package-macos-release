@@ -71,6 +71,15 @@ codesign --verify --deep --strict --verbose=2 "$app"
 # Reject development/ad-hoc signatures even if the archive command completed.
 requirement="anchor apple generic and certificate leaf[field.1.2.840.113635.100.6.1.13] exists and certificate leaf[subject.OU] = \"$APPLE_DEVELOPER_TEAM_ID\""
 codesign --verify --strict -R="$requirement" "$app"
+cli="$app/Contents/Helpers/taskmark"
+[[ -x "$cli" ]] || { echo "Archive contains no executable taskmark CLI." >&2; exit 1; }
+cli_architectures=" $(xcrun lipo -archs "$cli") "
+[[ "$cli_architectures" == *" arm64 "* && "$cli_architectures" == *" x86_64 "* ]] || {
+  echo "Release CLI must contain arm64 and x86_64 slices; found:$cli_architectures" >&2
+  exit 1
+}
+codesign --verify --strict -R="$requirement" "$cli"
+"$cli" --help > /dev/null
 
 notarize() {
   local file=$1 report=$2
