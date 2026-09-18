@@ -65,6 +65,10 @@ public struct VaultScanner: Sendable {
 
     func loadConfiguration() throws -> VaultConfiguration {
         let manifest = root.appendingPathComponent(LocalTodoSchema.manifestPath)
+        let paths = [".config", LocalTodoSchema.manifestPath].map { root.appendingPathComponent($0) }
+        for url in paths where try fileSystem.isSymbolicLink(at: url) {
+            throw VaultStoreError.invalidVault("Vault configuration must not use symbolic links")
+        }
         guard fileSystem.exists(at: manifest) else {
             throw VaultStoreError.invalidVault("Missing \(LocalTodoSchema.manifestPath)")
         }

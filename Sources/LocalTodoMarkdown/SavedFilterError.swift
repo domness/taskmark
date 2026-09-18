@@ -7,7 +7,7 @@ public enum SavedFilterError: Error, Equatable, Sendable, LocalizedError {
     public var errorDescription: String? {
         switch self {
         case .conflict: "Saved filters changed on disk. Reload them before saving again."
-        case let .invalidFormat(detail): "Invalid .localtodo/filters.md: \(detail)"
+        case let .invalidFormat(detail): "Invalid .config/filters.md: \(detail)"
         }
     }
 }

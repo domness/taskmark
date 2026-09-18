@@ -97,26 +97,20 @@ import Testing
 }
 
 @MainActor
-@Test func sortingPreferencesPersistAndAcceptLegacySettings() throws {
-    let suite = "SortPreferences.\(UUID().uuidString)"
-    let defaults = try #require(UserDefaults(suiteName: suite))
-    defer { defaults.removePersistentDomain(forName: suite) }
-    let legacy = Data(#"{"today":{"showsProject":false,"showsArea":true,"showsTags":true,"grouping":"none"}}"#.utf8)
-    defaults.set(legacy, forKey: "TaskListDisplayPreferences")
-    let preferences = TaskListDisplayPreferencesStore(defaults: defaults)
-    let model = WorkspaceModel(
-        bookmarks: VaultBookmarkStore(defaults: defaults),
-        taskListDisplayPreferences: preferences
-    )
-    #expect(!model.currentTaskListDisplayOptions.showsProject)
-    #expect(model.currentTaskSort == .priority)
-    model.setTaskSort(.deadline)
-    let reloaded = WorkspaceModel(
-        bookmarks: VaultBookmarkStore(defaults: defaults),
-        taskListDisplayPreferences: preferences
-    )
-    #expect(reloaded.currentTaskSort == .deadline)
-    #expect(!reloaded.currentTaskListDisplayOptions.showsProject)
-    reloaded.route = .upcoming
-    #expect(reloaded.currentTaskSort == .scheduled)
+@Test func sortingPreferencesPersistInTheVault() async throws {
+    try await withWorkspace { model, root in
+        model.route = .today
+        model.setTaskListMetadata(.project, isVisible: false)
+        #expect(model.currentTaskSort == .priority)
+        model.setTaskSort(.deadline)
+        #expect(await model.flushPreferences())
+        let reloaded = WorkspaceModel()
+        let opened = try await reloaded.openVault(root)
+        #expect(opened)
+        reloaded.route = .today
+        #expect(reloaded.currentTaskSort == .deadline)
+        #expect(!reloaded.currentTaskListDisplayOptions.showsProject)
+        reloaded.route = .upcoming
+        #expect(reloaded.currentTaskSort == .scheduled)
+    }
 }

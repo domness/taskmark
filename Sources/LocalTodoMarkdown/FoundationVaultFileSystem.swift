@@ -49,7 +49,8 @@ public struct FoundationVaultFileSystem: VaultFileSystem {
         var files = [URL]()
         for case let url as URL in enumerator {
             let relative = relativePath(of: url, in: root)
-            if relative == ".localtodo" || relative.hasPrefix(".localtodo/") {
+            let reserved = relative.lowercased()
+            if reserved == ".config" || reserved.hasPrefix(".config/") {
                 enumerator.skipDescendants()
                 continue
             }

@@ -30,11 +30,11 @@ swift run localtodo add --vault "$HOME/Taskmark" \
 swift run localtodo list --vault "$HOME/Taskmark" --view next
 ```
 
-Open `LocalTodo.xcodeproj` and run the `LocalTodoApp` scheme to build **Taskmark.app**. Create a new vault from the first-run screen, or open an existing vault containing `.localtodo/config.yml`. The app stores a security-scoped bookmark so it can restore that selection on later launches.
+Open `LocalTodo.xcodeproj` and run the `LocalTodoApp` scheme to build **Taskmark.app**. Create a new vault from the first-run screen, or open a vault containing `.config/config.yml`. The app stores a security-scoped bookmark so it can restore that selection on later launches.
 
-Taskmark was previously named Local Todo. The `localtodo` CLI command, `.localtodo` vault metadata, bundle identifier and internal Swift/Xcode target names remain stable, so existing vaults, preferences and scripts continue to work without migration.
+Taskmark was previously named Local Todo. The `localtodo` CLI command, bundle identifier and internal Swift/Xcode target names remain stable. **Version 0.1.0 uses vault schema 2:** `.config/config.yml` holds timezone, theme, appearance, calendar/display preferences and all manual ordering/view options. Saved filters live in `.config/filters.md`; custom styles remain in `.config/style.css`. The earlier `.localtodo` layout is not supported, and no migration is provided for the unused development format.
 
-Use **File → New Vault Window** (`Command-Shift-N`) to work with multiple vaults at once. Each window keeps its own selection, drafts and undo history; appearance preferences are shared.
+Use **File → New Vault Window** (`Command-Shift-N`) to work with multiple vaults at once. Each window keeps its own selection, drafts and undo history. Preferences belong to the selected vault, so different vaults can have different themes. Copy or sync the entire vault, including `.config/`, to share its preferences between machines; external changes reload automatically.
 
 ## CLI
 

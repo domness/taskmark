@@ -1,23 +1,73 @@
 # File Format
 
-Status: initial V1 contract. Any incompatible change requires a schema migration, tests, documentation, and a breaking-change commit.
+Status: vault schema 2, introduced in Taskmark 0.1.0. The configuration layout is intentionally incompatible with the earlier development format. At the user's request there is no migration or `.localtodo` fallback. Future incompatible changes require an explicit compatibility plan, tests, documentation and a breaking-change commit.
 
 ## Vault
 
-A vault is a user-selected directory containing `.localtodo/config.yml`:
+A vault is a user-selected directory containing `.config/config.yml`:
 
 ```yaml
-schema: 1
+schema: 2
 timezone: Europe/London
+preferences:
+  appearance: dark
+  theme: forest
+  week_start: 2
+  date_format: iso
+  time_format: twentyFourHour
+  initial_view: today
+  vault_stylesheet: true
 ```
 
-`timezone` is optional. When omitted, Today uses the current system timezone. The app may store disposable indexes under `.localtodo/cache/`; cache content is never canonical and must be safe to delete.
+`timezone` is optional. When omitted, Today uses the current system timezone. The app may store disposable indexes under `.config/cache/`; cache content is never canonical and must be safe to delete.
 
-macOS General Settings edits this canonical timezone through a coordinated, whole-file revision-checked atomic replacement. Unknown manifest YAML values survive; formatting and comments may normalize. Selecting System removes the timezone key. Invalid schemas, malformed YAML, symlink components and stale revisions fail without rewriting the file. App-only week-start/date/time-format/theme/startup preferences live in device-local UserDefaults and do not alter the entity schema or CLI formatting.
+Settings and display/order choices are canonical vault preferences in this file. Writes use exact-file coordination, whole-file optimistic revisions and atomic replacement. Unknown root and nested preference keys survive known-field edits; formatting/comments may normalize. Selecting System time zone removes the timezone key. Invalid schemas, malformed preferences, symlink components and stale revisions fail without rewriting the file. Calendar display choices do not change stored ISO dates, CLI formatting or recurrence calculation rules.
 
 Creating a vault requires an empty directory. Opening an existing vault requires a valid manifest and never reinitializes the folder.
 
-Typed Markdown files may live anywhere below the vault except `.localtodo/`. Folder names do not define workflow semantics.
+Typed Markdown files may live anywhere below the vault except `.config/`. Folder names do not define workflow semantics.
+
+### Shared Preferences
+
+`preferences` is an optional mapping; an absent/null mapping or missing known fields use the defaults below. Present field values must be valid, rather than being silently reset. Copy or synchronize the **entire vault, including `.config/`**, to carry the same choices between machines. Taskmark reads external changes during its regular refresh; it does not provide a synchronization transport.
+
+| Key | Values / default |
+| --- | --- |
+| `appearance` | `system` (default), `light`, `dark` |
+| `theme` | `standard` (Taskmark, default), `slate`, `forest`, `sand` |
+| `week_start` | Integer 1–7, Sunday–Saturday; default 2 (Monday) |
+| `date_format` | `system` (default), `iso`, `dayFirst`, `monthFirst` |
+| `time_format` | `system` (default), `twelveHour`, `twentyFourHour` |
+| `initial_view` | `today` (default), `inbox`, `next`, `upcoming`, `waiting`, `someday`, `all`, `search` |
+| `vault_stylesheet` | Boolean, default `true` |
+| `sidebar_order` | Optional mapping of `project` / `area` to ordered unique vault-relative paths |
+| `custom_order` | Optional mapping of view keys to `{isEnabled: boolean, paths: [ordered unique paths]}` |
+| `views` | Optional mapping of view keys to row display and automatic sort/grouping options |
+
+`system` is a shared choice to follow the current machine's appearance, locale or timezone; select explicit values when identical presentation is wanted across machines.
+
+View keys are built-in view names, `search`, `filters`, `filter:<name>`, `project:<exact-path>`, `area:<exact-path>`, `tag:<tag>` or `priority:<p1|p2|p3|p4|none>`. Each `views` entry has boolean `showsProject`, `showsArea`, `showsTags`, a `grouping` of `none`, `project` or `area`, and optional/null `sort` (`path`, `title`, `priority`, `scheduled`, `deadline`, `created`, `updated`). For example:
+
+```yaml
+preferences:
+  sidebar_order:
+    project: [Projects/Work.md, Projects/Home.md]
+  custom_order:
+    inbox:
+      isEnabled: true
+      paths: [Tasks/Second.md, Tasks/First.md]
+  views:
+    inbox:
+      showsProject: true
+      showsArea: true
+      showsTags: false
+      grouping: none
+      sort: priority
+```
+
+Ordering uses exact paths and never moves entity files. Missing paths are ignored; newly discovered tasks follow remembered tasks. Custom ordering is applied by the app after query evaluation, not a CLI sort mode or a rewrite of saved-filter definitions.
+
+Preference edits autosave and are flushed before closing/switching vaults or quitting. Different top-level preference fields can rebase over external changes. Concurrent changes to the same field (including an order/view mapping) retain the local draft and require Use File Preferences or Keep My Preferences. Machine-local bookmarks and window geometry remain outside this shared contract.
 
 ## Identity And References
 
@@ -34,7 +84,7 @@ area: Areas/Personal Systems.md
 - Current safety restriction: only task moves are enabled. Project and area moves are rejected before mutation until multi-file reference updates have a safe recovery design. Editing a collection title does not require a path move.
 - External moves can break references; clients report them and `localtodo doctor` will diagnose them.
 - Changing only a file title does not change identity. Renaming or moving its path does.
-- `.localtodo/` and its case variants are reserved and cannot contain entity paths, including on case-sensitive volumes so vaults remain portable. Entity identity otherwise remains exact and case-sensitive. Mutation paths cannot contain NUL or symbolic-link components below the vault root, including dangling links. This check is not a sandbox against malicious concurrent filesystem changes.
+- `.config/` and its case variants are reserved and cannot contain entity paths, including on case-sensitive volumes so vaults remain portable. Entity identity otherwise remains exact and case-sensitive. Mutation paths cannot contain NUL or symbolic-link components below the vault root, including dangling links. This check is not a sandbox against malicious concurrent filesystem changes.
 
 ## Task
 
@@ -130,12 +180,12 @@ Area status is `active` or `archived`.
 - Projects, areas, tags, and priorities are queries over explicit metadata.
 - Combined filters intersect project, area, status, priority, required tags, and inclusive scheduled/deadline ranges. Multiple statuses/priorities are alternatives; all selected tags are required and case-sensitive. A date range excludes undated tasks and its start must not exceed its end. Completed/canceled tasks require the include-completed option.
 - Sorting supports exact path, title, priority (P1 first), scheduled/deadline (earliest first, missing last), and creation/update time (newest first). Ties use exact path. CLI defaults to path order.
-- Completion updates the existing file in place; automatic archiving is outside V1.
+- Completion updates the existing file in place; automatic archiving is not implemented.
 - Rescheduling an incomplete task moves its scheduled date (or deadline when scheduled is absent) to a chosen date, preserving the signed calendar-day offset of paired dates. Undated tasks gain a scheduled date. Rescheduling does not complete/repeat the task or change checklist markers. Explicit edits to an individual date remain independent.
 
 ## Recurrence
 
-V1 supports fixed calendar recurrence and intervals after completion.
+Taskmark supports fixed calendar recurrence and intervals after completion.
 
 Fixed form:
 
@@ -168,7 +218,7 @@ After-completion intervals use exactly `P<n>D`, `P<n>W`, `P<n>M`, or `P<n>Y`, wh
 - Fixed rules advance from the previous scheduled date, or deadline when no scheduled date exists, repeatedly following the rule until the next occurrence is strictly after the completion day. Early completion still advances at least one occurrence. Monthly/yearly advancement retains the existing calendar clamping behavior (for example January 31 → February 28 → March 28).
 - When both dates exist, the scheduled date anchors the recurrence and the deadline keeps its calendar-day offset from it, including across daylight-saving changes.
 - A recurring task with neither date gets a scheduled date calculated from the completion day.
-- Recurrence leaves the body unchanged unless `reset_checklist_on_repeat: true` is set. Then recognized checked markers become unchecked; all other body bytes are preserved. This optional V1 extension requires no migration and defaults off for existing notes. Ordinary non-recurring completion never resets checklists.
+- Recurrence leaves the body unchanged unless `reset_checklist_on_repeat: true` is set. Then recognized checked markers become unchecked; all other body bytes are preserved. An absent preference defaults off. Ordinary non-recurring completion never resets checklists.
 
 ### Body Checklists
 
@@ -176,7 +226,7 @@ Interactive checklist items use `-`, `*`, `+`, or a 1–9 digit ordered marker e
 
 ## Saved Filters
 
-Optional `.localtodo/filters.md` is canonical vault metadata, not a cache or task entity. It stores named query definitions in Markdown frontmatter:
+Optional `.config/filters.md` is canonical vault metadata, not a cache or task entity. It retains its own filter-document schema 1, independent of vault schema 2, and stores named query definitions in Markdown frontmatter:
 
 ```markdown
 ---
@@ -197,7 +247,7 @@ filters:
 Optional notes about these views.
 ```
 
-- The file uses its own `schema: 1`; missing file means no saved filters. Existing vaults require no migration. The `filters` list is required when the file exists, and may be empty.
+- The file uses its own `schema: 1`; missing file means no saved filters. The `filters` list is required when the file exists, and may be empty.
 - Names are non-empty, unique and case-sensitive, without leading/trailing whitespace or newlines. They identify entries within this metadata document, not task/project/area entities. Task identity remains its exact path; no hidden IDs are introduced.
 - `view` is `all` (default), `today`, `inbox`, `next`, `upcoming`, `waiting`, or `someday`. Today/Upcoming resolve against the current vault-local day when run.
 - Optional `text`, `project`, `area`, `statuses`, `priorities`, `includes_no_priority`, `tags`, `scheduled_from`, `scheduled_through`, `deadline_from`, `deadline_through`, `include_completed`, and `sort` follow the shared query semantics above. Absent collections are empty, booleans false, text empty, and sort `path`. Date bounds are fixed inclusive calendar dates. Unknown enum values, malformed fields, reversed ranges and duplicate names are rejected.
@@ -205,13 +255,13 @@ Optional notes about these views.
 - Writes coordinate the exact metadata file, reject symlink components and coordinator remaps, compare the whole-file revision, then exclusively create or atomically replace it. Stale revisions fail rather than merging or overwriting other clients' saved views. A malformed file is surfaced and never silently repaired. Missing project/area references are reported in vault diagnostics and by saved-filter execution.
 - Both app and CLI use the shared definition and query implementation. CLI commands: `filter list`, `filter save NAME [query options] [--replace]`, `filter run NAME`, and `filter delete NAME`; mutation commands support `--dry-run`.
 
-## Device-Local Presentation And Optional Appearance
+## Shared Presentation And Optional Appearance
 
-The macOS app stores display preferences and manual ordering in UserDefaults, outside the vault schema. Sidebar project/area order and Custom task order are scoped to the vault URL; Custom task order is also scoped to its view. They use exact paths, do not move files, and are not canonical task fields or CLI sort modes. A saved filter's canonical `sort` remains one of the shared query sorts even when the app displays it in Custom order. See [personalization](PERSONALIZATION.md).
+The macOS app stores display preferences and manual ordering in `.config/config.yml` as described above. A saved filter's canonical `sort` remains one of the shared query sorts even when the app displays it in Custom order. See [personalization](PERSONALIZATION.md).
 
 ### Optional Native Appearance
 
-The macOS app optionally reads `.config/style.css`, a UTF-8 file up to 64 KiB. It is user-authored appearance configuration, not a manifest or entity. `.config/` remains available to typed Markdown files; no existing entity paths become reserved. Symlink components below the vault root are rejected. Missing or invalid styles use built-in appearance; diagnostics never cause stylesheet rewrites. The documented selectors, tokens, precedence and reload behavior are in [PERSONALIZATION.md](PERSONALIZATION.md). Styles do not change task semantics or Markdown mutations.
+The macOS app optionally reads `.config/style.css`, a UTF-8 file up to 64 KiB, alongside the manifest and saved filters. Symlink components below the vault root are rejected. Missing or invalid styles use built-in appearance; diagnostics never cause stylesheet rewrites. The documented selectors, tokens, precedence and reload behavior are in [PERSONALIZATION.md](PERSONALIZATION.md). Styles do not change task semantics or Markdown mutations.
 
 ## Mutation Guarantees
 

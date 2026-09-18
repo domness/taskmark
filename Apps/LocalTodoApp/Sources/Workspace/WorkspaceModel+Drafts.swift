@@ -9,9 +9,11 @@ extension WorkspaceModel {
             || hasDirtyDrafts
             || filterState.isSaving
             || isSavingConfiguration
+            || isSavingPreferences || !pendingPreferenceChanges.isEmpty
     }
 
     func flushTaskChanges() async -> Bool {
+        let preferencesSaved = await flushPreferences()
         for _ in 0 ..< 100 where !pendingMutationPaths.isEmpty || filterState.isSaving || isSavingConfiguration {
             try? await Task.sleep(for: .milliseconds(50))
         }
@@ -25,7 +27,7 @@ extension WorkspaceModel {
         for draft in projectDrafts.values where draft.canSave {
             await updateProject(draft)
         }
-        return pendingMutationPaths.isEmpty
+        return preferencesSaved && pendingPreferenceChanges.isEmpty && pendingMutationPaths.isEmpty
             && !isHistoryBusy
             && quickCaptureTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             && !hasDirtyDrafts

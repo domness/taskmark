@@ -12,7 +12,7 @@ public struct SavedFilterRecord: Equatable, Sendable {
 }
 
 extension VaultStore {
-    public static let savedFiltersPath = ".localtodo/filters.md"
+    public static let savedFiltersPath = ".config/filters.md"
 
     public func savedFilters() throws -> SavedFilterRecord {
         let url = try savedFilterURL()
@@ -60,7 +60,7 @@ extension VaultStore {
     }
 
     private func savedFilterURL() throws -> URL {
-        let components = [".localtodo", LocalTodoSchema.manifestPath, Self.savedFiltersPath]
+        let components = [".config", LocalTodoSchema.manifestPath, Self.savedFiltersPath]
         for component in components {
             try validateFilterComponent(component)
         }

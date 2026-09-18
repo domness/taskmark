@@ -50,6 +50,8 @@ import Testing
 @Test func stylesheetRejectsSymlinkEntryPoint() async throws {
     let root = try makeTestVault()
     defer { removeTestVault(root) }
-    try FileManager.default.createSymbolicLink(at: root.appendingPathComponent(".config"), withDestinationURL: root)
+    let original = root.appendingPathComponent("ConfigurationCopy")
+    try FileManager.default.moveItem(at: root.appendingPathComponent(".config"), to: original)
+    try FileManager.default.createSymbolicLink(at: root.appendingPathComponent(".config"), withDestinationURL: original)
     await #expect(throws: VaultStoreError.self) { try await VaultStore(root: root).stylesheet() }
 }

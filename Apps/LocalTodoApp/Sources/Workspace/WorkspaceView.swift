@@ -43,6 +43,7 @@ struct WorkspaceView: View {
             }
         }
         .frame(minWidth: 840, minHeight: 560)
+        .safeAreaInset(edge: .bottom) { ConfigurationSaveStatus(model: model) }
         .disabled(model.isSavingConfiguration)
         .sheet(isPresented: $model.isCommandPalettePresented) {
             CommandPaletteView(model: model)

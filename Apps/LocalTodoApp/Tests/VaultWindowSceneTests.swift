@@ -13,7 +13,7 @@ import Testing
     let secondModel = try #require((second.delegate as? WorkspaceWindowDelegate)?.model)
     #expect(first !== second)
     #expect(firstModel !== secondModel)
-    #expect(firstModel.preferences === secondModel.preferences)
+    #expect(firstModel.preferences !== secondModel.preferences)
     #expect(secondModel.rootURL == nil)
     #expect(first.tabbingMode == .disallowed)
     #expect(second.tabbingMode == .disallowed)

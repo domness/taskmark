@@ -269,6 +269,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: One app-wide model made every window show the same vault and allowed menu/history actions to target the wrong workspace. Independent models isolate exact paths that may be identical in different vaults; native per-window UndoManagers and close validation preserve edits.
 - What was rejected and why: Merely exposing WindowGroup's new-window action was rejected because it retained shared vault state. Dropping view-owned drafts on close was rejected because autosave may be pending. Full multi-vault session restoration is deferred: the first window restores the last bookmark and subsequent windows start at the chooser. The AppKit delegate bridge forwards SwiftUI's existing callbacks instead of replacing its scene lifecycle.
 
+### 2026-09-18: Store All Vault Preferences In Schema 2 Configuration
+
+- What was decided: At the user's request, move the sole supported metadata layout to `.config/`, with schema 2 `.config/config.yml`, saved filters `.config/filters.md` and `.config/style.css`. Store appearance, theme, stylesheet enablement, calendar/display/startup preferences, sidebar order, Custom task order and per-view display options in the manifest. Reserve `.config/` for metadata. The user explicitly said there are no existing users and no migration is needed, so no migration or legacy-layout fallback is provided.
+- Why: A vault copied or synchronized between machines should bring its preferences. This intentionally replaces the earlier device-local ordering/settings decisions and the shared app-wide appearance object from the multi-window decision. Each window now projects its vault configuration; different vaults can use different themes. Only bookmarks/window geometry remain machine-local.
+- What was rejected and why: Continuing to use UserDefaults for vault preferences would make machines diverge. Last-writer-wins was rejected: configuration writes check whole-file revisions, rebase distinct top-level fields, preserve unknown nested keys and retain conflicting local edits until resolved. Migration scaffolding was removed at the user's explicit direction. No file synchronization service is implied by configuration portability.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

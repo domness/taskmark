@@ -4,6 +4,7 @@ public enum VaultInitializer {
     public static func initialize(
         at root: URL,
         timezone: String? = nil,
+        preferences: [String: ConfigurationValue] = [:],
         fileSystem: any VaultFileSystem = FoundationVaultFileSystem()
     ) throws {
         if let timezone, TimeZone(identifier: timezone) == nil {
@@ -21,10 +22,9 @@ public enum VaultInitializer {
         }
         let rootExisted = fileSystem.exists(at: root)
         let configurationDirectory = manifest.deletingLastPathComponent()
-        let configuration = VaultConfiguration(timezone: timezone)
-        guard let data = try configuration.encoded().data(using: .utf8) else {
-            throw VaultStoreError.inputOutput("Unable to encode manifest")
-        }
+        try VaultPreferenceValidation.validate(preferences)
+        let configuration = VaultConfiguration(timezone: timezone, preferences: preferences)
+        let data = try Data(configuration.encoded().utf8)
         do {
             try fileSystem.createDirectory(at: root)
             try fileSystem.createDirectory(at: configurationDirectory)

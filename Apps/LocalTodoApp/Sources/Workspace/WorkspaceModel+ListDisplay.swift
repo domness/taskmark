@@ -62,6 +62,6 @@ extension WorkspaceModel {
         var options = currentTaskListDisplayOptions
         update(&options)
         taskListDisplayOptionsByRoute[route.listPreferencesKey] = options
-        taskListDisplayPreferences.save(taskListDisplayOptionsByRoute)
+        queuePreferenceState("views", value: taskListDisplayOptionsByRoute)
     }
 }

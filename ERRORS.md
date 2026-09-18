@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-18: Shared-Configuration Test And Settings Lifecycle Updates
+
+- What did not work: A closure whose only throwing operations were inside Swift Testing macros was inferred as nonthrowing during several test-compilation passes. Adding a Settings save-status inset also caused SwiftUI to reapply a nonresizable window style after the one-time anchor callback.
+- What worked instead: Evaluate throwing async setup in an ordinary `let` before asserting its result. The Settings anchor now rechecks the style after native window updates and changes it only when the resizable bit is missing. Shared-preference save/discard races use a paused-filesystem fixture rather than timing-only tests.
+- Note for next time: Validate the real Settings scene after changing its content structure, and keep throwing setup visible to closure type inference outside assertion macros.
+
 ## 2026-09-18: Multi-Window AppKit Boundaries In Swift 6 Tests
 
 - What did not work: Returning the non-Sendable NSWindowDelegate through `MainActor.assumeIsolated`, including via a captured variable, failed strict concurrency checking. Standalone hosted windows also had no environment UndoManager and did not reliably become OS key windows in the test runner, so global-menu activation was not a valid focus test there.

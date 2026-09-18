@@ -31,14 +31,6 @@ struct GeneralSettingsView: View {
                 } else {
                     Text("Open a vault to choose its time zone.").foregroundStyle(.secondary)
                 }
-                if let error = model.configurationSettingsError {
-                    Label(error, systemImage: "exclamationmark.triangle")
-                    Button("Reload Time Zone") {
-                        model.configurationSettingsError = nil
-                        Task { await model.refreshConfigurationSettings() }
-                    }
-                    .disabled(model.isSavingConfiguration)
-                }
             }
             Section("Startup") {
                 Picker("Initial view", selection: $preferences.initialView) {

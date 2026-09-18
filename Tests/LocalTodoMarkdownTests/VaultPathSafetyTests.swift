@@ -3,7 +3,7 @@ import LocalTodoDomain
 @testable import LocalTodoMarkdown
 import Testing
 
-@Test(arguments: [".localtodo/Task.md", ".LocalTodo/Task.md", "Bad\0Name.md", "../Task.md", "Tasks\\Task.md"])
+@Test(arguments: [".config/Task.md", ".Config/Task.md", "Bad\0Name.md", "../Task.md", "Tasks\\Task.md"])
 func pathSafetyRevalidatesDecodedPaths(value: String) async throws {
     let data = try JSONEncoder().encode(["value": value])
     let path = try JSONDecoder().decode(VaultPath.self, from: data)

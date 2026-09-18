@@ -2,7 +2,7 @@
 
 Open **Taskmark → Settings…** or press **Command-comma**. The native Settings window has General and Theme sections. Changes apply immediately; there is no Apply button. Settings uses the same appearance as the main window.
 
-With multiple vault windows, device-local preferences apply to all of them. Vault-specific timezone and stylesheet controls use the most recently active vault window; the timezone description identifies its vault. Closing that window selects another open workspace, or shows no active vault if all are closed.
+Settings edits the most recently active vault window. All choices belong to that vault and persist in `.config/config.yml`, so different vaults can have different themes. Windows/machines opening the same vault reload its settings from the shared file. Closing the active window selects another open workspace; without a vault, preference controls are disabled.
 
 The window opens at 760 × 620 logical points and can be resized, with a 700 × 560 minimum. Both sections align short content to the top of the right-hand panel and scroll when content exceeds the available height.
 
@@ -17,22 +17,24 @@ Settings uses a fixed 170-point sidebar beneath a compact native titlebar. The t
 | Start week on | Any weekday; Monday | Calendar pickers and the “Next week” suggestion. “Later this week” never crosses the chosen week boundary. Weekend suggestions remain Saturday/Sunday. This presentation choice does **not** change shared recurrence calculation boundaries. |
 | Date format | System (default), YYYY-MM-DD, DD/MM/YYYY, MM/DD/YYYY | Task-row dates, date-picker buttons/suggestions and inspector file timestamps. System uses the Mac's locale. Exact typed date entry, filters' stored dates, Markdown and CLI formats remain ISO. |
 | Time format | System (default), 12-hour, 24-hour | Live Settings preview and Created/Updated file timestamps in the task inspector. Tasks still have date-only scheduled/deadline fields; this adds no task-time schema. |
-| Time zone | System when absent, or searchable IANA identifier | **Active vault**, saved to `.localtodo/config.yml`, so app/CLI Today membership and recurrence calculations agree. No vault: control unavailable. |
+| Time zone | System when absent, or searchable IANA identifier | **Active vault**, saved to `.config/config.yml`, so app/CLI Today membership and recurrence calculations agree. No vault: control unavailable. |
 | Initial view | Today (default), Inbox, Next, Upcoming, Waiting, Someday, All Tasks, Search | Applied on vault opening, including app restoration and switching vaults. Changing it does not navigate away from current work. |
 
-All settings except time zone are device-local UserDefaults keys under `preferences.`. `AppPreferences` is an observable, composition-root-owned dependency with injectable defaults for tests. Unknown stored enum values fall back to defaults rather than failing startup. Initial view/appearance/theme choices persist independently.
+`AppPreferences` is an observable projection of the vault's `preferences` mapping. Missing fields use documented defaults; invalid present values are surfaced without rewriting the file. Theme, light/dark mode, week start, date/time formats, startup view and stylesheet enablement are shared, as are sidebar/task ordering and per-view display options. See the [configuration schema](FILE_FORMAT.md#shared-preferences). System appearance/date/time choices still follow each machine's OS/locale; select explicit values for identical rendering.
+
+Preference changes apply immediately and autosave. A save indicator/error banner appears in both Settings and the workspace. Concurrent changes to different top-level fields merge; overlapping changes require **Use File Preferences** or **Keep My Preferences**. Failed writes retain pending edits and block closing or switching vaults until resolved. Copy/sync `.config/` together with the vault's task files to carry preferences to another machine.
 
 ### Time-zone safety
 
 The Markdown target owns manifest reads and writes (`VaultStore+Configuration.swift`). It validates schema and IANA identifiers, rejects symlink components and coordinator remaps, compares the entire file's revision, preserves unknown YAML values, and atomically replaces the manifest. Selecting System removes the timezone key. Formatting/comments can normalize. Existing task files and their date values are not rewritten.
 
-Dirty or conflicting drafts must finish saving before changing the time zone. An in-flight timezone save disables workspace editing and blocks vault switching and termination until it finishes. Failures leave the old manifest and selected zone intact, and appear inline with **Reload Time Zone**. Reload before retrying an external-change conflict. Unrelated task undo history, including deletion recovery, survives a successful timezone change.
+Dirty or conflicting drafts must finish saving before changing the time zone. An in-flight timezone save disables workspace editing and blocks vault switching and termination until it finishes. Failures leave the old manifest and selected zone intact, and appear with **Reload Configuration**. Reload before retrying an external-change conflict. Unrelated task undo history, including deletion recovery, survives a successful timezone change.
 
 ## Theme
 
 - **System / Light / Dark** controls appearance independently of the chosen palette. System follows macOS. Native controls, sheets, popovers, editors and text use the resolved appearance.
 - **Taskmark, Slate, Forest, Sand** each provide paired light/dark palettes. Selection applies immediately to sidebar, list, inspector and Settings surfaces and control accents.
-- **Apply vault stylesheet** enables `.config/style.css` overrides on top of the selected theme. This preference is persistent on this Mac. Missing/invalid styles fall back to the selected built-in theme. The Settings section shows parse diagnostics and provides Reveal Vault and Reload Stylesheet actions.
+- **Apply vault stylesheet** enables `.config/style.css` overrides on top of the selected theme. This preference is saved with the vault. Missing/invalid styles fall back to the selected built-in theme. The Settings section shows parse diagnostics and provides Reveal Vault and Reload Stylesheet actions.
 
 See [THEMES.md](THEMES.md) for every built-in token, custom-theme examples, override precedence and implementation extension points.
 

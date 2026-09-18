@@ -1,48 +1,76 @@
-import Foundation
+import LocalTodoMarkdown
 import Observation
 
-/// Device-local presentation preferences. The vault time zone is intentionally stored in its manifest instead.
+/// A window's projection of its vault's canonical preferences. Changes are saved by WorkspaceModel.
 @MainActor
 @Observable
 final class AppPreferences {
-    var weekStart: WeekStart {
-        didSet { defaults.set(weekStart.rawValue, forKey: "preferences.weekStart") }
+    var weekStart: WeekStart = .monday {
+        didSet { changed("week_start", .integer(weekStart.rawValue)) }
     }
 
-    var dateFormat: DisplayDateFormat {
-        didSet { defaults.set(dateFormat.rawValue, forKey: "preferences.dateFormat") }
+    var dateFormat: DisplayDateFormat = .system {
+        didSet { changed("date_format", .string(dateFormat.rawValue)) }
     }
 
-    var timeFormat: DisplayTimeFormat {
-        didSet { defaults.set(timeFormat.rawValue, forKey: "preferences.timeFormat") }
+    var timeFormat: DisplayTimeFormat = .system {
+        didSet { changed("time_format", .string(timeFormat.rawValue)) }
     }
 
-    var initialView: InitialView {
-        didSet { defaults.set(initialView.rawValue, forKey: "preferences.initialView") }
+    var initialView: InitialView = .today {
+        didSet { changed("initial_view", .string(initialView.rawValue)) }
     }
 
-    var appearance: AppAppearance {
-        didSet { defaults.set(appearance.rawValue, forKey: "preferences.appearance") }
+    var appearance: AppAppearance = .system {
+        didSet { changed("appearance", .string(appearance.rawValue)) }
     }
 
-    var theme: AppTheme {
-        didSet { defaults.set(theme.rawValue, forKey: "preferences.theme") }
+    var theme: AppTheme = .standard {
+        didSet { changed("theme", .string(theme.rawValue)) }
     }
 
-    var usesVaultStylesheet: Bool {
-        didSet { defaults.set(usesVaultStylesheet, forKey: "preferences.vaultStylesheet") }
+    var usesVaultStylesheet = true {
+        didSet { changed("vault_stylesheet", .bool(usesVaultStylesheet)) }
     }
 
-    @ObservationIgnored private let defaults: UserDefaults
+    @ObservationIgnored var onChange: ((String, ConfigurationValue) -> Void)?
+    @ObservationIgnored private var isApplying = false
 
-    init(defaults: UserDefaults = .standard) {
-        self.defaults = defaults
-        weekStart = WeekStart(rawValue: defaults.integer(forKey: "preferences.weekStart")) ?? .monday
-        dateFormat = DisplayDateFormat(rawValue: defaults.string(forKey: "preferences.dateFormat") ?? "") ?? .system
-        timeFormat = DisplayTimeFormat(rawValue: defaults.string(forKey: "preferences.timeFormat") ?? "") ?? .system
-        initialView = InitialView(rawValue: defaults.string(forKey: "preferences.initialView") ?? "") ?? .today
-        appearance = AppAppearance(rawValue: defaults.string(forKey: "preferences.appearance") ?? "") ?? .system
-        theme = AppTheme(rawValue: defaults.string(forKey: "preferences.theme") ?? "") ?? .standard
-        usesVaultStylesheet = defaults.object(forKey: "preferences.vaultStylesheet") as? Bool ?? true
+    init(values: [String: ConfigurationValue] = [:]) {
+        apply(values)
+    }
+
+    var values: [String: ConfigurationValue] {
+        [
+            "week_start": .integer(weekStart.rawValue),
+            "date_format": .string(dateFormat.rawValue),
+            "time_format": .string(timeFormat.rawValue),
+            "initial_view": .string(initialView.rawValue),
+            "appearance": .string(appearance.rawValue),
+            "theme": .string(theme.rawValue),
+            "vault_stylesheet": .bool(usesVaultStylesheet),
+        ]
+    }
+
+    func apply(_ values: [String: ConfigurationValue]) {
+        isApplying = true
+        defer { isApplying = false }
+        weekStart = WeekStart(rawValue: (try? values["week_start"]?.decode(Int.self)) ?? 2) ?? .monday
+        dateFormat = DisplayDateFormat(rawValue: string("date_format", in: values)) ?? .system
+        timeFormat = DisplayTimeFormat(rawValue: string("time_format", in: values)) ?? .system
+        initialView = InitialView(rawValue: string("initial_view", in: values)) ?? .today
+        appearance = AppAppearance(rawValue: string("appearance", in: values)) ?? .system
+        theme = AppTheme(rawValue: string("theme", in: values)) ?? .standard
+        usesVaultStylesheet = (try? values["vault_stylesheet"]?.decode(Bool.self)) ?? true
+    }
+
+    private func changed(_ key: String, _ value: ConfigurationValue) {
+        if !isApplying {
+            onChange?(key, value)
+        }
+    }
+
+    private func string(_ key: String, in values: [String: ConfigurationValue]) -> String {
+        (try? values[key]?.decode(String.self)) ?? ""
     }
 }

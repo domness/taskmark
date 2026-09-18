@@ -25,11 +25,18 @@ struct SettingsView: View {
                 case .theme: ThemeSettingsView(model: model, preferences: model.preferences)
                 }
             }
+            .disabled(model.snapshot == nil)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .themeSurface()
             .navigationTitle((section ?? .general).title)
         }
         .frame(minWidth: 700, maxWidth: .infinity, minHeight: 560, maxHeight: .infinity, alignment: .topLeading)
+        .safeAreaInset(edge: .bottom) {
+            if model.snapshot == nil {
+                Text("Open a vault to edit its shared preferences.").padding()
+            }
+            ConfigurationSaveStatus(model: model)
+        }
         .background {
             SettingsWindowResizing()
                 .frame(width: 0, height: 0)

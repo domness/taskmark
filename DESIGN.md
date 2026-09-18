@@ -96,7 +96,7 @@ Native controls own interaction feedback. Any future custom motion should remain
 
 ## 7. Implemented macOS Settings And Appearance
 
-The Settings surface inherits the native system font, sidebar navigation, visible keyboard focus and flat working plane. General uses native grouped form controls; Theme uses a segmented appearance picker and four compact selectable previews with text/checkmark selection cues. Preferences apply immediately.
+The Settings surface inherits the native system font, sidebar navigation, visible keyboard focus and flat working plane. General uses native grouped form controls; Theme uses a segmented appearance picker and four compact selectable previews with text/checkmark selection cues. Preferences apply immediately and autosave to the active vault's `.config/config.yml`; other windows/machines opening that vault reload the same choices. Different vaults may use different palettes. Configuration save errors and conflicts have visible resolution controls.
 
 Appearance is independently System, Light or Dark. Slate, Forest and Sand extend the default Taskmark palette's restrained surface language. All paired token values and extension rules are documented in [docs/THEMES.md](docs/THEMES.md), with code in `Apps/LocalTodoApp/Sources/Settings/AppTheme.swift`.
 

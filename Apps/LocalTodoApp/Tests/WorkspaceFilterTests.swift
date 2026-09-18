@@ -97,7 +97,6 @@ func withReloadedWorkspace(
     try bookmarks.save(root)
     let model = WorkspaceModel(
         bookmarks: bookmarks,
-        taskListDisplayPreferences: TaskListDisplayPreferencesStore(defaults: defaults),
         clock: { now ?? Date() }
     )
     await model.restoreVault()

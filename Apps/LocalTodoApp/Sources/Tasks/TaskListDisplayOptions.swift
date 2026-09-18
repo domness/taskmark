@@ -45,22 +45,3 @@ enum TaskListMetadataField {
     case area
     case tags
 }
-
-struct TaskListDisplayPreferencesStore {
-    private let key = "TaskListDisplayPreferences"
-    private let defaults: UserDefaults
-
-    init(defaults: UserDefaults = .standard) {
-        self.defaults = defaults
-    }
-
-    func load() -> [String: TaskListDisplayOptions] {
-        guard let data = defaults.data(forKey: key) else { return [:] }
-        return (try? JSONDecoder().decode([String: TaskListDisplayOptions].self, from: data)) ?? [:]
-    }
-
-    func save(_ preferences: [String: TaskListDisplayOptions]) {
-        guard let data = try? JSONEncoder().encode(preferences) else { return }
-        defaults.set(data, forKey: key)
-    }
-}

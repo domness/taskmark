@@ -25,10 +25,6 @@ extension WorkspaceModel {
         return SidebarOrder.sorted(paths, order: sidebarOrders[collection.rawValue] ?? [])
     }
 
-    func loadSidebarOrder() {
-        sidebarOrders = sidebarPreferences.dictionary(forKey: sidebarOrderKey) as? [String: [String]] ?? [:]
-    }
-
     func moveCollection(_ path: VaultPath, in collection: SidebarCollection, offset: Int) {
         var paths = orderedCollectionPaths(collection)
         guard let index = paths.firstIndex(of: path), paths.indices.contains(index + offset) else { return }
@@ -59,12 +55,8 @@ extension WorkspaceModel {
         saveSidebarOrder([], collection: collection)
     }
 
-    private var sidebarOrderKey: String {
-        "sidebar-order." + (rootURL?.standardizedFileURL.path ?? "")
-    }
-
     private func saveSidebarOrder(_ order: [String], collection: SidebarCollection) {
         sidebarOrders[collection.rawValue] = order
-        sidebarPreferences.set(sidebarOrders, forKey: sidebarOrderKey)
+        queuePreferenceState("sidebar_order", value: sidebarOrders)
     }
 }

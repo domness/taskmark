@@ -1,7 +1,7 @@
 import AppKit
 import Observation
 
-/// App-scoped ownership of open workspaces, shared preferences and coordinated termination.
+/// App-scoped ownership of open workspaces, unbound defaults and coordinated termination.
 @MainActor
 @Observable
 final class WorkspaceWindows {

@@ -6,7 +6,7 @@ enum VaultPicker {
     static func chooseExistingVault() async -> URL? {
         await chooseDirectory(
             title: "Open Taskmark Vault",
-            message: "Select a folder containing .localtodo/config.yml.",
+            message: "Select a folder containing .config/config.yml.",
             prompt: "Open Vault",
             canCreateDirectories: false
         )

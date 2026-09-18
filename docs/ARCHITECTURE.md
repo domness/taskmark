@@ -8,7 +8,7 @@ Markdown is canonical. Any index or cache is derived, disposable, and rebuildabl
 
 ## Targets
 
-The macOS product is `Taskmark.app`. Existing `LocalTodo*` target/module names, the `localtodo` executable, bundle identifier and `.localtodo` metadata paths remain stable through the display-name change.
+The macOS product is `Taskmark.app`. Existing `LocalTodo*` target/module names, the `localtodo` executable and bundle identifier remain stable. Vault schema 2 stores metadata under `.config/`.
 
 ```text
 LocalTodoApp ---> LocalTodoMarkdown <--- LocalTodoCLI
@@ -32,21 +32,22 @@ Owns command definitions, argument validation, human output, JSON output, and pr
 
 Owns SwiftUI composition, macOS vault selection, security-scoped access, keyboard commands, and presentation state. The desktop shell has a navigation sidebar, task list, collapsible task/project inspector, command palette and native Settings scene. `WorkspaceModel` owns task/project drafts, autosave, conflict handling, native history and vault-session state.
 
-Each `WorkspaceWindowRoot` owns a distinct `WorkspaceModel`. The app-scoped `WorkspaceWindows` coordinates shared `AppPreferences`, open-model lifetime, the last active Settings context and all-window termination flushing. `WorkspaceCommands` uses SwiftUI focused scene values rather than a single app-wide model. A main-actor AppKit window-delegate bridge validates close requests, supplies a per-window UndoManager, forwards SwiftUI's scene callbacks and releases vault resources after closing. Only the initial window restores the last bookmark; newly requested windows start unbound.
+Each `WorkspaceWindowRoot` owns a distinct `WorkspaceModel` and `AppPreferences` projection of its vault configuration. The app-scoped `WorkspaceWindows` coordinates open-model lifetime, the last active Settings context and all-window termination flushing. Different vault windows can use different themes; windows on the same vault refresh shared values from disk. `WorkspaceCommands` uses SwiftUI focused scene values rather than a single app-wide model. A main-actor AppKit window-delegate bridge validates close requests, supplies a per-window UndoManager, forwards SwiftUI's scene callbacks and releases vault resources after closing. Only the initial window restores the last bookmark; newly requested windows start unbound.
 
 ## Data Flow
 
-1. The user selects a vault containing `.localtodo/config.yml`.
+1. The user selects a vault containing `.config/config.yml`.
 2. The Markdown target discovers typed files and reports parse failures without dropping them.
-3. Domain queries drive Inbox, Today, Next, Upcoming, Waiting, Someday, All Tasks, collection/tag/priority views, search and saved filters. The app may apply device-local Custom ordering after shared query evaluation.
+3. Domain queries drive Inbox, Today, Next, Upcoming, Waiting, Someday, All Tasks, collection/tag/priority views, search and saved filters. The app applies the vault's Custom ordering after shared query evaluation when enabled.
 4. User actions produce explicit mutations.
 5. The Markdown target applies mutations through coordinated atomic replacement.
 6. An approximately two-second app refresh loop obtains a full vault snapshot, reconciles drafts and reloads saved filters, stylesheet and configuration. Successful app mutations merge their result immediately and refresh. Incremental filesystem indexing is not implemented.
 
 ## Persistence And Presentation
 
-- Entity Markdown, `.localtodo/config.yml` and optional `.localtodo/filters.md` are canonical vault data. The optional `.config/style.css` is user-authored appearance configuration; the app only reads it.
-- UserDefaults holds device-local settings, list display preferences, independent sidebar ordering and Custom task ordering. Manual order uses exact paths, scoped per vault URL and route; it does not change Markdown, CLI sorting or saved-filter definitions.
+- Entity Markdown, `.config/config.yml` and optional `.config/filters.md` are canonical vault data. The optional `.config/style.css` is user-authored appearance configuration; the app only reads it. `.config/` is reserved and excluded from entity scans.
+- Settings, list display preferences, sidebar ordering and Custom task ordering are stored in the manifest's `preferences` mapping. Manual order uses exact paths and view keys, without machine-specific absolute paths. UserDefaults is used only for machine-local access/window information such as the recent-vault bookmark.
+- Workspace-owned preference drafts autosave through revision-checked Markdown APIs. Non-overlapping top-level fields rebase; overlapping external changes remain pending until the user chooses file or local preferences. Known-field patches preserve unknown nested YAML values. Pending preference changes participate in close/switch/quit checks.
 - Custom task ordering uses native List moves within the current group. Transferable task drags assign sidebar collections under automatic sorts; they are omitted in Custom mode to avoid competing gestures.
 - The app's stylesheet adapter maps a bounded CSS-token syntax to native colors and spacing. It does not embed a browser or replace native control semantics. See [themes](THEMES.md) and [personalization](PERSONALIZATION.md).
 

@@ -76,17 +76,17 @@ Selectors are exactly `:root`, `:root[data-appearance=light]` and `:root[data-ap
 
 ### Reload And Recovery
 
-- The entry point is case-sensitive UTF-8, no more than 64 KiB; symlink components below the root are rejected. `.config/` remains available for typed Markdown files. No new reserved entity paths or schema migration are introduced.
+- The entry point is case-sensitive UTF-8, no more than 64 KiB; symlink components below the root are rejected. `.config/` is reserved for configuration, styles and saved filters, not task entities.
 - Reads happen on opening the vault and its existing approximately two-second refresh, or through Reload Stylesheet. No app action writes or repairs the stylesheet.
 - Any invalid or unsupported declaration rejects the whole file. The selected built-in theme stays usable; Theme Settings and the task-list View Options warning expose the diagnostic. A missing stylesheet simply uses the built-in theme.
-- Disabling Apply vault stylesheet persists across launches and vault switches on this Mac. It does not delete the file. App/CLI task semantics and vault timezone remain unaffected.
+- Disabling Apply vault stylesheet persists in the vault's `.config/config.yml` and applies on every machine that opens that vault. It does not delete the file. Each vault retains independent appearance choices; app/CLI task semantics and vault timezone remain unaffected.
 - Custom colors are user-controlled. Provide paired light/dark values, keep native text legible, test selected and disabled states and Increase Contrast, and preserve at least 4.5:1 body-text contrast. There is no automatic contrast certification or silent palette rewriting.
 
 ## Extending The Implementation
 
 Source paths below are relative to `Apps/LocalTodoApp/Sources/`. For window composition and behavior, see [Settings](SETTINGS.md); for ordering and task interactions, see [Personalization](PERSONALIZATION.md).
 
-- `Settings/AppPreferences.swift`: durable device-local choices, independently persisted stable keys and safe defaults. Inject a test UserDefaults suite; avoid global mutable appearance state.
+- `Settings/AppPreferences.swift`: observable per-vault choices projected from canonical configuration. Workspace-owned autosave persists changes through `LocalTodoMarkdown`; use temporary vaults in tests rather than machine defaults. Malformed stored preferences are diagnosed and not silently reset.
 - `Settings/AppTheme.swift`: add palette cases here, each with explicit light/dark tokens and a useful preview label. The Settings grid derives from `allCases`.
 - `Workspace/VaultAppearance.swift`: validates the CSS subset and merges overrides. Add new tokens to its allowlist with validation, tests and an entry in this document; never silently accept unsupported declarations.
 - `Settings/AppAppearanceModifier.swift`: applies preference-driven native appearance at **both scene roots**, propagates calendar/date-format/theme environments, and defines `ThemeSurface` for explicit semantic surfaces. Do not force every text/control fill to a custom color; macOS still owns focus, selection and form-control states.

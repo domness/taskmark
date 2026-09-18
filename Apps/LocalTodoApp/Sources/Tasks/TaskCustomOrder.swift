@@ -92,14 +92,6 @@ extension WorkspaceModel {
         return true
     }
 
-    func loadTaskCustomOrders() {
-        guard let data = sidebarPreferences.data(forKey: taskCustomOrderKey) else {
-            taskCustomOrders = [:]
-            return
-        }
-        taskCustomOrders = (try? JSONDecoder().decode([String: TaskCustomOrder].self, from: data)) ?? [:]
-    }
-
     private func reorderSection(containing path: VaultPath?) -> [VaultPath] {
         let tasks = visibleTasks
         guard let task = tasks.first(where: { $0.path == path }) else { return [] }
@@ -112,12 +104,7 @@ extension WorkspaceModel {
         }.map(\.path)
     }
 
-    private var taskCustomOrderKey: String {
-        "task-custom-order." + (rootURL?.standardizedFileURL.path ?? "")
-    }
-
     private func saveTaskCustomOrders() {
-        guard let data = try? JSONEncoder().encode(taskCustomOrders) else { return }
-        sidebarPreferences.set(data, forKey: taskCustomOrderKey)
+        queuePreferenceState("custom_order", value: taskCustomOrders)
     }
 }

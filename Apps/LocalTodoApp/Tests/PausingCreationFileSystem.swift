@@ -1,12 +1,18 @@
 import Foundation
 import LocalTodoMarkdown
 
-/// Pauses one exclusive publication so tests can exercise input arriving during a real filesystem save.
+/// Pauses one selected operation so tests can exercise input arriving during real filesystem work.
 final class PausingCreationFileSystem: VaultFileSystem, @unchecked Sendable {
+    enum Operation { case create, replace, read }
+    private let operation: Operation
     private let base = FoundationVaultFileSystem()
     private let lock = NSLock()
     private let gate = DispatchSemaphore(value: 0)
     private var paused = false
+
+    init(operation: Operation = .create) {
+        self.operation = operation
+    }
 
     var hasPaused: Bool {
         lock.withLock { paused }
@@ -49,7 +55,8 @@ final class PausingCreationFileSystem: VaultFileSystem, @unchecked Sendable {
     }
 
     func read(at url: URL) throws -> Data {
-        try base.read(at: url)
+        pauseIfNeeded(.read)
+        return try base.read(at: url)
     }
 
     func remove(at url: URL) throws {
@@ -65,10 +72,17 @@ final class PausingCreationFileSystem: VaultFileSystem, @unchecked Sendable {
     }
 
     func writeAtomically(_ data: Data, to url: URL) throws {
+        pauseIfNeeded(.replace)
         try base.writeAtomically(data, to: url)
     }
 
     func writeExclusively(_ data: Data, to url: URL) throws {
+        pauseIfNeeded(.create)
+        try base.writeExclusively(data, to: url)
+    }
+
+    private func pauseIfNeeded(_ operation: Operation) {
+        guard self.operation == operation else { return }
         let shouldPause = lock.withLock {
             guard !paused else { return false }
             paused = true
@@ -77,6 +91,5 @@ final class PausingCreationFileSystem: VaultFileSystem, @unchecked Sendable {
         if shouldPause {
             gate.wait()
         }
-        try base.writeExclusively(data, to: url)
     }
 }

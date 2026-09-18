@@ -55,7 +55,12 @@ final class WorkspaceModel {
     var isSavingConfiguration = false
     var deletingTaskPaths = Set<VaultPath>()
     var deletingCollectionPaths = Set<VaultPath>()
-    @ObservationIgnored let sidebarPreferences: UserDefaults
+    var pendingPreferenceChanges = [String: ConfigurationValue]()
+    var preferenceConflicts = Set<String>()
+    var isSavingPreferences = false
+    @ObservationIgnored var preferenceBases = [String: ConfigurationValue]()
+    @ObservationIgnored var preferenceSaveTask: Task<Void, Never>?
+    @ObservationIgnored var preferenceEditGeneration: UInt64 = 0
 
     @ObservationIgnored var store: VaultStore?
     @ObservationIgnored weak var undoManager: UndoManager?
@@ -71,27 +76,24 @@ final class WorkspaceModel {
     @ObservationIgnored var refreshRequest = UUID()
     @ObservationIgnored var taskDrafts = [VaultPath: TaskDraft]()
     @ObservationIgnored var projectDrafts = [VaultPath: ProjectDraft]()
-    @ObservationIgnored let taskListDisplayPreferences: TaskListDisplayPreferencesStore
     @ObservationIgnored let clock: () -> Date
     @ObservationIgnored var quickCaptureGeneration: UInt64 = 0
 
     init(
         bookmarks: VaultBookmarkStore = VaultBookmarkStore(),
-        taskListDisplayPreferences: TaskListDisplayPreferencesStore = TaskListDisplayPreferencesStore(),
-        sidebarPreferences: UserDefaults = .standard,
         preferences: AppPreferences = AppPreferences(),
         clock: @escaping () -> Date = Date.init
     ) {
         self.bookmarks = bookmarks
-        self.preferences = preferences
-        self.sidebarPreferences = sidebarPreferences
+        self.preferences = AppPreferences(values: preferences.values)
         self.clock = clock
-        self.taskListDisplayPreferences = taskListDisplayPreferences
-        taskListDisplayOptionsByRoute = taskListDisplayPreferences.load()
+        taskListDisplayOptionsByRoute = [:]
+        self.preferences.onChange = { [weak self] key, value in self?.queuePreferenceChange(key, value: value) }
     }
 
     deinit {
         refreshLoop?.cancel()
+        preferenceSaveTask?.cancel()
         for task in autosaveTasks.values {
             task.cancel()
         }
@@ -138,11 +140,12 @@ final class WorkspaceModel {
     }
 
     func createVault(at url: URL) async {
-        guard !isLoading, pendingMutationPaths.isEmpty, !isHistoryBusy else { return }
+        guard !isLoading, pendingMutationPaths.isEmpty, !isHistoryBusy,
+              pendingPreferenceChanges.isEmpty, !isSavingPreferences else { return }
         let access = SecurityScopedVault(url: url)
         defer { _ = access }
         do {
-            try VaultInitializer.initialize(at: url)
+            try VaultInitializer.initialize(at: url, preferences: preferences.values)
             if try await openVault(url) {
                 try bookmarks.save(url)
             }
@@ -153,7 +156,9 @@ final class WorkspaceModel {
 
     private func canChangeVault() -> Bool {
         guard !isLoading else { return false }
-        guard pendingMutationPaths.isEmpty, !isHistoryBusy, !filterState.isSaving, !isSavingConfiguration else {
+        guard pendingMutationPaths.isEmpty, !isHistoryBusy, !filterState.isSaving, !isSavingConfiguration,
+              !isSavingPreferences, pendingPreferenceChanges.isEmpty
+        else {
             errorMessage = "Wait for the current change to finish before switching vaults."
             return false
         }
@@ -167,8 +172,10 @@ final class WorkspaceModel {
         }
         return true
     }
+}
 
-    private func openVault(_ url: URL) async throws -> Bool {
+extension WorkspaceModel {
+    func openVault(_ url: URL) async throws -> Bool {
         let request = UUID()
         openRequest = request
         isLoading = true
@@ -180,7 +187,9 @@ final class WorkspaceModel {
         guard !hasDirtyDrafts else {
             throw VaultSwitchError.unsavedTaskChanges
         }
-        guard pendingMutationPaths.isEmpty, !isHistoryBusy, !filterState.isSaving, !isSavingConfiguration else {
+        guard pendingMutationPaths.isEmpty, !isHistoryBusy, !filterState.isSaving, !isSavingConfiguration,
+              !isSavingPreferences, pendingPreferenceChanges.isEmpty
+        else {
             throw VaultSwitchError.activeMutation
         }
         guard !isQuickCapturePresented else {
@@ -197,17 +206,22 @@ final class WorkspaceModel {
         resetPersonalization()
         self.store = store
         self.snapshot = snapshot
+        resetDocumentState()
+        try applySharedPreferences(snapshot.configuration.preferences)
+        route = preferences.initialView.route
+        selectedTaskPath = nil
+        startRefreshLoop()
+        await refreshVaultPreferences()
+        return true
+    }
+
+    private func resetDocumentState() {
         taskDrafts.removeAll()
         projectDrafts.removeAll()
         autosaveTasks.removeAll()
         pendingMutationPaths.removeAll()
         completedTaskStatuses.removeAll()
         filterState.reset()
-        route = preferences.initialView.route
-        selectedTaskPath = nil
-        startRefreshLoop()
-        await refreshVaultPreferences()
-        return true
     }
 
     private func startRefreshLoop() {
@@ -226,6 +240,8 @@ extension WorkspaceModel {
         openRequest = UUID()
         refreshLoop?.cancel()
         refreshLoop = nil
+        preferenceSaveTask?.cancel()
+        preferenceSaveTask = nil
         for task in autosaveTasks.values {
             task.cancel()
         }

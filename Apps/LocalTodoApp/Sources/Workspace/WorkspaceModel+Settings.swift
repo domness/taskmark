@@ -3,8 +3,14 @@ import LocalTodoMarkdown
 
 extension WorkspaceModel {
     func resetPersonalization() {
-        loadSidebarOrder()
-        loadTaskCustomOrders()
+        sidebarOrders = [:]
+        taskCustomOrders = [:]
+        taskListDisplayOptionsByRoute = [:]
+        preferenceSaveTask?.cancel()
+        preferenceSaveTask = nil
+        pendingPreferenceChanges.removeAll()
+        preferenceBases.removeAll()
+        preferenceConflicts.removeAll()
         configurationSettings = nil
         configurationSettingsError = nil
         vaultAppearance = VaultAppearance()
@@ -25,20 +31,20 @@ extension WorkspaceModel {
     }
 
     func refreshConfigurationSettings() async {
-        guard let store, !isSavingConfiguration else { return }
+        guard let store, !isSavingConfiguration, !isSavingPreferences else { return }
         let session = vaultSession
         do {
             let record = try await store.configurationRecord()
-            guard session == vaultSession, !isSavingConfiguration else { return }
-            configurationSettings = record
+            guard session == vaultSession, !isSavingConfiguration, !isSavingPreferences else { return }
+            try receiveConfiguration(record)
         } catch {
             guard session == vaultSession else { return }
-            configurationSettings = nil
             configurationSettingsError = error.localizedDescription
         }
     }
 
     func setVaultTimezone(_ identifier: String?) async {
+        guard await flushPreferences() else { return }
         guard let store, let configurationSettings, !isSavingConfiguration else { return }
         guard pendingMutationPaths.isEmpty, !isHistoryBusy, !hasDirtyDrafts, !filterState.isSaving else {
             configurationSettingsError = "Finish saving or resolving pending changes before changing the time zone."
@@ -51,13 +57,7 @@ extension WorkspaceModel {
         defer { isSavingConfiguration = false }
         do {
             let saved = try await store.setTimezone(identifier, expectedRevision: configurationSettings.revision)
-            self.configurationSettings = saved
-            if let snapshot {
-                self.snapshot = VaultSnapshot(
-                    generation: snapshot.generation, configuration: saved.value, tasks: snapshot.tasks,
-                    projects: snapshot.projects, areas: snapshot.areas, diagnostics: snapshot.diagnostics
-                )
-            }
+            try receiveConfiguration(saved)
             await refresh()
         } catch {
             configurationSettingsError = error.localizedDescription

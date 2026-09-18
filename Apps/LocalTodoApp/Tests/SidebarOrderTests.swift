@@ -13,7 +13,7 @@ import Testing
         try? FileManager.default.removeItem(at: root)
     }
     let bookmarks = VaultBookmarkStore(defaults: defaults)
-    let model = WorkspaceModel(bookmarks: bookmarks, sidebarPreferences: defaults)
+    let model = WorkspaceModel(bookmarks: bookmarks)
     await model.createVault(at: root)
     for name in ["a", "b"] {
         await model.createCollection(kind: .project, path: "Projects/\(name).md", title: name)
@@ -30,7 +30,8 @@ import Testing
     let session = model.vaultSession
     #expect(model.moveCollections(from: IndexSet(integer: 0), to: 2, in: .area, paths: areas, session: session))
     #expect(!model.moveCollections(from: IndexSet(integer: 0), to: 2, in: .project, paths: areas, session: session))
-    let restored = WorkspaceModel(bookmarks: bookmarks, sidebarPreferences: defaults)
+    #expect(await model.flushPreferences())
+    let restored = WorkspaceModel(bookmarks: bookmarks)
     await restored.restoreVault()
     #expect(restored.orderedCollectionPaths(.project) == Array(projects.reversed()))
     #expect(restored.orderedCollectionPaths(.area) == Array(areas.reversed()))

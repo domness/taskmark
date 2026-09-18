@@ -4,11 +4,8 @@ import LocalTodoDomain
 import Testing
 
 @MainActor
-@Test func appPreferencesPersistAndRecoverUnknownValues() throws {
-    let suite = "PreferencesTests.\(UUID().uuidString)"
-    let defaults = try #require(UserDefaults(suiteName: suite))
-    defer { defaults.removePersistentDomain(forName: suite) }
-    let preferences = AppPreferences(defaults: defaults)
+@Test func appPreferencesProjectSharedConfigurationValues() {
+    let preferences = AppPreferences()
     #expect(preferences.weekStart == .monday)
     #expect(preferences.appearance == .system)
     preferences.weekStart = .saturday
@@ -18,7 +15,7 @@ import Testing
     preferences.appearance = .dark
     preferences.theme = .forest
     preferences.usesVaultStylesheet = false
-    let restored = AppPreferences(defaults: defaults)
+    let restored = AppPreferences(values: preferences.values)
     #expect(restored.weekStart == .saturday)
     #expect(restored.dateFormat == .dayFirst)
     #expect(restored.timeFormat == .twentyFourHour)
@@ -26,9 +23,8 @@ import Testing
     #expect(restored.appearance == .dark)
     #expect(restored.theme == .forest)
     #expect(!restored.usesVaultStylesheet)
-    defaults.set("obsolete", forKey: "preferences.theme")
-    defaults.set(99, forKey: "preferences.weekStart")
-    let recovered = AppPreferences(defaults: defaults)
+    restored.apply([:])
+    let recovered = restored
     #expect(recovered.theme == .standard)
     #expect(recovered.weekStart == .monday)
 }
@@ -66,6 +62,7 @@ func nextWeekHonorsConfiguredWeekStart(firstWeekday: Int) throws {
         model.preferences.weekStart = .saturday
         #expect(model.planningCalendar.firstWeekday == 7)
         #expect(model.vaultCalendar.firstWeekday == original)
+        #expect(await model.flushPreferences())
         await model.restoreVault()
         #expect(model.route == .waiting)
     }

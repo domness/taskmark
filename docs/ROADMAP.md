@@ -1,12 +1,13 @@
 # Roadmap
 
-Status reviewed against the repository on 2026-09-17. Implemented features below are backed by source and automated checks; they do not imply completed manual acceptance or a published release.
+Status reviewed against the repository on 2026-09-18. Implemented features below are backed by source and automated checks; they do not imply completed manual acceptance.
 
 ## Implemented: macOS And CLI
 
 ### Local-First Foundation
 
 - Swift 6 Domain and Markdown targets shared by the native macOS app and CLI, with documented [architecture](ARCHITECTURE.md) and [vault contract](FILE_FORMAT.md).
+- Vault schema 2 uses `.config/` for the manifest, saved filters, stylesheet and shared preferences. The unused earlier development format has no migration or fallback, as requested.
 - Safe empty-folder initialization, vault selection and security-scoped restoration, full-scan snapshots and periodic external-change refresh.
 - Revision-checked atomic updates, preservation of unknown frontmatter and Markdown bodies, visible malformed-file and missing-reference diagnostics.
 - Workspace-owned task/project autosave, non-overlapping rebases, explicit conflict resolution, task-file recovery and native Undo/Redo.
@@ -20,7 +21,7 @@ Status reviewed against the repository on 2026-09-17. Implemented features below
 - Fixed and after-completion recurrence; late fixed completion skips missed occurrences. Interactive body checklists and opt-in checklist reset on repeat.
 - Project title/notes/status editing, completion/reopening and collapsed inactive-project navigation.
 - Combined filters and canonical saved filters shared with the CLI, with explicit Save/Update and conflict recovery.
-- Automatic sorting and **Custom** drag ordering per view/vault on this Mac. Grouped custom moves stay within their group; hidden task positions and order across launches/sort switches are retained.
+- Automatic sorting and **Custom** drag ordering per view/vault, persisted in shared configuration. Grouped custom moves stay within their group; hidden task positions and order across launches/sort switches are retained.
 
 See [daily workflows and shortcuts](DAILY_WORK.md).
 
@@ -40,6 +41,7 @@ See [personalization](PERSONALIZATION.md).
 
 - Resizable native Settings with a fixed General/Theme sidebar and compact titlebar.
 - Persistent week start, date/time display, startup view, appearance, palette and stylesheet preferences.
+- All vault preferences, including sidebar/custom order and per-view display options, travel with `.config/config.yml`. External changes reload; same-field conflicts require explicit resolution. Bookmarks and window geometry remain machine-local.
 - Canonical active-vault timezone editing shared with CLI date semantics.
 - System/Light/Dark appearance and Taskmark, Slate, Forest and Sand palettes, with custom-style diagnostics and reload.
 
@@ -49,7 +51,7 @@ See [settings](SETTINGS.md) and [themes](THEMES.md).
 
 - `make check` regenerates the project, checks formatting/lint and release scripts, runs package/macOS app tests, and builds the unsigned Debug app.
 - PR quality runs on hosted runners; main/manual quality runs target the Mac Mini.
-- Release workflow and scripts build a universal macOS app, select the pinned Developer ID identity, notarize/staple, and upload DMG/ZIP/checksum assets to an existing published release. Runner credentials and end-to-end release execution remain setup/validation work, not proof of a distributed release.
+- Release workflow and scripts build a universal macOS app, select the pinned Developer ID identity and explicit notarization Keychain, notarize/staple, and upload DMG/ZIP/checksum assets to an existing published release. This pipeline successfully published 0.0.2, including independently checked download checksums and Gatekeeper acceptance.
 
 See [CI and release setup](CI_RELEASES.md).
 
@@ -58,7 +60,7 @@ See [CI and release setup](CI_RELEASES.md).
 - Exercise complete native windows, small-window layouts, physical drag gestures, keyboard/VoiceOver traversal and light/dark/Increase Contrast appearance. Hosted tests already cover dynamic row height and Backspace routing between the inspector and list; those checks are narrower than full UI acceptance.
 - Run a real-use pilot and validate iCloud behavior, concurrent external editors and crash/power-loss recovery before claiming synchronization or durability guarantees.
 - Restore project/area path moves only after a multi-file recovery and visibility design satisfies the atomic reference-update contract. They remain rejected before mutation; task moves use exclusive atomic rename.
-- Complete Mac Mini runner/signing prerequisites and verify an end-to-end signed/notarized release and downloaded-app launch.
+- Continue downloaded-app launch and interaction acceptance for each release; successful signing/notarization does not establish full UI correctness.
 
 The maintained test suites under `Tests/` and `Apps/LocalTodoApp/Tests/` are the automated evidence; use the current `make check` result rather than historical test counts.
 

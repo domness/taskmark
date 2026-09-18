@@ -16,11 +16,9 @@ import Testing
         #expect(model.visibleTasks.map(\.path) == paths)
         #expect(move(model, from: [0, 1], to: 3))
         let expected = [paths[2], paths[0], paths[1]]
-        let reloaded = WorkspaceModel(
-            bookmarks: VaultBookmarkStore(defaults: model.sidebarPreferences),
-            sidebarPreferences: model.sidebarPreferences
-        )
-        await reloaded.restoreVault()
+        #expect(await model.flushPreferences())
+        let reloaded = WorkspaceModel()
+        #expect(try await reloaded.openVault(root))
         reloaded.route = .inbox
         #expect(reloaded.currentTaskListSort == .custom)
         #expect(reloaded.visibleTasks.map(\.path) == expected)
@@ -47,6 +45,7 @@ import Testing
         model.route = .inbox
         #expect(model.visibleTasks.map(\.path) == [paths[1], paths[2], paths[0]])
         let otherRoot = root.appendingPathComponent("OtherVault")
+        #expect(await model.flushPreferences())
         await model.createVault(at: otherRoot)
         _ = try await createOrderTasks(model)
         #expect(!model.isCustomTaskOrder)
@@ -56,7 +55,7 @@ import Testing
 
 @MainActor
 @Test func customMovesRejectStaleRoutesSessionsSectionsAndIndices() async throws {
-    try await withWorkspace { model, _ in
+    try await withWorkspace { model, root in
         _ = try await createOrderTasks(model)
         model.setTaskListSort(.custom)
         let context = model.taskReorderContext(for: model.visibleTasks)
@@ -73,11 +72,9 @@ import Testing
         model.setTaskListGrouping(.none)
         #expect(move(model, from: [0], to: 3))
         #expect(!model.moveTasks(from: [0], to: 3, context: context))
-        let reloaded = WorkspaceModel(
-            bookmarks: VaultBookmarkStore(defaults: model.sidebarPreferences),
-            sidebarPreferences: model.sidebarPreferences
-        )
-        await reloaded.restoreVault()
+        #expect(await model.flushPreferences())
+        let reloaded = WorkspaceModel()
+        #expect(try await reloaded.openVault(root))
         reloaded.route = .inbox
         #expect(!reloaded.moveTasks(from: [0], to: 3, context: model.taskReorderContext(for: model.visibleTasks)))
     }

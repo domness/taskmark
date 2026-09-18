@@ -95,7 +95,7 @@ private struct FailingInitializerFileSystem: VaultFileSystem {
 
     func createDirectory(at url: URL) throws {
         try base.createDirectory(at: url)
-        if behavior == .createRootFileAfterMarker, url.lastPathComponent == ".localtodo" {
+        if behavior == .createRootFileAfterMarker, url.lastPathComponent == ".config" {
             try Data("Concurrent content".utf8)
                 .write(to: url.deletingLastPathComponent().appendingPathComponent("concurrent.md"))
         }

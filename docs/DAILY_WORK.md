@@ -6,7 +6,7 @@ Open or create a **dedicated task vault** in the macOS app. Tasks stay in indivi
 
 Choose **File → New Vault Window** (`Command-Shift-N`) to open another independent window, then choose **Open Existing Vault** or **Create New Vault** there. Each window has its own vault, navigation, selection, drafts and Undo/Redo. **Switch Vault** changes only that window. Task/navigation commands follow the focused vault window; `Command-N` still captures a task.
 
-Appearance/calendar-display preferences are shared across windows. Settings uses the most recently active vault window for its vault timezone and stylesheet context. Closing a window flushes its pending document edits; unresolved edits or unsubmitted capture text keep it open. Quitting checks all open workspaces. The first window at launch restores the most recently opened vault; additional windows start with the vault chooser. Restoring a full set of previous vault windows is not implemented.
+Appearance/calendar-display preferences belong to each vault's `.config/config.yml`; different vaults can use different themes. Settings edits the most recently active vault window. Windows/machines opening the same vault reload its shared settings. Closing a window flushes pending document and preference edits; unresolved edits or unsubmitted capture text keep it open. Quitting checks all open workspaces. The first window at launch restores the most recently opened vault; additional windows start with the vault chooser. Restoring a full set of previous vault windows is not implemented.
 
 ## Capture And Plan
 
@@ -20,7 +20,7 @@ Appearance/calendar-display preferences are shared across windows. Settings uses
 - Select a task and use **Task → Reschedule Selected Task…** for an exact date. Reschedule moves scheduled and deadline dates together, preserving their signed calendar-day separation. For a deadline-only task, it moves the deadline; an undated task gains a scheduled date. To edit just one date, use its inspector control.
 - A row click selects the task and opens its details while keeping list focus. **Command-E** focuses the title for editing. The title uses a placeholder instead of a separate label, wraps across multiple lines and expands up to six visible lines; edits autosave.
 - **View Options → Sort** offers title, priority, scheduled date, deadline, newest created/updated, and exact file path. Missing dates/priorities sort last; ties use exact paths.
-- Choose **View Options → Sort → Custom** to drag tasks into your own order. Order is remembered separately for each view and vault on this Mac; switching to another sort and back retains it. New tasks appear after ordered tasks. Grouped views support reordering within each group, and temporarily hidden tasks retain their places. Custom sorting is a local display override, including for saved filters; it does not rewrite Markdown or change CLI sorting. While Custom is active, row drags reorder the list; use the inspector to assign projects/areas, or switch to another sort to drag onto sidebar destinations.
+- Choose **View Options → Sort → Custom** to drag tasks into your own order. Order is saved separately for each view in the vault config and travels between machines; switching to another sort and back retains it. New tasks appear after ordered tasks. Grouped views support reordering within each group, and temporarily hidden tasks retain their places. Custom sorting is an app display override, including for saved filters; it does not rewrite task Markdown or change CLI sorting. While Custom is active, row drags reorder the list; use the inspector to assign projects/areas, or switch to another sort to drag onto sidebar destinations.
 
 ## Repeat And Checklists
 
@@ -48,9 +48,9 @@ Right-click a project or area to delete it. Remove task, project and saved-filte
 
 Choose **New Filter** or press **Command-Shift-F**. Combine a view, project/area, statuses, required tags, priorities, text and scheduled/deadline ranges. All dimensions must match; statuses/priorities are alternatives, and every selected tag is required. Enable **Include completed and canceled tasks** when reviewing finished work.
 
-Results update as criteria change. Name the query and choose **Save Filter**. Select a saved filter in the sidebar and use **Edit Filter → Update Filter** to change it. A different, unused name saves a copy. Choosing an automatic sort for a saved filter opens its working editor so the definition is updated intentionally. **Custom** is a local display override and keeps the saved filter open without rewriting its definition.
+Results update as criteria change. Name the query and choose **Save Filter**. Select a saved filter in the sidebar and use **Edit Filter → Update Filter** to change it. A different, unused name saves a copy. Choosing an automatic sort for a saved filter opens its working editor so the definition is updated intentionally. **Custom** uses the shared presentation order in the vault config and keeps the saved filter open without rewriting its query definition.
 
-Working criteria are temporary until explicitly saved. Named definitions live in `.localtodo/filters.md` and are shared with the CLI. If another client changes that file, local criteria remain available: **Use File Version** loads the saved definition; **Keep Working Filter** reloads other definitions and permits an explicit subsequent save. Malformed definitions and missing references are surfaced rather than repaired.
+Working criteria are temporary until explicitly saved. Named definitions live in `.config/filters.md` and are shared with the CLI. If another client changes that file, local criteria remain available: **Use File Version** loads the saved definition; **Keep Working Filter** reloads other definitions and permits an explicit subsequent save. Malformed definitions and missing references are surfaced rather than repaired.
 
 ## Keyboard Reference
 

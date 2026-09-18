@@ -6,7 +6,7 @@ import Testing
     let root = try makeTestVault()
     defer { removeTestVault(root) }
     let manifest = root.appendingPathComponent(LocalTodoSchema.manifestPath)
-    try Data("schema: 1\ntimezone: Europe/London\ncustom:\n  tags: [one, two]\n".utf8).write(to: manifest)
+    try Data("schema: 2\ntimezone: Europe/London\ncustom:\n  tags: [one, two]\n".utf8).write(to: manifest)
     let store = VaultStore(root: root)
     let initial = try await store.configurationRecord()
     let updated = try await store.setTimezone("Asia/Tokyo", expectedRevision: initial.revision)

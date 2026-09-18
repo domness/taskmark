@@ -15,13 +15,24 @@ struct SettingsWindowResizing: NSViewRepresentable {
 final class SettingsWindowAnchor: NSView {
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
+        NotificationCenter.default.removeObserver(self, name: NSWindow.didUpdateNotification, object: nil)
+        if let window {
+            NotificationCenter.default.addObserver(
+                self, selector: #selector(windowUpdated), name: NSWindow.didUpdateNotification, object: window
+            )
+        }
+        enableResizing()
+    }
+
+    @objc private func windowUpdated(_: Notification) {
         enableResizing()
     }
 
     func enableResizing() {
         // Wait until the Settings scene has applied its initial window style.
         DispatchQueue.main.async { [weak self] in
-            self?.window?.styleMask.insert(.resizable)
+            guard let window = self?.window, !window.styleMask.contains(.resizable) else { return }
+            window.styleMask.insert(.resizable)
         }
     }
 }

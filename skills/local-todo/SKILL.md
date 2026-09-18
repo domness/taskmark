@@ -7,12 +7,12 @@ description: Manage a Taskmark Markdown vault through the localtodo CLI. Use whe
 
 Use `localtodo` for mutations. Markdown is user-owned, exact path identity is significant, and direct YAML edits can break references or discard unknown fields.
 
-Taskmark was previously named Local Todo. The CLI command and `.localtodo` vault metadata paths retain their existing names for compatibility.
+Taskmark was previously named Local Todo. The CLI command remains `localtodo`. Vault schema 2 uses `.config/` for metadata and shared preferences; there is no migration or fallback for the earlier development layout.
 
 ## Establish Context
 
 1. Run `localtodo --version` and `localtodo --help`.
-2. Use an explicit user-provided vault with `--vault PATH`, or run inside a vault so the CLI resolves the nearest ancestor containing `.localtodo/config.yml`. Never search unrelated home-directory content.
+2. Use an explicit user-provided vault with `--vault PATH`, or run inside a vault so the CLI resolves the nearest ancestor containing `.config/config.yml`. Never search unrelated home-directory content.
 3. Run `localtodo schema --json` before relying on field or status values.
 4. Run `localtodo doctor --vault PATH --json` before broad changes. Exit status 10 means diagnostics were found.
 5. Preserve every returned vault-relative path exactly, including case.
@@ -28,9 +28,9 @@ localtodo search --vault PATH --json "launch"
 localtodo doctor --vault PATH --json
 ```
 
-Combine `list` and `search` filters as needed: `--view all|inbox|next|today|upcoming|waiting|someday`, repeated `--status`, `--project`, `--area`, repeated `--tag`, repeated `--priority` including `none`, `--scheduled-on`, `--scheduled-from`, `--scheduled-through`, `--deadline-on`, `--deadline-from`, and `--deadline-through`. Add `--all` only when completed and canceled tasks should be included. `--view all` selects the broad scope but does not itself include completed tasks. Use `--sort path|title|priority|scheduled|deadline|created|updated`; the macOS app's Custom order is device-local and has no CLI equivalent.
+Combine `list` and `search` filters as needed: `--view all|inbox|next|today|upcoming|waiting|someday`, repeated `--status`, `--project`, `--area`, repeated `--tag`, repeated `--priority` including `none`, `--scheduled-on`, `--scheduled-from`, `--scheduled-through`, `--deadline-on`, `--deadline-from`, and `--deadline-through`. Add `--all` only when completed and canceled tasks should be included. `--view all` selects the broad scope but does not itself include completed tasks. Use `--sort path|title|priority|scheduled|deadline|created|updated`; the app's shared Custom order is stored in the vault config and has no CLI sort equivalent.
 
-Saved filters use `filter list`, `filter run NAME`, `filter save NAME [query options]` and `filter delete NAME`. Definitions live in `.localtodo/filters.md`; `filter save --replace` explicitly updates an existing name. Deleting a filter does not delete its tasks.
+Saved filters use `filter list`, `filter run NAME`, `filter save NAME [query options]` and `filter delete NAME`. Definitions live in `.config/filters.md`; `filter save --replace` explicitly updates an existing name. Deleting a filter does not delete its tasks.
 
 Do not treat an empty result as deletion. Distinguish no matches from invalid vaults, malformed files, unresolved references, conflicts, and I/O failures. Vault command JSON responses use `api_version: 1` and `ok`; failures include `error.kind` and `error.message` and return a nonzero status. `schema --json` returns the schema summary directly.
 
@@ -76,7 +76,7 @@ Never auto-confirm destructive or broad changes. Run `doctor` again after a sequ
 
 ## Safety
 
-- Never modify `.localtodo/cache/` as canonical data.
+- Never modify `.config/cache/` as canonical data. `.config/` is reserved; never create task/project/area entities inside it.
 - Never edit frontmatter directly when a CLI operation exists.
 - Never invent UUIDs; identity is the path.
 - Never normalize unknown frontmatter on the agent's own initiative.

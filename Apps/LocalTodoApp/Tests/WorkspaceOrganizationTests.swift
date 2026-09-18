@@ -79,31 +79,22 @@ import Testing
 }
 
 @MainActor
-@Test func taskListDisplayOptionsPersistIndependentlyPerView() throws {
-    let suiteName = "LocalTodoAppListPreferencesTests.\(UUID().uuidString)"
-    let defaults = try #require(UserDefaults(suiteName: suiteName))
-    defer { defaults.removePersistentDomain(forName: suiteName) }
-    let preferences = TaskListDisplayPreferencesStore(defaults: defaults)
-    let model = WorkspaceModel(
-        bookmarks: VaultBookmarkStore(defaults: defaults),
-        taskListDisplayPreferences: preferences
-    )
-    model.route = .today
-
-    model.setTaskListMetadata(.project, isVisible: false)
-    model.setTaskListGrouping(.project)
-
-    #expect(!model.currentTaskListDisplayOptions.showsProject)
-    #expect(model.currentTaskListDisplayOptions.grouping == .project)
-    model.route = .inbox
-    #expect(model.currentTaskListDisplayOptions.showsProject)
-    #expect(model.currentTaskListDisplayOptions.grouping == .none)
-
-    let restored = WorkspaceModel(
-        bookmarks: VaultBookmarkStore(defaults: defaults),
-        taskListDisplayPreferences: preferences
-    )
-    restored.route = .today
-    #expect(!restored.currentTaskListDisplayOptions.showsProject)
-    #expect(restored.currentTaskListDisplayOptions.grouping == .project)
+@Test func taskListDisplayOptionsPersistIndependentlyPerView() async throws {
+    try await withWorkspace { model, root in
+        model.route = .today
+        model.setTaskListMetadata(.project, isVisible: false)
+        model.setTaskListGrouping(.project)
+        #expect(!model.currentTaskListDisplayOptions.showsProject)
+        #expect(model.currentTaskListDisplayOptions.grouping == .project)
+        model.route = .inbox
+        #expect(model.currentTaskListDisplayOptions.showsProject)
+        #expect(model.currentTaskListDisplayOptions.grouping == .none)
+        #expect(await model.flushPreferences())
+        let restored = WorkspaceModel()
+        let opened = try await restored.openVault(root)
+        #expect(opened)
+        restored.route = .today
+        #expect(!restored.currentTaskListDisplayOptions.showsProject)
+        #expect(restored.currentTaskListDisplayOptions.grouping == .project)
+    }
 }

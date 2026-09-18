@@ -28,9 +28,10 @@ import Testing
         first.route = .upcoming
         #expect(second.selectedTaskPath == secondDraft.path)
         #expect(second.route != .upcoming)
-        windows.preferences.theme = .forest
+        first.preferences.theme = .forest
         #expect(first.preferences.theme == .forest)
-        #expect(second.preferences.theme == .forest)
+        #expect(second.preferences.theme == .standard)
+        #expect(await windows.flushAll())
     }
 }
 
@@ -90,8 +91,12 @@ import Testing
 @Test func onlyInitialWindowRestoresTheRecentVault() async throws {
     try await withWorkspace { previous, root in
         let windows = WorkspaceWindows(preferences: previous.preferences)
-        let first = makeWindowModel(defaults: previous.sidebarPreferences, preferences: previous.preferences)
-        let second = makeWindowModel(defaults: previous.sidebarPreferences, preferences: previous.preferences)
+        let suite = "InitialWindowTests.\(UUID().uuidString)"
+        let defaults = try #require(UserDefaults(suiteName: suite))
+        defer { defaults.removePersistentDomain(forName: suite) }
+        try VaultBookmarkStore(defaults: defaults).save(root)
+        let first = makeWindowModel(defaults: defaults, preferences: previous.preferences)
+        let second = makeWindowModel(defaults: defaults, preferences: previous.preferences)
         defer {
             first.releaseWindowResources()
             second.releaseWindowResources()
@@ -135,7 +140,7 @@ private func withTwoVaultWindows(
         defaults.removePersistentDomain(forName: suite)
         try? FileManager.default.removeItem(at: root)
     }
-    let preferences = AppPreferences(defaults: defaults)
+    let preferences = AppPreferences()
     let windows = WorkspaceWindows(preferences: preferences)
     let first = makeWindowModel(defaults: defaults, preferences: preferences)
     let second = makeWindowModel(defaults: defaults, preferences: preferences)
@@ -158,8 +163,6 @@ private func withTwoVaultWindows(
 private func makeWindowModel(defaults: UserDefaults, preferences: AppPreferences) -> WorkspaceModel {
     WorkspaceModel(
         bookmarks: VaultBookmarkStore(defaults: defaults),
-        taskListDisplayPreferences: TaskListDisplayPreferencesStore(defaults: defaults),
-        sidebarPreferences: defaults,
         preferences: preferences
     )
 }

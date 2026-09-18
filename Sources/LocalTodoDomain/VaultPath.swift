@@ -10,7 +10,7 @@ public struct VaultPath: Codable, Hashable, Sendable {
             || normalized.hasSuffix("/")
             || !normalized.hasSuffix(".md")
             || normalized.contains("\0")
-            || components.first?.lowercased() == ".localtodo"
+            || components.first?.lowercased() == ".config"
             || components.contains(where: { $0.isEmpty || $0 == "." || $0 == ".." })
 
         guard !isInvalid else {
