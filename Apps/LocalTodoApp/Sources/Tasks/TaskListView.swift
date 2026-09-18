@@ -234,7 +234,12 @@ private extension TaskListView {
     var selection: Binding<VaultPath?> {
         Binding(
             get: { model.selectedTaskPath },
-            set: { model.selectTask($0) }
+            set: {
+                model.selectTask($0)
+                if $0 != nil {
+                    model.isInspectorPresented = true
+                }
+            }
         )
     }
 }

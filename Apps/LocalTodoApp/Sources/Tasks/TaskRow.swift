@@ -28,27 +28,14 @@ struct TaskRow: View {
             .foregroundStyle(priorityColor)
             .accessibilityLabel(task.status.isComplete ? "Reopen task" : "Mark complete")
 
-            Button {
-                onSelect()
-            } label: {
-                VStack(
-                    alignment: .leading,
-                    spacing: model.effectiveAppearance.number("--row-spacing", scheme: colorScheme, fallback: 3)
-                ) {
-                    Text(task.title)
-                        .font(.system(size: taskFontSize))
-                        .strikethrough(task.status.isComplete)
-                    if hasMetadata {
-                        metadata
-                    }
-                }
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.leading, 10)
-                .contentShape(Rectangle())
+            if model.isCustomTaskOrder {
+                // Leave mouse tracking to the native List so a press can become a reorder drag.
+                taskLabel.allowsHitTesting(false)
+            } else {
+                Button(action: onSelect) { taskLabel }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Select \(task.title)")
             }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Select \(task.title)")
         }
         .fixedSize(horizontal: false, vertical: true)
         .modifier(TaskAssignmentDrag(model: model, task: task))
@@ -70,6 +57,24 @@ struct TaskRow: View {
         case .canceled: "xmark.circle.fill"
         default: "circle"
         }
+    }
+
+    private var taskLabel: some View {
+        VStack(
+            alignment: .leading,
+            spacing: model.effectiveAppearance.number("--row-spacing", scheme: colorScheme, fallback: 3)
+        ) {
+            Text(task.title)
+                .font(.system(size: taskFontSize))
+                .strikethrough(task.status.isComplete)
+            if hasMetadata {
+                metadata
+            }
+        }
+        .fixedSize(horizontal: false, vertical: true)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.leading, 10)
+        .contentShape(Rectangle())
     }
 
     private var taskFontSize: Double {

@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-18: Hosted Native Drag Tests
+
+- What did not work: A pasteboard-writer check alone passed even while a row-wide Button intercepted mouse tracking. SwiftUI accessibility traversal did not expose that button reliably. Posting a sequence of mouse events through NSApp failed to complete a reorder, and removing the button could leave the synthetic test in native drag tracking until timeout.
+- What worked instead: Keep deterministic native drag-source and selection wiring checks alongside model move/persistence tests; remove the row-wide control from the native reorder hit region. Reserve physical drag acceptance for a real UI automation/manual session.
+- Note for next time: In-process keyboard event tests do not imply synthetic mouse events can complete a WindowServer drag session. Do not treat a hanging drag harness as a product failure or a passing model test as gesture proof.
+
 ## 2026-09-18: Notarization Profile Lookup Must Select A Keychain
 
 - What did not work: Retrying implicit profile lookup reported a missing `local-todo-dominic` item; after the user restored it explicitly, implicit lookup returned HTTP 401 while the same profile in the login Keychain authenticated successfully. Treating changing GitHub runner IDs as evidence of machine replacement was misleading: the manager creates ephemeral registrations for each job.

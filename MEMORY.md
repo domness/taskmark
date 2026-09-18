@@ -239,6 +239,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The user's restored profile successfully authenticated with an explicit login-Keychain path, while default lookup for the same name returned HTTP 401. A profile name alone did not reliably select the working credentials.
 - What was rejected and why: Repeated implicit retries and claims of password expiry were rejected because explicit authentication succeeded. Changing global Keychain defaults/search lists or unlocking/deleting another project's temporary Keychains was rejected because this is a shared runner. Signing still uses the pinned Dominic Wroblewski identity.
 
+### 2026-09-18: Let Native Custom-Order Rows Own Mouse Tracking
+
+- What was decided: In Custom sort, render task content without the row-wide selection button and let the List own selection and drag tracking. Native selection opens the inspector; automatic sorts retain their selection button and assignment drag. The completion button stays independently actionable.
+- Why: The native drag source existed, but the full-width Button consumed the mouse interaction over the useful drag region. Model-only ordering tests did not exercise that event ownership. Hosted coverage now checks native drag items and selection-to-inspector wiring.
+- What was rejected and why: Adding another competing transferable drag was rejected because native List insertion already owns reordering. A synthetic in-process mouse sequence was not accepted as end-to-end drag evidence because it could enter system drag tracking without receiving a real WindowServer mouse release.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".
