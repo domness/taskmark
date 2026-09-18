@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-18: Notarization Profile Lookup Must Select A Keychain
+
+- What did not work: Retrying implicit profile lookup reported a missing `local-todo-dominic` item; after the user restored it explicitly, implicit lookup returned HTTP 401 while the same profile in the login Keychain authenticated successfully. Treating changing GitHub runner IDs as evidence of machine replacement was misleading: the manager creates ephemeral registrations for each job.
+- What worked instead: Pass the explicit persistent Keychain path to every notarytool call. Use the same wrapper for a read-only authentication preflight and actual submissions. Tests verify default/custom paths, argument preservation and failure propagation without real credentials.
+- Note for next time: Compare explicit and implicit lookup before attributing failures to a revoked password or deleted credential. Never dump passwords or reset unrelated Keychains. The original disappearance remains unexplained; another project's latest nightly run skipped its Keychain steps.
+
 ## 2026-09-17: Hosted SwiftUI Keyboard Event Tests
 
 - What did not work: Direct `NSWindow.sendEvent` and `NSTableView.keyDown` calls did not traverse SwiftUI’s application-level key handling, even with native selection and first responder confirmed. Adding alternate SwiftUI key handlers did not fix the bypassed dispatch path.

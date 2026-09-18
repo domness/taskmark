@@ -37,4 +37,9 @@ if [[ "${1:-}" == release ]]; then
   }
   xcrun --find notarytool
   xcrun --find stapler
+  script_dir=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+  if ! bash "$script_dir/notarytool-with-keychain" history --output-format json >/dev/null; then
+    echo "Cannot authenticate for notarization using the configured profile and explicit Keychain. Check docs/CI_RELEASES.md." >&2
+    exit 1
+  fi
 fi

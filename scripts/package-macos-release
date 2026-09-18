@@ -74,7 +74,7 @@ codesign --verify --strict -R="$requirement" "$app"
 
 notarize() {
   local file=$1 report=$2
-  xcrun notarytool submit "$file" --keychain-profile "$NOTARYTOOL_PROFILE" \
+  bash "$root/scripts/notarytool-with-keychain" submit "$file" \
     --wait --timeout 30m --output-format json > "$report"
   python3 - "$report" <<'PY'
 import json

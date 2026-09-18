@@ -29,6 +29,7 @@ test-release-scripts:
 	python3 scripts/test-release-scripts.py
 	bash -n scripts/check-macos-runner
 	bash -n scripts/package-macos-release
+	bash -n scripts/notarytool-with-keychain
 
 check: lint test-release-scripts test build
 

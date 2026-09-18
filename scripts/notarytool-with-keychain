@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Use one explicit, persistent Keychain for both preflight and submissions.
+set -euo pipefail
+
+: "${NOTARYTOOL_PROFILE:?Set NOTARYTOOL_PROFILE to the notarization credential profile}"
+keychain="${NOTARYTOOL_KEYCHAIN:-$HOME/Library/Keychains/login.keychain-db}"
+[[ -f "$keychain" ]] || {
+  echo "Notarization Keychain not found: $keychain. Set NOTARYTOOL_KEYCHAIN to its persistent path." >&2
+  exit 1
+}
+
+exec xcrun notarytool "$@" --keychain-profile "$NOTARYTOOL_PROFILE" --keychain "$keychain"

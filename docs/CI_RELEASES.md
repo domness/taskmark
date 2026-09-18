@@ -20,6 +20,7 @@ Release signing is pinned to Dominic Wroblewski:
 Apple team:        4K4TD4WZ4C
 Signing identity:  Developer ID Application: Dominic Wroblewski (4K4TD4WZ4C)
 Notary profile:    local-todo-dominic
+Notary Keychain:   $HOME/Library/Keychains/login.keychain-db (explicit path)
 ```
 
 The team matches Lumelo's project and the available Dominic Wroblewski distribution identities. The workflow uses manual identity selection, enables hardened runtime and secure timestamps, verifies the resulting Developer ID certificate/team requirement, notarizes and staples the app, and packages it. It then signs, notarizes and staples the DMG too. Both distribution paths include the stapled `.app`. Missing credentials, signing, architecture, notarization, stapling, or Gatekeeper-assessment failures stop publishing; there is **no unsigned fallback**.
@@ -34,7 +35,7 @@ The release receives:
 
 GitHub release assets are files, so the `.app` directory is shipped inside the ZIP/DMG rather than uploaded as a loose folder. ZIP creation uses `ditto` to preserve bundle metadata. Version `v1.2.3-rc.1` produces `CFBundleShortVersionString=1.2.3`; the full tag remains in artifact filenames. Build version is the workflow run number plus attempt, e.g. `42.1`. The supported build-number range is 1–9999 with optional two-digit minor/patch components.
 
-Failed runs retain packaging logs/notary JSON and test results as Actions artifacts for 14 days. Apple submission details can be inspected with `xcrun notarytool log <submission-id> --keychain-profile local-todo-dominic` on the runner. Release jobs have a 90-minute timeout; each notarization submission waits at most 30 minutes. A notarization timeout may require checking Apple's final status and rerunning the workflow.
+Failed runs retain packaging logs/notary JSON and test results as Actions artifacts for 14 days. Apple submission details can be inspected with `xcrun notarytool log <submission-id> --keychain-profile local-todo-dominic --keychain "$HOME/Library/Keychains/login.keychain-db"` on the runner (substitute your configured Keychain path if different). Release jobs have a 90-minute timeout; each notarization submission waits at most 30 minutes. A notarization timeout may require checking Apple's final status and rerunning the workflow.
 
 ## One-Time Mac Mini Setup
 
@@ -74,12 +75,23 @@ Create an app-specific password for Dominic's Apple account and store it in the 
 ```sh
 xcrun notarytool store-credentials local-todo-dominic \
   --apple-id '<Dominic Apple account email>' \
-  --team-id 4K4TD4WZ4C
+  --team-id 4K4TD4WZ4C \
+  --keychain "$HOME/Library/Keychains/login.keychain-db"
 ```
 
-Use Dominic's actual Apple account email; it is not inferred from the certificate display name. An App Store Connect API key for the same team can alternatively be stored with `notarytool store-credentials`; the workflow still consumes only the profile name.
+Use Dominic's actual Apple account email; it is not inferred from the certificate display name. An App Store Connect API key for the same team can alternatively be stored with `notarytool store-credentials` in the selected Keychain; the workflow reads the stored profile rather than receiving raw credentials.
 
 The default profile name is `local-todo-dominic`. If an existing same-team profile has a different name, set repository **Actions variable** `NOTARYTOOL_PROFILE` to that name. Certificate/team values are explicitly pinned in workflow source and also checked by the preflight script. No Apple password or private key is stored in the repository or workflow logs, and no GitHub signing secrets are required with this keychain-based setup.
+
+Preflight and submissions both use `scripts/notarytool-with-keychain`, which explicitly selects the runner user's persistent login Keychain. A custom persistent Keychain can be selected with the `NOTARYTOOL_KEYCHAIN` Actions variable (an absolute path). Store the profile in that same file. Neither the wrapper nor the workflow changes the user's default Keychain/search list or unlocks other apps' temporary Keychains. Missing files fail rather than falling back to implicit lookup.
+
+Verify authentication before building:
+
+```sh
+NOTARYTOOL_PROFILE=local-todo-dominic bash scripts/notarytool-with-keychain history --output-format json
+```
+
+Release preflight runs this check automatically and suppresses submission-history output. If it fails, resolve credentials/access for the specified file before retrying. On 2026-09-18, explicit login-Keychain authentication succeeded while implicit lookup returned HTTP 401; specifying only the profile name was not reliable in this environment. The exact cause of the earlier missing profile was not established.
 
 GitHub's job-scoped `GITHUB_TOKEN` supplies release upload permission. The `gh` upload step uses it through `GH_TOKEN`; a personal token does not need to be installed on the runner.
 

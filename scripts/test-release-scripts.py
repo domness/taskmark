@@ -1,7 +1,11 @@
 """Input-contract checks run without Apple signing credentials or a macOS host."""
 
+import json
+import os
 import pathlib
 import subprocess
+import sys
+import tempfile
 import unittest
 
 
@@ -37,6 +41,44 @@ class ReleaseInputTests(unittest.TestCase):
     def test_missing_arguments_fail_before_any_build(self):
         result = subprocess.run(["bash", str(SCRIPT), "--validate-inputs"], capture_output=True, check=False)
         self.assertEqual(result.returncode, 2)
+
+
+class NotarizationKeychainTests(unittest.TestCase):
+    def test_preflight_and_submission_use_explicit_keychain(self):
+        for custom in (False, True):
+            for action in ("history", "submit"):
+                with self.subTest(custom=custom, action=action), tempfile.TemporaryDirectory() as directory:
+                    root = pathlib.Path(directory)
+                    keychain = root / ("Custom Signing.keychain-db" if custom else "Library/Keychains/login.keychain-db")
+                    keychain.parent.mkdir(parents=True, exist_ok=True)
+                    keychain.touch()
+                    log = root / "arguments.json"
+                    tool = root / "xcrun"
+                    tool.write_text(
+                        f"#!{sys.executable}\nimport json, os, sys\n"
+                        "with open(os.environ['ARGUMENT_LOG'], 'w') as output: json.dump(sys.argv[1:], output)\n"
+                        "sys.exit(int(os.environ.get('NOTARY_TEST_EXIT', '0')))\n"
+                    )
+                    tool.chmod(0o755)
+                    env = {**os.environ, "HOME": str(root), "PATH": str(root) + os.pathsep + os.environ["PATH"],
+                           "NOTARYTOOL_PROFILE": "test-profile", "NOTARYTOOL_KEYCHAIN": str(keychain) if custom else "",
+                           "ARGUMENT_LOG": str(log)}
+                    arguments = [action, "--output-format", "json"]
+                    if action == "submit":
+                        arguments.insert(1, str(root / "Taskmark update.zip"))
+                    command = ["bash", str(SCRIPT.with_name("notarytool-with-keychain")), *arguments]
+                    result = subprocess.run(command, env=env, capture_output=True, text=True, check=False)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    self.assertEqual(json.loads(log.read_text()),
+                                     ["notarytool", *arguments, "--keychain-profile", "test-profile", "--keychain", str(keychain)])
+                    env["NOTARY_TEST_EXIT"] = "69"
+                    self.assertEqual(subprocess.run(command, env=env, capture_output=True, check=False).returncode, 69)
+                    log.unlink()
+                    keychain.unlink()
+                    result = subprocess.run(command, env=env, capture_output=True, text=True, check=False)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("Keychain not found", result.stderr)
+                    self.assertFalse(log.exists(), "Missing Keychain must not fall back to an implicit lookup")
 
 
 if __name__ == "__main__":

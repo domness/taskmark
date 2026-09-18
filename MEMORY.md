@@ -233,6 +233,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The user provided the finished artwork and asked to use it. The asset catalog supplies native small/Retina sizes and lets Xcode produce the bundled icon during builds and release packaging.
 - What was rejected and why: Generating replacement artwork, redrawing the checkmark or adding a competing standalone ICNS resource was unnecessary. The uploaded ZIP remains a local ignored import package; the original asset files are tracked.
 
+### 2026-09-18: Pin Notarization To An Explicit Persistent Keychain
+
+- What was decided: Use one wrapper to pass an explicit Keychain file to notarization preflight and archive submissions, defaulting to the runner user's login Keychain and allowing a `NOTARYTOOL_KEYCHAIN` path override. Authenticate before expensive builds. The user explicitly authorized updating the installer-less 0.0.2 tag to include this packaging fix.
+- Why: The user's restored profile successfully authenticated with an explicit login-Keychain path, while default lookup for the same name returned HTTP 401. A profile name alone did not reliably select the working credentials.
+- What was rejected and why: Repeated implicit retries and claims of password expiry were rejected because explicit authentication succeeded. Changing global Keychain defaults/search lists or unlocking/deleting another project's temporary Keychains was rejected because this is a shared runner. Signing still uses the pinned Dominic Wroblewski identity.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

@@ -33,6 +33,8 @@ jobs:
       APPLE_DEVELOPER_TEAM_ID: 4K4TD4WZ4C
       MACOS_SIGNING_IDENTITY: 'Developer ID Application: Dominic Wroblewski (4K4TD4WZ4C)'
       NOTARYTOOL_PROFILE: ${{ vars.NOTARYTOOL_PROFILE || 'local-todo-dominic' }}
+      # Empty uses the runner user's persistent login Keychain, never implicit lookup.
+      NOTARYTOOL_KEYCHAIN: ${{ vars.NOTARYTOOL_KEYCHAIN }}
     steps:
       - name: Check out the release tag
         uses: actions/checkout@v4
