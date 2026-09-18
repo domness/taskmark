@@ -227,6 +227,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The user requested a new app name and `.app` output, while existing preferences, security-scoped bookmarks, vaults and automation should continue to work without migration.
 - What was rejected and why: Renaming storage metadata, bundle identity or every internal type was rejected because branding does not require breaking saved data or scripts. The prior product name remains in historical decision entries and fixture data where it represents history or example file identity.
 
+### 2026-09-18: Use The Supplied Foldmark Artwork For Taskmark
+
+- What was decided: Import the original ten-slot macOS asset set from the user's `Foldmark-Mac-Icon.zip` and select it as Taskmark's app icon in `project.yml`. Preserve the supplied pixels and transparency; the 1024-pixel master is the largest asset slot.
+- Why: The user provided the finished artwork and asked to use it. The asset catalog supplies native small/Retina sizes and lets Xcode produce the bundled icon during builds and release packaging.
+- What was rejected and why: Generating replacement artwork, redrawing the checkmark or adding a competing standalone ICNS resource was unnecessary. The uploaded ZIP remains a local ignored import package; the original asset files are tracked.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

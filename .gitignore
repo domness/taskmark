@@ -3,6 +3,7 @@
 .swiftpm/xcode/package.xcworkspace/xcuserdata/
 DerivedData/
 dist/
+/Foldmark-Mac-Icon.zip
 LocalTodo.xcodeproj/
 *.xcuserstate
 xcuserdata/

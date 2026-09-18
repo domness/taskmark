@@ -101,3 +101,7 @@ The Settings surface inherits the native system font, sidebar navigation, visibl
 Appearance is independently System, Light or Dark. Slate, Forest and Sand extend the default Taskmark palette's restrained surface language. All paired token values and extension rules are documented in [docs/THEMES.md](docs/THEMES.md), with code in `Apps/LocalTodoApp/Sources/Settings/AppTheme.swift`.
 
 Native primary/secondary text and control state semantics remain adaptive. Custom vault styles override named surface/accent/priority tokens, task-title size (11–24 logical points, default 13, scaled relative to body), and row metadata spacing (2–16, default 3). They do not replace keyboard focus or selection behavior. Window rendering and contrast require visual acceptance; parser/model/build checks do not establish that evidence.
+
+## 8. App Icon
+
+Taskmark uses the user-supplied folded purple checkmark on a charcoal rounded tile from `Foldmark-Mac-Icon.zip`. The original PNGs, including their transparency and shadows, live in `Apps/LocalTodoApp/Resources/Assets.xcassets/AppIcon.appiconset`. The 512-point 2x slot is the supplied 1024-pixel master; all ten macOS 1x/2x slots are included. `project.yml` selects `AppIcon`, and Xcode compiles the distribution icon into the app bundle. The artwork is supplied by the user, not generated or redrawn in the repository.
