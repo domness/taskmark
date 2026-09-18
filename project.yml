@@ -59,8 +59,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.domness.localtodo
         PRODUCT_NAME: Taskmark
-        MARKETING_VERSION: 0.1.0
-        CURRENT_PROJECT_VERSION: 4
+        MARKETING_VERSION: 0.2.0
+        CURRENT_PROJECT_VERSION: 5
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         PRODUCT_MODULE_NAME: LocalTodoApp
         GENERATE_INFOPLIST_FILE: YES
