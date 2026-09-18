@@ -35,6 +35,7 @@ struct TaskRow: View {
                 Button(action: onSelect) { taskLabel }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Select \(task.title)")
+                    .accessibilityHint(overdue.explanation)
             }
         }
         .fixedSize(horizontal: false, vertical: true)
@@ -67,6 +68,7 @@ struct TaskRow: View {
             Text(task.title)
                 .font(.system(size: taskFontSize))
                 .strikethrough(task.status.isComplete)
+                .foregroundStyle(overdue.isOverdue ? Color.red : Color.primary)
             if hasMetadata {
                 metadata
             }
@@ -79,6 +81,10 @@ struct TaskRow: View {
 
     private var taskFontSize: Double {
         baseFontSize * model.effectiveAppearance.number("--task-font-size", scheme: colorScheme, fallback: 13) / 13
+    }
+
+    private var overdue: TaskOverdueState {
+        TaskOverdueState(task: task, today: try? CalendarDate(date: model.clock(), calendar: model.vaultCalendar))
     }
 
     private var priorityColor: Color {
@@ -114,6 +120,11 @@ struct TaskRow: View {
 
     private var planningMetadata: some View {
         HStack(spacing: 8) {
+            if overdue.isOverdue {
+                Label("Overdue", systemImage: "exclamationmark.circle.fill")
+                    .foregroundStyle(.red)
+                    .help(overdue.explanation)
+            }
             if let priority = task.priority {
                 Text(priority.rawValue.uppercased())
                     .foregroundStyle(priorityColor)
@@ -124,9 +135,11 @@ struct TaskRow: View {
                     model.preferences.dateFormat.string(scheduled, calendar: model.vaultCalendar),
                     systemImage: "calendar"
                 )
+                .foregroundStyle(overdue.scheduled ? Color.red : Color.secondary)
             }
             if let deadline = task.deadline {
                 Label(model.preferences.dateFormat.string(deadline, calendar: model.vaultCalendar), systemImage: "flag")
+                    .foregroundStyle(overdue.deadline ? Color.red : Color.secondary)
             }
         }
     }

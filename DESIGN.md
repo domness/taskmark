@@ -50,7 +50,7 @@ The palette uses adaptive, subtly tinted near-neutrals. The built-in Taskmark to
 ### Hierarchy
 - **Empty states**: Native `ContentUnavailableView` hierarchy.
 - **Headline**: Route/project headings and inspector title fields use `.headline`.
-- **Task titles**: Scaled system font in rows; neutral color with completion strikethrough.
+- **Task titles**: Scaled system font in rows; neutral color with completion strikethrough. Incomplete overdue tasks use semantic red plus an explicit Overdue warning label; only planning dates before the vault-local day qualify.
 - **Body**: `.body` for notes and editors; prose line lengths should remain comfortable as views expand.
 - **Metadata**: `.caption` and secondary styling in rows; `.callout` for tag tokens and supporting Settings content.
 

@@ -6,6 +6,7 @@ Open or create a **dedicated task vault** in the macOS app. Tasks stay in indivi
 
 - **Inbox** appears above Today in the sidebar and contains incomplete tasks with Inbox status.
 - **Today** shows tasks scheduled or due today or earlier.
+- Incomplete tasks with a scheduled date or deadline **before today in the vault timezone** have a red title, red overdue date and an **Overdue** warning label. Dates today are not overdue; done/canceled tasks are not highlighted. Priority indicators retain their own colors.
 - **Upcoming** shows future scheduled dates or deadlines. A task with an overdue scheduled date and a future deadline can appear in both views.
 - **Waiting** and **Someday** follow the task's status, including undated tasks.
 - Capture in Today schedules today; Upcoming schedules tomorrow; Next, Waiting and Someday use their respective status. Project/area capture assigns that collection. Capture from search or filters goes to Inbox. The destination shown when capture opens is retained if you navigate before submitting.

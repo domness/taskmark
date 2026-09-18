@@ -257,6 +257,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Hosted native-toolbar inspection reproduced two Show Inspector items after closing the pane: SwiftUI retains the inspector's toolbar contribution while hidden. Tests now start both open and closed and repeatedly toggle, asserting one correctly labeled item throughout.
 - What was rejected and why: Moving between separately declared toolbar items was rejected because their lifetimes overlap. Removing native sidebar controls or changing the inspector's presentation model was unnecessary; the duplicated items were both app-owned inspector toggles.
 
+### 2026-09-18: Highlight Overdue Tasks Using The Vault Calendar Day
+
+- What was decided: Highlight incomplete tasks when either planning date is strictly before the vault-local day, using a red title, red past-date metadata and an Overdue icon/text label. Keep priority indicators independent and suppress overdue styling for done/canceled tasks. This revises neutral-title styling specifically for the user's requested overdue state.
+- Why: Past deadlines and missed scheduled dates both need visible attention, while tasks dated today remain on time. An explicit warning label provides a non-color cue; the injected clock and vault timezone keep presentation consistent with daily queries.
+- What was rejected and why: Comparing calendar dates to wall-clock timestamps or treating today as already overdue was rejected because planning dates have no time-of-day. Persisting an overdue flag was unnecessary because it is derived from existing dates and status.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

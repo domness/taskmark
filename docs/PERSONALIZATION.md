@@ -6,6 +6,8 @@ Click anywhere in the task content to the right of its completion control to sel
 
 The title field uses **Title** only as a placeholder and expands from one to six visible lines. Project, area, token-based Tags and Repeat are always visible. Use the tag **+** button to enter a whole tag or select a suggestion, and **×** to remove one. Commas within a tag name are preserved. Task rows grow or shrink as date metadata is added or removed.
 
+Incomplete tasks past their scheduled date or deadline use red title/date text and an **Overdue** warning label. The boundary is strictly before today in the vault timezone; dates today and completed/canceled tasks are excluded. This warning uses native semantic red independently of priority colors.
+
 - **Duplicate Task** saves valid pending edits, creates a collision-safe sibling `-copy.md` path and adds “(Copy)” to the title. Notes, checklist state, recurrence, organization, priority, dates and unknown frontmatter are retained. Creation/update timestamps are fresh. Done/canceled copies start in Inbox with no completion timestamp; other statuses are retained. Duplicate is undoable.
 - **Delete Task** saves pending edits before deleting. Use **Edit → Undo Delete Task** to restore the exact original Markdown bytes, including unknown fields and formatting; Redo deletes them again. Recovery is session-local native history, not system Trash: restore before switching vaults or quitting. External changes invalidate history, and occupied restoration paths are never overwritten.
 - **Copy Title**, **Copy Markdown**, and **Copy Vault-Relative Path** have explicit meanings. Markdown includes frontmatter and notes. Invalid/conflicting pending edits must be resolved before copying or mutating.
