@@ -13,7 +13,7 @@ struct SidebarView: View {
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .navigationTitle(model.vaultName ?? "Local Todo")
+        .navigationTitle(model.vaultName ?? "Taskmark")
         .themeSurface("--sidebar-background")
     }
 

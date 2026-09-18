@@ -69,9 +69,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release upload "$RELEASE_TAG" \
-            "dist/LocalTodo-$RELEASE_TAG-universal.zip" \
-            "dist/LocalTodo-$RELEASE_TAG-universal.dmg" \
-            "dist/LocalTodo-$RELEASE_TAG-SHA256SUMS.txt" \
+            "dist/Taskmark-$RELEASE_TAG-universal.zip" \
+            "dist/Taskmark-$RELEASE_TAG-universal.dmg" \
+            "dist/Taskmark-$RELEASE_TAG-SHA256SUMS.txt" \
             --repo "$GITHUB_REPOSITORY" --clobber
       - name: Upload packaging logs and test results
         if: always()

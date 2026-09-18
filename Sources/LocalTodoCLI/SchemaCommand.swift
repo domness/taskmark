@@ -23,7 +23,7 @@ struct SchemaCommand: ParsableCommand {
         if json {
             try printJSON(summary)
         } else {
-            print("Local Todo schema \(summary.version)")
+            print("Taskmark schema \(summary.version)")
             print("Manifest: \(summary.manifestPath)")
             print("Entity types: \(summary.entityTypes.joined(separator: ", "))")
             print("Task statuses: \(summary.taskStatuses.joined(separator: ", "))")

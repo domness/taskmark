@@ -1,6 +1,6 @@
 # Settings
 
-Open **Local Todo → Settings…** or press **Command-comma**. The native Settings window has General and Theme sections. Changes apply immediately; there is no Apply button. Settings uses the same appearance as the main window.
+Open **Taskmark → Settings…** or press **Command-comma**. The native Settings window has General and Theme sections. Changes apply immediately; there is no Apply button. Settings uses the same appearance as the main window.
 
 The window opens at 760 × 620 logical points and can be resized, with a 700 × 560 minimum. Both sections align short content to the top of the right-hand panel and scroll when content exceeds the available height.
 
@@ -27,7 +27,7 @@ Dirty or conflicting drafts must finish saving before changing the time zone. An
 ## Theme
 
 - **System / Light / Dark** controls appearance independently of the chosen palette. System follows macOS. Native controls, sheets, popovers, editors and text use the resolved appearance.
-- **Local Todo, Slate, Forest, Sand** each provide paired light/dark palettes. Selection applies immediately to sidebar, list, inspector and Settings surfaces and control accents.
+- **Taskmark, Slate, Forest, Sand** each provide paired light/dark palettes. Selection applies immediately to sidebar, list, inspector and Settings surfaces and control accents.
 - **Apply vault stylesheet** enables `.config/style.css` overrides on top of the selected theme. This preference is persistent on this Mac. Missing/invalid styles fall back to the selected built-in theme. The Settings section shows parse diagnostics and provides Reveal Vault and Reload Stylesheet actions.
 
 See [THEMES.md](THEMES.md) for every built-in token, custom-theme examples, override precedence and implementation extension points.

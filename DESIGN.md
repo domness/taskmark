@@ -1,9 +1,9 @@
 ---
-name: Local Todo
+name: Taskmark
 description: A focused local-first task manager built on transparent Markdown files.
 ---
 
-# Design System: Local Todo
+# Design System: Taskmark
 
 ## 1. Overview
 
@@ -24,7 +24,7 @@ The product must not feel like a Jira issue editor. Task entry and review are wo
 
 ## 2. Colors
 
-The palette uses adaptive, subtly tinted near-neutrals. The built-in Local Todo tokens below are implemented in `Apps/LocalTodoApp/Sources/Settings/AppTheme.swift`; [docs/THEMES.md](docs/THEMES.md) maintains all palette values and override rules.
+The palette uses adaptive, subtly tinted near-neutrals. The built-in Taskmark tokens below are implemented in `Apps/LocalTodoApp/Sources/Settings/AppTheme.swift`; [docs/THEMES.md](docs/THEMES.md) maintains all palette values and override rules.
 
 ### Primary
 - **Working Ink**: Native `.primary` and `.secondary` text styles, with system-owned focus/selection/disabled semantics. Control accent is `#365f99` in light mode and `#92b8ee` in dark mode.
@@ -98,6 +98,6 @@ Native controls own interaction feedback. Any future custom motion should remain
 
 The Settings surface inherits the native system font, sidebar navigation, visible keyboard focus and flat working plane. General uses native grouped form controls; Theme uses a segmented appearance picker and four compact selectable previews with text/checkmark selection cues. Preferences apply immediately.
 
-Appearance is independently System, Light or Dark. Slate, Forest and Sand extend the default Local Todo palette's restrained surface language. All paired token values and extension rules are documented in [docs/THEMES.md](docs/THEMES.md), with code in `Apps/LocalTodoApp/Sources/Settings/AppTheme.swift`.
+Appearance is independently System, Light or Dark. Slate, Forest and Sand extend the default Taskmark palette's restrained surface language. All paired token values and extension rules are documented in [docs/THEMES.md](docs/THEMES.md), with code in `Apps/LocalTodoApp/Sources/Settings/AppTheme.swift`.
 
 Native primary/secondary text and control state semantics remain adaptive. Custom vault styles override named surface/accent/priority tokens, task-title size (11–24 logical points, default 13, scaled relative to body), and row metadata spacing (2–16, default 3). They do not replace keyboard focus or selection behavior. Window rendering and contrast require visual acceptance; parser/model/build checks do not establish that evidence.

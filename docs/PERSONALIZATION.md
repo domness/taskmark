@@ -30,7 +30,7 @@ Right-click a collection for **Delete Project** or **Delete Area**. Pending proj
 
 Create `.config/style.css` inside the vault. The app reads it on opening and during the existing two-second refresh loop. It never writes or repairs the stylesheet. Missing files use built-in appearance; any unsupported selector, property, malformed declaration or invalid value rejects the whole stylesheet and uses built-in appearance. A warning icon appears on View Options, whose **Stylesheet Issue…** action explains the problem.
 
-Turn off **View Options → Appearance → Use Vault Stylesheet** or **Settings → Theme → Apply vault stylesheet** to use the selected built-in theme. This preference persists on this Mac across launches and vault switches. Settings also provides System/Light/Dark appearance and Local Todo, Slate, Forest and Sand palettes. See [SETTINGS.md](SETTINGS.md) and the full [theme guide](THEMES.md).
+Turn off **View Options → Appearance → Use Vault Stylesheet** or **Settings → Theme → Apply vault stylesheet** to use the selected built-in theme. This preference persists on this Mac across launches and vault switches. Settings also provides System/Light/Dark appearance and Taskmark, Slate, Forest and Sand palettes. See [SETTINGS.md](SETTINGS.md) and the full [theme guide](THEMES.md).
 
 ```css
 /* Base tokens apply to both appearances. */

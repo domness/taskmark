@@ -1,6 +1,6 @@
 # Native Themes And Custom Stylesheets
 
-Local Todo is SwiftUI/AppKit, not a web view. Themes customize native appearance tokens; CSS is a deliberately small input syntax, not a browser layout engine.
+Taskmark is SwiftUI/AppKit, not a web view. Themes customize native appearance tokens; CSS is a deliberately small input syntax, not a browser layout engine.
 
 ## Appearance And Precedence
 
@@ -19,8 +19,8 @@ All colors are sRGB `#RRGGBB`. `AppTheme.swift` is the implementation source of 
 
 | Palette / appearance | Background | Sidebar | Inspector | Accent |
 | --- | --- | --- | --- | --- |
-| Local Todo / Light | `#f7f8fa` | `#edf0f3` | `#f1f3f6` | `#365f99` |
-| Local Todo / Dark | `#202226` | `#191b1f` | `#25282d` | `#92b8ee` |
+| Taskmark / Light | `#f7f8fa` | `#edf0f3` | `#f1f3f6` | `#365f99` |
+| Taskmark / Dark | `#202226` | `#191b1f` | `#25282d` | `#92b8ee` |
 | Slate / Light | `#f1f5f9` | `#e4ebf3` | `#eaf0f7` | `#315e9d` |
 | Slate / Dark | `#1c2532` | `#151d29` | `#232e3d` | `#91bdf4` |
 | Forest / Light | `#f2f7f3` | `#e4ede6` | `#ebf2ed` | `#306b49` |

@@ -221,6 +221,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The milestone snapshot and duplicated test counts had drifted behind the shipped UI. Documentation must describe the actual full-scan refresh, device-local Custom order, multiline/token-based inspector, guarded deletion and current CLI move/recurrence behavior.
 - What was rejected and why: A replacement acceptance-count document was rejected because it would duplicate current test output and drift again. Claiming physical drag/VoiceOver/full-window acceptance or successful signed distribution from build results was rejected because those remain distinct validation work.
 
+### 2026-09-18: Rename The macOS Product To Taskmark
+
+- What was decided: At the user's request, rename the app's display branding, executable and built bundle to Taskmark, and use Taskmark-named release assets. This explicitly revises the previously permanent Local Todo product name. Retain internal `LocalTodo*` targets/modules, the existing bundle identifier, `localtodo` CLI command and `.localtodo` vault metadata.
+- Why: The user requested a new app name and `.app` output, while existing preferences, security-scoped bookmarks, vaults and automation should continue to work without migration.
+- What was rejected and why: Renaming storage metadata, bundle identity or every internal type was rejected because branding does not require breaking saved data or scripts. The prior product name remains in historical decision entries and fixture data where it represents history or example file identity.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

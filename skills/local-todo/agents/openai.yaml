@@ -1,4 +1,4 @@
 interface:
-  display_name: "Local Todo"
-  short_description: "Manage a Local Todo Markdown vault safely"
-  default_prompt: "Use the localtodo CLI to inspect and manage tasks in my Local Todo vault."
+  display_name: "Taskmark"
+  short_description: "Manage a Taskmark Markdown vault safely"
+  default_prompt: "Use $local-todo and the localtodo CLI to inspect and manage tasks in my Taskmark vault."

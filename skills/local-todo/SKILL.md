@@ -1,11 +1,13 @@
 ---
 name: local-todo
-description: Manage a Local Todo Markdown vault through the localtodo CLI. Use when an agent needs to inspect, create, update, complete, search, organize, move, or validate Local Todo tasks, projects, areas, tags, priorities, dates, deadlines, and recurrence without editing frontmatter directly.
+description: Manage a Taskmark Markdown vault through the localtodo CLI. Use when an agent needs to inspect, create, update, complete, search, organize, move, or validate Taskmark tasks, projects, areas, tags, priorities, dates, deadlines, and recurrence without editing frontmatter directly.
 ---
 
-# Local Todo
+# Taskmark
 
 Use `localtodo` for mutations. Markdown is user-owned, exact path identity is significant, and direct YAML edits can break references or discard unknown fields.
+
+Taskmark was previously named Local Todo. The CLI command and `.localtodo` vault metadata paths retain their existing names for compatibility.
 
 ## Establish Context
 

@@ -44,10 +44,10 @@ mkdir -p "${3:-$root/dist}"
 output=$(cd "${3:-$root/dist}" && pwd)
 work=$(mktemp -d "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/local-todo-release.XXXXXX")
 trap 'rm -rf -- "$work"' EXIT
-archive="$work/LocalTodo.xcarchive"
-app="$archive/Products/Applications/Local Todo.app"
-zip="$output/LocalTodo-$tag-universal.zip"
-dmg="$output/LocalTodo-$tag-universal.dmg"
+archive="$work/Taskmark.xcarchive"
+app="$archive/Products/Applications/Taskmark.app"
+zip="$output/Taskmark-$tag-universal.zip"
+dmg="$output/Taskmark-$tag-universal.dmg"
 
 make -C "$root" generate
 xcodebuild archive \
@@ -61,8 +61,8 @@ xcodebuild archive \
   CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO 'OTHER_CODE_SIGN_FLAGS=--timestamp' \
   2>&1 | tee "$output/archive.log"
 
-[[ -d "$app" ]] || { echo "Archive contains no Local Todo.app." >&2; exit 1; }
-architectures=" $(xcrun lipo -archs "$app/Contents/MacOS/Local Todo") "
+[[ -d "$app" ]] || { echo "Archive contains no Taskmark.app." >&2; exit 1; }
+architectures=" $(xcrun lipo -archs "$app/Contents/MacOS/Taskmark") "
 [[ "$architectures" == *" arm64 "* && "$architectures" == *" x86_64 "* ]] || {
   echo "Release app must contain arm64 and x86_64 slices; found:$architectures" >&2
   exit 1
@@ -95,9 +95,9 @@ spctl --assess --type execute --verbose=2 "$app"
 ditto -c -k --sequesterRsrc --keepParent "$app" "$zip"
 
 mkdir -p "$work/disk-image"
-ditto "$app" "$work/disk-image/Local Todo.app"
+ditto "$app" "$work/disk-image/Taskmark.app"
 ln -s /Applications "$work/disk-image/Applications"
-hdiutil create -volname 'Local Todo' -srcfolder "$work/disk-image" -ov -format UDZO "$dmg"
+hdiutil create -volname 'Taskmark' -srcfolder "$work/disk-image" -ov -format UDZO "$dmg"
 codesign --force --sign "$MACOS_SIGNING_IDENTITY" --timestamp "$dmg"
 notarize "$dmg" "$output/notary-dmg.json"
 xcrun stapler staple "$dmg"
@@ -106,6 +106,6 @@ spctl --assess --type open --context context:primary-signature --verbose=2 "$dmg
 
 (
   cd "$output"
-  shasum -a 256 "LocalTodo-$tag-universal.zip" "LocalTodo-$tag-universal.dmg" > "LocalTodo-$tag-SHA256SUMS.txt"
+  shasum -a 256 "Taskmark-$tag-universal.zip" "Taskmark-$tag-universal.dmg" > "Taskmark-$tag-SHA256SUMS.txt"
 )
 printf 'Packaged %s (%s):\n%s\n%s\n' "$version" "$build" "$zip" "$dmg"

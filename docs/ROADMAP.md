@@ -39,7 +39,7 @@ See [personalization](PERSONALIZATION.md).
 - Resizable native Settings with a fixed General/Theme sidebar and compact titlebar.
 - Persistent week start, date/time display, startup view, appearance, palette and stylesheet preferences.
 - Canonical active-vault timezone editing shared with CLI date semantics.
-- System/Light/Dark appearance and Local Todo, Slate, Forest and Sand palettes, with custom-style diagnostics and reload.
+- System/Light/Dark appearance and Taskmark, Slate, Forest and Sand palettes, with custom-style diagnostics and reload.
 
 See [settings](SETTINGS.md) and [themes](THEMES.md).
 

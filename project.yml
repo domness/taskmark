@@ -30,10 +30,10 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.domness.localtodo
-        PRODUCT_NAME: Local Todo
+        PRODUCT_NAME: Taskmark
         PRODUCT_MODULE_NAME: LocalTodoApp
         GENERATE_INFOPLIST_FILE: YES
-        INFOPLIST_KEY_CFBundleDisplayName: Local Todo
+        INFOPLIST_KEY_CFBundleDisplayName: Taskmark
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_ENTITLEMENTS: Apps/LocalTodoApp/LocalTodoApp.entitlements
@@ -48,7 +48,7 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.domness.localtodo.tests
-        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Local Todo.app/Contents/MacOS/Local Todo"
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Taskmark.app/Contents/MacOS/Taskmark"
         BUNDLE_LOADER: "$(TEST_HOST)"
 
 schemes:

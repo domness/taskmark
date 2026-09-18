@@ -68,7 +68,7 @@ extension WorkspaceModel {
     ) async {
         guard intentSession == vaultSession else { return }
         guard let store, let snapshot, let record = snapshot.tasks[path], record.revision == expectedRevision else {
-            errorMessage = "The task changed before completion. Local Todo refreshed it; try again."
+            errorMessage = "The task changed before completion. Taskmark refreshed it; try again."
             return
         }
         guard let record = await prepareCompletion(record, session: intentSession) else { return }
@@ -187,7 +187,7 @@ extension WorkspaceModel {
         if shouldRetry, draft.isDirty, !draft.hasConflicts, draft.validationError == nil {
             await updateTask(draft, retryingConflict: false)
         } else if !draft.hasConflicts {
-            errorMessage = "The task kept changing while Local Todo was saving. Your edits remain in the inspector."
+            errorMessage = "The task kept changing while Taskmark was saving. Your edits remain in the inspector."
         }
     }
 

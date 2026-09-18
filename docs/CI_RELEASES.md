@@ -28,9 +28,9 @@ The release receives:
 
 | Asset | Purpose |
 | --- | --- |
-| `LocalTodo-<tag>-universal.dmg` | Open the disk image and drag **Local Todo.app** to **Applications**. |
-| `LocalTodo-<tag>-universal.zip` | An alternative archive containing the complete stapled **Local Todo.app** bundle. Extract it, then move the app to Applications. |
-| `LocalTodo-<tag>-SHA256SUMS.txt` | SHA-256 checksums of the final ZIP and DMG. |
+| `Taskmark-<tag>-universal.dmg` | Open the disk image and drag **Taskmark.app** to **Applications**. |
+| `Taskmark-<tag>-universal.zip` | An alternative archive containing the complete stapled **Taskmark.app** bundle. Extract it, then move the app to Applications. |
+| `Taskmark-<tag>-SHA256SUMS.txt` | SHA-256 checksums of the final ZIP and DMG. |
 
 GitHub release assets are files, so the `.app` directory is shipped inside the ZIP/DMG rather than uploaded as a loose folder. ZIP creation uses `ditto` to preserve bundle metadata. Version `v1.2.3-rc.1` produces `CFBundleShortVersionString=1.2.3`; the full tag remains in artifact filenames. Build version is the workflow run number plus attempt, e.g. `42.1`. The supported build-number range is 1–9999 with optional two-digit minor/patch components.
 

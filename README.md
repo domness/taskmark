@@ -1,6 +1,6 @@
-# Local Todo
+# Taskmark
 
-Local Todo is a local-first GTD task manager whose source of truth is a directory of human-readable Markdown files. The macOS app and CLI share the same domain rules and storage implementation, so every change remains inspectable outside the app.
+Taskmark is a local-first GTD task manager whose source of truth is a directory of human-readable Markdown files. The macOS app and CLI share the same domain rules and storage implementation, so every change remains inspectable outside the app.
 
 The macOS app supports Inbox, Today, Next, Upcoming, Waiting and Someday; project editing and completion; interactive note checklists; editable fixed/after-completion recurrence; saved combined filters; and keyboard capture, completion and rescheduling. Task and project edits autosave with conflict handling and native undo/redo. Custom drag ordering, token-based tags, multiline title editing, task context actions and reversible project/area deletion support daily use. Settings includes calendar/display preferences, vault timezone editing and native themes with optional stylesheet overrides. Project and area path moves remain disabled pending safe multi-file recovery.
 
@@ -19,18 +19,20 @@ Set up the development checkout and initialize a vault:
 
 ```bash
 make bootstrap
-swift run localtodo init "$HOME/Local Todo" --timezone Europe/London
+swift run localtodo init "$HOME/Taskmark" --timezone Europe/London
 ```
 
 Add and query a task:
 
 ```bash
-swift run localtodo add --vault "$HOME/Local Todo" \
+swift run localtodo add --vault "$HOME/Taskmark" \
   "Tasks/Review launch.md" --title "Review launch" --status next --priority p1
-swift run localtodo list --vault "$HOME/Local Todo" --view next
+swift run localtodo list --vault "$HOME/Taskmark" --view next
 ```
 
-Open `LocalTodo.xcodeproj` and run the `LocalTodoApp` scheme. Create a new vault from the first-run screen, or open an existing vault containing `.localtodo/config.yml`. The app stores a security-scoped bookmark so it can restore that selection on later launches.
+Open `LocalTodo.xcodeproj` and run the `LocalTodoApp` scheme to build **Taskmark.app**. Create a new vault from the first-run screen, or open an existing vault containing `.localtodo/config.yml`. The app stores a security-scoped bookmark so it can restore that selection on later launches.
+
+Taskmark was previously named Local Todo. The `localtodo` CLI command, `.localtodo` vault metadata, bundle identifier and internal Swift/Xcode target names remain stable, so existing vaults, preferences and scripts continue to work without migration.
 
 ## CLI
 
@@ -59,11 +61,11 @@ Commands resolve the nearest ancestor vault by default. Pass `--vault PATH` to t
 **Intentional CLI behavior change:** `edit --status done` now applies recurrence using the edited rule, dates and reset preference, matching the app inspector and `complete`. To finish a recurring task permanently, use `edit --clear-recurrence --status done`. JSON entity output retains the `recurrence` mode and adds `repeat_rule` or `repeat_after` for inspecting the full rule, plus `reset_checklist_on_repeat`.
 
 ```bash
-localtodo edit --vault "$HOME/Local Todo" --dry-run --json \
+localtodo edit --vault "$HOME/Taskmark" --dry-run --json \
   "Tasks/Review launch.md" --scheduled 2026-08-01 --tag launch
-localtodo move --vault "$HOME/Local Todo" --dry-run --json \
+localtodo move --vault "$HOME/Taskmark" --dry-run --json \
   "Tasks/Review launch.md" "Tasks/Review release.md"
-localtodo doctor --vault "$HOME/Local Todo" --json
+localtodo doctor --vault "$HOME/Taskmark" --json
 ```
 
 Entity identity is the exact, case-sensitive, vault-relative path. Use the CLI for task moves and the app or CLI for known-field mutations so unknown frontmatter and Markdown bodies are preserved. Change project/area titles without renaming their files for now; external path moves can break references. Move dry runs perform the same preflight validation without writing, but cannot reserve paths against later external changes.

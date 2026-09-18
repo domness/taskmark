@@ -58,6 +58,6 @@ struct CLIContext {
             }
             candidate = parent
         }
-        throw CLIError.message("No Local Todo vault found in the current directory or its ancestors")
+        throw CLIError.message("No Taskmark vault found in the current directory or its ancestors")
     }
 }

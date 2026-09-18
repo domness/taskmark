@@ -28,7 +28,7 @@ enum AppTheme: String, CaseIterable, Identifiable {
     }
 
     var title: String {
-        self == .standard ? "Local Todo" : rawValue.capitalized
+        self == .standard ? "Taskmark" : rawValue.capitalized
     }
 
     var summary: String {

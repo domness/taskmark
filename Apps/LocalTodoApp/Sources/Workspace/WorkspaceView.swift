@@ -60,7 +60,7 @@ struct WorkspaceView: View {
         .sheet(item: $model.rescheduleSelection) { selection in
             TaskRescheduleSheet(model: model, selection: selection)
         }
-        .alert("Local Todo", isPresented: errorPresented) {
+        .alert("Taskmark", isPresented: errorPresented) {
             Button("OK") { model.errorMessage = nil }
         } message: {
             Text(model.errorMessage ?? "Unknown error")

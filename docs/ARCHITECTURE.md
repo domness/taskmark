@@ -2,11 +2,13 @@
 
 ## Decision Summary
 
-Local Todo is Apple-native and macOS-first. SwiftUI provides the app shell, while Swift packages hold all portable behavior. iOS will reuse those packages after the file contract and desktop workflows are reliable. A later web client must implement the same documented Markdown contract; it does not determine today's native architecture.
+Taskmark is Apple-native and macOS-first. SwiftUI provides the app shell, while Swift packages hold all portable behavior. iOS will reuse those packages after the file contract and desktop workflows are reliable. A later web client must implement the same documented Markdown contract; it does not determine today's native architecture.
 
 Markdown is canonical. Any index or cache is derived, disposable, and rebuildable.
 
 ## Targets
+
+The macOS product is `Taskmark.app`. Existing `LocalTodo*` target/module names, the `localtodo` executable, bundle identifier and `.localtodo` metadata paths remain stable through the display-name change.
 
 ```text
 LocalTodoApp ---> LocalTodoMarkdown <--- LocalTodoCLI

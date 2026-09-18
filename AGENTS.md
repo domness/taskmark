@@ -42,7 +42,7 @@ Check `ERRORS.md` before suggesting approaches to similar tasks.
 
 These facts are always true for this project. Apply them to every session without exception. If a task conflicts with one of these facts, flag the conflict before proceeding.
 
-- This is Local Todo, an Apple-native, macOS-first, local-first task manager and CLI built with Swift 6.
+- This is Taskmark (formerly Local Todo), an Apple-native, macOS-first, local-first task manager and CLI built with Swift 6. The `localtodo` CLI, `.localtodo` vault format and existing internal target names are retained for compatibility.
 - Follow the repository as it exists today. Do not invent missing layers, directories, or tooling because older docs, templates, or examples imply they should exist.
 - `AGENTS.md`, `MEMORY.md`, `ERRORS.md`, `docs/ARCHITECTURE.md`, and `docs/FILE_FORMAT.md` are load-bearing project guidance. Read and follow them before changing code.
 - `docs/ARCHITECTURE.md` is the source of truth for target boundaries, dependency direction, data flow, concurrency, and storage safety.

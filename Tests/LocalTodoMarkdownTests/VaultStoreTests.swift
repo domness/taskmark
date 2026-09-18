@@ -179,7 +179,7 @@ import Testing
 
     #expect(
         VaultStoreError.conflict(path).localizedDescription
-            == "The file changed outside Local Todo: Tasks/Test.md. Reload it before saving."
+            == "The file changed outside Taskmark: Tasks/Test.md. Reload it before saving."
     )
 }
 

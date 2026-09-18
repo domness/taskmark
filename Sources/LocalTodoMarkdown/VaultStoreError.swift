@@ -16,14 +16,14 @@ public enum VaultStoreError: Error, Equatable, Sendable {
 extension VaultStoreError: LocalizedError {
     public var errorDescription: String? {
         switch self {
-        case let .conflict(path): "The file changed outside Local Todo: \(path.value). Reload it before saving."
+        case let .conflict(path): "The file changed outside Taskmark: \(path.value). Reload it before saving."
         case let .destinationExists(path): "A file already exists at \(path.value)."
         case let .invalidVault(message): "Invalid vault: \(message)."
         case let .missingReference(path): "A referenced file is missing: \(path.value)."
         case let .notFound(path): "File not found: \(path.value)."
         case .pathMismatch: "The entity path does not match its vault-relative file path."
         case let .unsupportedSchema(version): "Vault schema version \(version) is not supported."
-        case let .wrongEntityType(path): "The file type changed outside Local Todo: \(path.value)."
+        case let .wrongEntityType(path): "The file type changed outside Taskmark: \(path.value)."
         case let .inputOutput(message): "File operation failed: \(message)."
         }
     }

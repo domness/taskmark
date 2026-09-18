@@ -5,7 +5,7 @@ import Foundation
 enum VaultPicker {
     static func chooseExistingVault() async -> URL? {
         await chooseDirectory(
-            title: "Open Local Todo Vault",
+            title: "Open Taskmark Vault",
             message: "Select a folder containing .localtodo/config.yml.",
             prompt: "Open Vault",
             canCreateDirectories: false
@@ -14,7 +14,7 @@ enum VaultPicker {
 
     static func chooseNewVaultDirectory() async -> URL? {
         await chooseDirectory(
-            title: "Create Local Todo Vault",
+            title: "Create Taskmark Vault",
             message: "Choose an empty folder, or create a new folder for your tasks.",
             prompt: "Create Vault",
             canCreateDirectories: true
