@@ -50,6 +50,7 @@ struct TaskMarkdownEditingTests {
             TaskMarkdownField(
                 text: Binding(get: { state.text }, set: { state.text = $0 }),
                 kind: kind,
+                subject: "Task",
                 isEditing: Binding(get: { state.isEditing }, set: { state.isEditing = $0 })
             )
             .frame(width: 360, height: 180)
@@ -62,6 +63,35 @@ struct TaskMarkdownEditingTests {
         window.isReleasedWhenClosed = false
         window.contentViewController = controller
         return window
+    }
+
+    @Test func projectInspectorRendersMarkdownUntilEditingIsRequested() async throws {
+        try await withWorkspace { model, _ in
+            let draft = try await makeProjectDraft(model)
+            draft.title = "Project **Markdown**"
+            draft.notes = "# Project notes\n\n- Preview this"
+            #expect(await model.flushTaskChanges())
+            let controller = NSHostingController(rootView: ProjectInspectorView(model: model, draft: draft))
+            let window = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 420, height: 640),
+                styleMask: [.titled, .resizable], backing: .buffered, defer: false
+            )
+            window.isReleasedWhenClosed = false
+            window.contentViewController = controller
+            let host = try #require(window.contentView)
+            defer { window.close() }
+            try await presentForNativeInput(window)
+            try await waitForNativeUI("rendered project Markdown", in: window) {
+                descendant(in: host, as: MarkdownEditingBoundaryView.self) == nil
+                    && editableTextView(in: host) == nil
+            }
+            model.editProject()
+            try await waitForNativeUI("project title Markdown source focus", in: window) {
+                descendant(in: host, as: MarkdownEditingBoundaryView.self) != nil
+                    && (window.firstResponder as? NSTextView)?.string == draft.title
+            }
+            #expect(model.titleEditingPath == nil)
+        }
     }
 
     private func checkOutsideClick(state: MarkdownFieldTestState, window: NSWindow, host: NSView) async throws {
@@ -155,4 +185,12 @@ private func textField(in view: NSView, value: String) -> NSTextField? {
         return field
     }
     return view.subviews.lazy.compactMap { textField(in: $0, value: value) }.first
+}
+
+@MainActor
+private func editableTextView(in view: NSView) -> NSTextView? {
+    if let textView = view as? NSTextView, textView.isEditable {
+        return textView
+    }
+    return view.subviews.lazy.compactMap { editableTextView(in: $0) }.first
 }

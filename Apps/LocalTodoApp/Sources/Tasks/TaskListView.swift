@@ -150,6 +150,7 @@ struct TaskListView: View {
                 isListFocused = true
             }
             .tag(task.path)
+            .listRowSeparator(.hidden)
             .moveDisabled(!model.isCustomTaskOrder)
         }
         .onMove { offsets, destination in model.moveTasks(from: offsets, to: destination, context: context) }

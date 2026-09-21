@@ -9,7 +9,7 @@ struct TaskInspectorView: View {
 
     var body: some View {
         Form {
-            TaskMarkdownField(text: $draft.title, kind: .title, isEditing: $isTitleEditing)
+            TaskMarkdownField(text: $draft.title, kind: .title, subject: "Task", isEditing: $isTitleEditing)
             Picker("Status", selection: status) {
                 ForEach(TaskStatus.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
             }
@@ -70,9 +70,6 @@ struct TaskInspectorView: View {
             Section("File") {
                 LabeledContent("Created", value: model.formattedTimestamp(draft.sourceTask.createdAt))
                 LabeledContent("Updated", value: model.formattedTimestamp(draft.sourceTask.updatedAt))
-                Text(draft.path.value)
-                    .font(.caption.monospaced())
-                    .textSelection(.enabled)
                 HStack {
                     Button("Reveal in Finder") { reveal() }
                     Button("Open Externally") { openExternally() }

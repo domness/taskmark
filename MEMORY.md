@@ -335,6 +335,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: CI on macOS 15/Xcode 16.4 exposed assumptions that passed locally on macOS 27/Xcode 27. An inserted editor is not necessarily focused, and draft flushing cannot wait for an as-yet-undispatched keyboard action. The user's request is to fix unreliable checks rather than rerun them until green.
 - What was rejected and why: Blindly increasing sleeps, dropping focus/deletion checks, automatic test retries and changing runner versions would conceal failures. Requiring OS app activation was rejected after it remained false in the background test host; window-local responder checks are the available behavioral boundary.
 
+### 2026-09-21: Extend Rendered Markdown To Projects And Reduce List Chrome
+
+- What was decided: Project titles and notes use the same rendered-first Markdown fields as tasks, and Edit Project opens the title source directly. Inspector File sections no longer show task or project paths; task file actions and timestamps remain available. Task rows hide their native separators.
+- Why: Project content should have the same reading and editing experience as task content, while filenames and repeated rules add visual noise to the daily workspace.
+- What was rejected and why: Keeping exact project paths in the inspector was intentionally revised at the user's request; diagnostics and deliberate file actions still expose identity when needed. Separate project Markdown rendering and custom row dividers were rejected because the shared native behavior already satisfies the interaction.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

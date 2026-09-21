@@ -38,6 +38,9 @@ extension WorkspaceModel {
         prepareProjectDraft()
         selectedTaskPath = nil
         isInspectorPresented = true
+        guard let path = selectedProjectDraft?.path else { return }
+        titleEditingPath = path
+        titleEditRequest += 1
     }
 
     func toggleProjectCompletion(_ draft: ProjectDraft, now: Date = Date()) {

@@ -5,10 +5,6 @@ struct TaskMarkdownField: View {
     enum Kind {
         case title, notes
 
-        var label: String {
-            self == .title ? "Task title" : "Task notes"
-        }
-
         var placeholder: String {
             self == .title ? "Title" : "Add notes…"
         }
@@ -16,14 +12,19 @@ struct TaskMarkdownField: View {
 
     @Binding var text: String
     let kind: Kind
+    let subject: String
     @Binding var isEditing: Bool
     @FocusState private var isSourceFocused: Bool
+
+    private var label: String {
+        "\(subject) \(kind == .title ? "title" : "notes")"
+    }
 
     var body: some View {
         if isEditing {
             source
                 .focused($isSourceFocused)
-                .accessibilityLabel("\(kind.label), Markdown")
+                .accessibilityLabel("\(label), Markdown")
                 .background {
                     MarkdownEditingBoundary { endEditing() }
                 }
@@ -45,7 +46,7 @@ struct TaskMarkdownField: View {
                     return .handled
                 }
                 .accessibilityHint("Click or press Return to edit Markdown")
-                .accessibilityAction(named: "Edit \(kind.label)") { isEditing = true }
+                .accessibilityAction(named: "Edit \(label)") { isEditing = true }
         }
     }
 
@@ -89,7 +90,7 @@ struct TaskNotesView: View {
 
     var body: some View {
         Section("Notes") {
-            TaskMarkdownField(text: $draft.notes, kind: .notes, isEditing: $isEditing)
+            TaskMarkdownField(text: $draft.notes, kind: .notes, subject: "Task", isEditing: $isEditing)
         }
     }
 }
