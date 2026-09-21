@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-21: Wait For Native Inspector Toolbar Propagation
+
+- What did not work: Two full quality runs failed the existing inspector-toggle label assertion after a fixed 300 ms sleep, with stale labels in different presentation states.
+- What worked instead: Poll for the single correctly labeled toolbar item with a bounded two-second timeout, then retain both original count and label assertions. The complete quality gate passed after this test synchronization change.
+- Note for next time: Native presentation and toolbar updates are asynchronous; wait for the observable state rather than assuming a fixed animation duration. Do not remove duplicate-item or stale-label assertions.
+
 ## 2026-09-18: Bundled CLI Export And Case-Insensitive App Paths
 
 - What did not work: Initial installer validation hit a formatter/linter disagreement around a compact catch and FileWrapper's string-keyed attributes. Embedding lowercase `taskmark` beside uppercase `Taskmark` overwrote the app executable on the default case-insensitive filesystem, causing the app test host to run the CLI.
