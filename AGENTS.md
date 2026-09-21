@@ -12,6 +12,10 @@ At the start of every session, read these files after this guide and before maki
 6. `docs/ARCHITECTURE.md` before changing target boundaries.
 7. `docs/ROADMAP.md` before expanding scope.
 
+## Repository Skills
+
+When asked to create or publish a Taskmark release, read and follow `skills/taskmark-release/SKILL.md`. It covers version selection, validation, GitHub publication and verification of signed/notarized downloads. Agents without automatic skill discovery should read that file directly.
+
 ## Session Memory And Error Logs
 
 Maintain `MEMORY.md` as the project decision log. After any significant decision, add an entry with:

@@ -347,6 +347,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: A theme should shape the complete interface rather than only task rows. Root propagation keeps inherited controls consistent, while scaled semantic roles preserve hierarchy and explicit monospaced code/path exceptions.
 - What was rejected and why: Keeping size overrides task-specific was rejected because it left sidebars, headers, inspectors and Settings visually disconnected. Renaming the existing stylesheet token was rejected because stylesheets may already use it; native menus, system dialogs and system-owned typography remain outside the app theme.
 
+### 2026-09-21: Capture The Release Workflow As A Repository Skill
+
+- What was decided: After publishing Taskmark 0.6.0, add `skills/taskmark-release/SKILL.md` and route release requests to it from `AGENTS.md`. Keep it portable Markdown with Git/gh commands and links to the authoritative release guide/workflow.
+- Why: The user requested reproducible releases with any future agent, without restating versioning, validation, publication and artifact-verification steps.
+- What was rejected and why: A machine-global or harness-specific skill would not travel with the repository. A second packaging script or copied signing implementation would drift from the existing workflow. Publication alone is not completion; the skill requires successful packaging and all three uploaded assets.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".
