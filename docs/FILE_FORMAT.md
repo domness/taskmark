@@ -119,7 +119,7 @@ Confirm that external editors can add unknown frontmatter safely.
 | Field | Required | Meaning |
 | --- | --- | --- |
 | `type` | yes | Always `task`. |
-| `title` | yes | Non-empty display title. |
+| `title` | yes | Non-empty display title; may contain inline Markdown source. |
 | `status` | yes | `inbox`, `next`, `waiting`, `someday`, `done`, or `canceled`. |
 | `priority` | no | `p1`, `p2`, `p3`, `p4`, or `null`; P1 is highest. |
 | `scheduled` | no | Planned calendar date in `YYYY-MM-DD`. |

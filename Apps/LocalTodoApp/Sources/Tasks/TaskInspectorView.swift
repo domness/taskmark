@@ -14,6 +14,13 @@ struct TaskInspectorView: View {
                 .lineLimit(1 ... 6)
                 .font(.headline)
                 .focused($isTitleFocused)
+                .help("Markdown supported: **bold**, *italic* and [links](https://example.com)")
+            if TaskMarkdown.inline(draft.title) != AttributedString(draft.title) {
+                Text(TaskMarkdown.inline(draft.title))
+                    .font(.headline)
+                    .textSelection(.enabled)
+                    .accessibilityHint("Formatted task title")
+            }
             Picker("Status", selection: status) {
                 ForEach(TaskStatus.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
             }
@@ -70,12 +77,7 @@ struct TaskInspectorView: View {
             }
             TaskRecurrenceView(model: model, draft: draft)
             TaskChecklistView(model: model, draft: draft)
-            Section("Notes") {
-                TextEditor(text: $draft.notes)
-                    .font(.body)
-                    .frame(minHeight: 160)
-                    .accessibilityLabel("Task notes, Markdown")
-            }
+            TaskNotesView(draft: draft)
             Section("File") {
                 LabeledContent("Created", value: model.formattedTimestamp(draft.sourceTask.createdAt))
                 LabeledContent("Updated", value: model.formattedTimestamp(draft.sourceTask.updatedAt))
