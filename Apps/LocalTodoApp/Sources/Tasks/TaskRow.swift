@@ -7,7 +7,6 @@ struct TaskRow: View {
     let displayOptions: TaskListDisplayOptions
     let onSelect: () -> Void
     @Environment(\.colorScheme) private var colorScheme
-    @ScaledMetric(relativeTo: .body) private var baseFontSize = 13.0
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 0) {
@@ -67,7 +66,7 @@ struct TaskRow: View {
         ) {
             if model.inlineTitleEditingPath == task.path, let draft = model.taskDrafts[task.path] {
                 InlineTaskTitleEditor(model: model, draft: draft)
-                    .font(model.preferences.theme.typography.taskFont(scaledSize: taskFontSize))
+                    .themeFont(.body)
             } else {
                 titleLabel
             }
@@ -83,7 +82,7 @@ struct TaskRow: View {
 
     private var titleLabel: some View {
         Text(TaskMarkdown.inline(task.title, links: false))
-            .font(model.preferences.theme.typography.taskFont(scaledSize: taskFontSize))
+            .themeFont(.body)
             .strikethrough(task.status.isComplete)
             .foregroundStyle(overdue.isOverdue ? Color.red : Color.primary)
             .contentShape(Rectangle())
@@ -93,10 +92,6 @@ struct TaskRow: View {
             .accessibilityAction(named: "Edit Title Inline") {
                 model.beginInlineTitleEditing(at: task.path)
             }
-    }
-
-    private var taskFontSize: Double {
-        baseFontSize * model.effectiveAppearance.number("--task-font-size", scheme: colorScheme, fallback: 13) / 13
     }
 
     private var overdue: TaskOverdueState {

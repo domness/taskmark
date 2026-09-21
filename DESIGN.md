@@ -42,15 +42,15 @@ The palette uses adaptive, subtly tinted near-neutrals. The built-in Taskmark to
 
 ## 3. Typography
 
-**Interface Font:** Native system typography (SF on macOS) for Taskmark, Slate, Forest and Sand; bundled Inter for Dracula and Figtree for Catppuccin. One family follows each vault's selected theme across app-authored text and editors. Native menus, system dialogs and system-owned control typography retain platform behavior.
+**Interface Font:** Native system typography (SF on macOS) for Taskmark, Slate, Forest and Sand; bundled Inter for Dracula and Figtree for Catppuccin. One family and base size follow each vault's selected theme across app-authored window text and editors. Native menus, system dialogs and system-owned control typography retain platform behavior.
 **File Paths:** Native monospaced caption styling where exact identity is shown.
 
-**Character:** Native semantic text sizes provide familiar density, legibility and hierarchy in each family. Task-list title size defaults to 13 logical points, or 14 for Catppuccin, and scales relative to body text; the stylesheet may set a bounded 11–24-point value. Upright and italic variable fonts preserve weight hierarchy and Markdown emphasis without network access or system font installation.
+**Character:** Native semantic text sizes provide familiar density, legibility and hierarchy in each family. The interface base size defaults to 13 logical points, or 14 for Catppuccin, and the stylesheet may set a bounded 11–24-point value for the whole app-authored window while preserving relative semantic sizes. Upright and italic variable fonts preserve weight hierarchy and Markdown emphasis without network access or system font installation.
 
 ### Hierarchy
 - **Empty states**: Native `ContentUnavailableView` hierarchy.
 - **Headline**: Route/project headings and inspector title fields use `.headline`.
-- **Task titles**: Scaled theme font in rows and inline editors; neutral color with completion strikethrough. Incomplete overdue tasks use semantic red plus an explicit Overdue warning label; only planning dates before the vault-local day qualify.
+- **Task titles**: Theme body font in rows and inline editors; neutral color with completion strikethrough. Incomplete overdue tasks use semantic red plus an explicit Overdue warning label; only planning dates before the vault-local day qualify.
 - **Body**: `.body` for notes and editors; prose line lengths should remain comfortable as views expand.
 - **Metadata**: `.caption` and secondary styling in rows; `.callout` for tag tokens and supporting Settings content.
 
@@ -98,11 +98,11 @@ Native controls own interaction feedback. Any future custom motion should remain
 
 ## 7. Implemented macOS Settings And Appearance
 
-The Settings surface inherits the selected theme's font, native sidebar navigation, visible keyboard focus and flat working plane. General uses native grouped form controls; Theme uses a segmented appearance picker and six compact selectable previews with text/checkmark selection cues. Preview task samples use each tile's own font and default task size. Preferences apply immediately and autosave to the active vault's `.config/config.yml`; other windows/machines opening that vault reload the same choices. Different vaults may use different palettes. Configuration save errors and conflicts have visible resolution controls.
+The Settings surface inherits the selected theme's font and base size, native sidebar navigation, visible keyboard focus and flat working plane. General uses native grouped form controls; Theme uses a segmented appearance picker and six compact selectable previews with text/checkmark selection cues. Preview samples use each tile's own typography. Preferences apply immediately and autosave to the active vault's `.config/config.yml`; other windows/machines opening that vault reload the same choices. Different vaults may use different palettes. Configuration save errors and conflicts have visible resolution controls.
 
 Appearance is independently System, Light or Dark. Slate, Forest and Sand extend the default Taskmark palette's restrained surface language. Catppuccin pairs Latte/Mocha and Dracula pairs Alucard/Dracula, bringing their upstream backgrounds and purple accents into the same native surface system. All paired token values and extension rules are documented in [docs/THEMES.md](docs/THEMES.md), with code in `Apps/LocalTodoApp/Sources/Settings/AppTheme.swift`.
 
-Native primary/secondary text and control state semantics remain adaptive. Custom vault styles override named surface/accent/priority tokens, task-title size (11–24 logical points, default 14 for Catppuccin and 13 otherwise, scaled relative to body), and row metadata spacing (2–16, default 3). They do not replace keyboard focus or selection behavior. Window rendering and contrast require visual acceptance; parser/model/build checks do not establish that evidence.
+Native primary/secondary text and control state semantics remain adaptive. Custom vault styles override named surface/accent/priority tokens, interface base size (11–24 logical points, default 14 for Catppuccin and 13 otherwise), and row metadata spacing (2–16, default 3). The base size scales app-authored text and editors across the workspace and Settings while retaining semantic hierarchy. Styles do not replace keyboard focus or selection behavior. Window rendering and contrast require visual acceptance; parser/model/build checks do not establish that evidence.
 
 ## 8. App Icon
 

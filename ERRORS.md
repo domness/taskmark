@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-21: Do Not Simulate macOS Text Scaling With DynamicTypeSize
+
+- What did not work: A hosted native typography regression tried to prove scalable text by injecting SwiftUI `dynamicTypeSize` values and requiring a larger AppKit `NSTextField` point size. Neither `@ScaledMetric` nor a custom font relative to a semantic style changed the bridged field under this macOS host. Exact custom title-size assertions also ignored SwiftUI's semantic relative scaling.
+- What worked instead: Keep `@ScaledMetric` at the scene appearance boundary, apply that already-scaled size once to bundled proportional fonts, and preserve semantic-role proportions from native sizes. Test configured body sizes, family changes, semantic hierarchy and scaled monospaced exceptions through actual native fields. Treat platform accessibility text-size acceptance as a native/manual boundary rather than fabricating a macOS setting through the SwiftUI environment.
+- Note for next time: `dynamicTypeSize` injection is not evidence for bridged macOS control scaling. Do not replace relative/scaled production fonts just to satisfy fixed hosted point-size assertions; assert hierarchy unless the contract specifies an exact semantic-role size.
+
 ## 2026-09-21: Observe Native Test Readiness Instead Of Sleeping
 
 - What did not work: PR #7 passed locally on Xcode 27/macOS 27 but failed Markdown reopening, list Backspace and inline-font checks on Xcode 16.4/macOS 15 CI. Fixed 100–150 ms waits, checking only editor insertion, and flushing drafts after posting an event did not establish native focus or completion of the queued command. Diagnostic iterations also showed that `activate()` cannot make this background test process active, cached native field references can be replaced during SwiftUI transitions, and the list can have no native selection despite a selected model path.

@@ -6,7 +6,7 @@ struct ThemePreview: View {
     let scheme: ColorScheme
     let isSelected: Bool
     let select: () -> Void
-    @ScaledMetric(relativeTo: .body) private var baseFontSize = 13.0
+    @ScaledMetric(relativeTo: .body) private var scaledBodySize = 13.0
 
     var body: some View {
         Button(action: select) {
@@ -22,14 +22,15 @@ struct ThemePreview: View {
                     .frame(maxHeight: .infinity)
                     .background(color("--sidebar-background"))
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Today").font(theme.typography.font(.caption, weight: .semibold))
+                        Text("Today").themeFont(.caption, weight: .semibold)
                         Label("Plan the week", systemImage: "circle")
                         Label("Review notes", systemImage: "checkmark.circle").foregroundStyle(.secondary)
                     }
-                    .font(theme.typography.taskFont(scaledSize: sampleFontSize))
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .environment(\.themeTypography, previewTypography)
+                .font(previewTypography.font(.body))
                 .frame(height: 112)
                 .background(color("--background"))
                 .clipShape(RoundedRectangle(cornerRadius: 8))
@@ -59,7 +60,10 @@ struct ThemePreview: View {
         theme.tokens.color(token, scheme: scheme, fallback: .accentColor)
     }
 
-    private var sampleFontSize: Double {
-        baseFontSize * theme.tokens.number("--task-font-size", scheme: scheme, fallback: 13) / 13
+    private var previewTypography: ThemeTypography {
+        let configuredBodySize = theme.tokens.number("--task-font-size", scheme: scheme, fallback: 13)
+        return theme.typography.scaled(
+            toBodySize: scaledBodySize * configuredBodySize / 13
+        )
     }
 }

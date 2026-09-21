@@ -45,7 +45,7 @@ See [personalization](PERSONALIZATION.md).
 - All vault preferences, including sidebar/custom order and per-view display options, travel with `.config/config.yml`. External changes reload; same-field conflicts require explicit resolution. Bookmarks and window geometry remain machine-local.
 - Canonical active-vault timezone editing shared with CLI date semantics.
 - System/Light/Dark appearance and Taskmark, Slate, Forest, Sand, Catppuccin (Latte/Mocha) and Dracula (Alucard/Dracula) palettes, with custom-style diagnostics and reload.
-- Bundled Inter typography for Dracula and Figtree for Catppuccin, with a slightly larger 14-point default for Catppuccin task titles and stylesheet size overrides.
+- Bundled Inter typography for Dracula and Figtree for Catppuccin, with a slightly larger 14-point interface default for Catppuccin and window-wide stylesheet size overrides.
 
 See [settings](SETTINGS.md) and [themes](THEMES.md).
 
