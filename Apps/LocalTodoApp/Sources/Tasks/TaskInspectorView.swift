@@ -5,22 +5,11 @@ import SwiftUI
 struct TaskInspectorView: View {
     let model: WorkspaceModel
     @Bindable var draft: TaskDraft
-    @FocusState private var isTitleFocused: Bool
+    @State private var isTitleEditing = false
 
     var body: some View {
         Form {
-            TextField("Title", text: $draft.title, axis: .vertical)
-                .labelsHidden()
-                .lineLimit(1 ... 6)
-                .font(.headline)
-                .focused($isTitleFocused)
-                .help("Markdown supported: **bold**, *italic* and [links](https://example.com)")
-            if TaskMarkdown.inline(draft.title) != AttributedString(draft.title) {
-                Text(TaskMarkdown.inline(draft.title))
-                    .font(.headline)
-                    .textSelection(.enabled)
-                    .accessibilityHint("Formatted task title")
-            }
+            TaskMarkdownField(text: $draft.title, kind: .title, isEditing: $isTitleEditing)
             Picker("Status", selection: status) {
                 ForEach(TaskStatus.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
             }
@@ -191,7 +180,7 @@ struct TaskInspectorView: View {
 
     private func focusTitleIfRequested() {
         if model.titleEditingPath == draft.path {
-            isTitleFocused = true
+            isTitleEditing = true
             model.consumeTitleEditRequest(at: draft.path)
         }
     }

@@ -59,6 +59,23 @@ func invalidSharedPreferencesLeaveOriginalBytes(changes: [String: ConfigurationV
     #expect(try Data(contentsOf: url) == bytes)
 }
 
+@Test(arguments: ["catppuccin", "dracula"])
+func communityThemesRoundTripWithoutChangingOtherPreferences(theme: String) async throws {
+    let root = try makeTestVault()
+    defer { removeTestVault(root) }
+    let store = VaultStore(root: root)
+    let original = try await store.configurationRecord()
+    let prepared = try await store.setPreferences([
+        "appearance": .string("dark"),
+        "plugin": .object(["keep": .bool(true)]),
+    ], expectedRevision: original.revision)
+    _ = try await store.setPreferences(["theme": .string(theme)], expectedRevision: prepared.revision)
+    let reloaded = try await VaultStore(root: root).configurationRecord()
+    #expect(reloaded.value.preferences["theme"] == .string(theme))
+    #expect(reloaded.value.preferences["appearance"] == .string("dark"))
+    #expect(reloaded.value.preferences["plugin"] == .object(["keep": .bool(true)]))
+}
+
 @Test func failedPreferenceReplacementPreservesConfiguration() async throws {
     let root = try makeTestVault()
     defer { removeTestVault(root) }

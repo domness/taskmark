@@ -28,9 +28,9 @@ struct TaskRow: View {
             .foregroundStyle(priorityColor)
             .accessibilityLabel(task.status.isComplete ? "Reopen task" : "Mark complete")
 
-            if model.isCustomTaskOrder {
+            if model.inlineTitleEditingPath == task.path || model.isCustomTaskOrder {
                 // Leave mouse tracking to the native List so a press can become a reorder drag.
-                taskLabel.allowsHitTesting(false)
+                taskLabel
             } else {
                 Button(action: onSelect) { taskLabel }
                     .buttonStyle(.plain)
@@ -65,10 +65,12 @@ struct TaskRow: View {
             alignment: .leading,
             spacing: model.effectiveAppearance.number("--row-spacing", scheme: colorScheme, fallback: 3)
         ) {
-            Text(TaskMarkdown.inline(task.title, links: false))
-                .font(.system(size: taskFontSize))
-                .strikethrough(task.status.isComplete)
-                .foregroundStyle(overdue.isOverdue ? Color.red : Color.primary)
+            if model.inlineTitleEditingPath == task.path, let draft = model.taskDrafts[task.path] {
+                InlineTaskTitleEditor(model: model, draft: draft)
+                    .font(.system(size: taskFontSize))
+            } else {
+                titleLabel
+            }
             if hasMetadata {
                 metadata
             }
@@ -77,6 +79,20 @@ struct TaskRow: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.leading, 10)
         .contentShape(Rectangle())
+    }
+
+    private var titleLabel: some View {
+        Text(TaskMarkdown.inline(task.title, links: false))
+            .font(.system(size: taskFontSize))
+            .strikethrough(task.status.isComplete)
+            .foregroundStyle(overdue.isOverdue ? Color.red : Color.primary)
+            .contentShape(Rectangle())
+            .background(TaskTitleDoubleClick {
+                model.beginInlineTitleEditing(at: task.path)
+            })
+            .accessibilityAction(named: "Edit Title Inline") {
+                model.beginInlineTitleEditing(at: task.path)
+            }
     }
 
     private var taskFontSize: Double {

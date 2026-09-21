@@ -27,6 +27,19 @@ All colors are sRGB `#RRGGBB`. `AppTheme.swift` is the implementation source of 
 | Forest / Dark | `#1d2922` | `#162019` | `#25332a` | `#91c9a3` |
 | Sand / Light | `#faf6ef` | `#efe7da` | `#f4ede2` | `#8b562c` |
 | Sand / Dark | `#2b2520` | `#211c17` | `#342d25` | `#dfb486` |
+| Catppuccin / Light (Latte) | `#eff1f5` | `#dce0e8` | `#e6e9ef` | `#8839ef` |
+| Catppuccin / Dark (Mocha) | `#1e1e2e` | `#11111b` | `#181825` | `#cba6f7` |
+| Dracula / Light (Alucard) | `#fffbeb` | `#f4f0e1` | `#f8f4e5` | `#644ac9` |
+| Dracula / Dark | `#282a36` | `#22242e` | `#2e303d` | `#bd93f9` |
+
+Select **Catppuccin** or **Dracula** in Settings, then choose Light/Dark (or System) to resolve the variant. Configuration stores `theme: catppuccin` or `theme: dracula` independently of `appearance`; both choices use the same stylesheet precedence as the original palettes.
+
+### Community Palette Sources
+
+- [Catppuccin](https://github.com/catppuccin/catppuccin#-palette): Latte and Mocha use upstream Base for the main background, Crust for the sidebar, Mantle for the inspector and Mauve for the accent, following the upstream [pane guidance](https://github.com/catppuccin/catppuccin/blob/main/docs/style-guide.md).
+- [Dracula and Alucard](https://github.com/dracula/dracula-theme#color-palette-oss): use the open-source Background and Purple colors. Secondary panes are Taskmark adaptations: Alucard blends its Foreground into Background at 5% (sidebar) and 3% (inspector); Dracula darkens Background by 15% for the sidebar and blends Current Line into Background at 20% for the inspector, rounded to sRGB bytes. These are surface adaptations, not upstream palette entries.
+
+Both palettes are MIT-licensed; attribution and license notices are in [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md). Native text and semantic priority colors remain system-owned as described above.
 
 System typography remains the interface family. Task titles default to 13 logical points, scaled relative to body text; title/metadata spacing defaults to 3 points. Appearance tokens color broad native surfaces, not decorative borders or nested cards.
 
@@ -87,7 +100,7 @@ Selectors are exactly `:root`, `:root[data-appearance=light]` and `:root[data-ap
 Source paths below are relative to `Apps/LocalTodoApp/Sources/`. For window composition and behavior, see [Settings](SETTINGS.md); for ordering and task interactions, see [Personalization](PERSONALIZATION.md).
 
 - `Settings/AppPreferences.swift`: observable per-vault choices projected from canonical configuration. Workspace-owned autosave persists changes through `LocalTodoMarkdown`; use temporary vaults in tests rather than machine defaults. Malformed stored preferences are diagnosed and not silently reset.
-- `Settings/AppTheme.swift`: add palette cases here, each with explicit light/dark tokens and a useful preview label. The Settings grid derives from `allCases`.
+- `Settings/AppTheme.swift`: add palette cases here, each with explicit light/dark tokens and a useful preview label. The Settings grid derives from `allCases`. Also update `Sources/LocalTodoMarkdown/VaultPreferenceValidation.swift` and the file-contract theme values so app and CLI can reopen saved choices.
 - `Workspace/VaultAppearance.swift`: validates the CSS subset and merges overrides. Add new tokens to its allowlist with validation, tests and an entry in this document; never silently accept unsupported declarations.
 - `Settings/AppAppearanceModifier.swift`: applies preference-driven native appearance at **both scene roots**, propagates calendar/date-format/theme environments, and defines `ThemeSurface` for explicit semantic surfaces. Do not force every text/control fill to a custom color; macOS still owns focus, selection and form-control states.
 - `Settings/ThemePreview.swift`: displays the same built-in tokens as the workspace. Keep the textual selected state and checkmark; color alone is insufficient.

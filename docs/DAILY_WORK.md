@@ -24,11 +24,13 @@ Appearance/calendar-display preferences belong to each vault's `.config/config.y
 
 ## Markdown Titles And Notes
 
-Task titles support inline Markdown: `**bold**`, `*italic*`, `` `code` ``, and `[label](https://example.com)` links. Rows display the formatted title; the inspector keeps the source editable and shows a formatted preview beneath it when formatting is present. Open title links from this preview. Rows retain their selection and reorder gestures.
+Task titles support inline Markdown: `**bold**`, `*italic*`, `` `code` ``, and `[label](https://example.com)` links. Rows and the inspector display the formatted title. Click the inspector title to edit its Markdown source, or use **Command-E**. Leaving the field returns it to rendered text. Rows retain their selection and reorder gestures.
 
-Notes have **Edit** and **Preview** tabs. Edit Markdown source with normal autosave; Preview renders paragraphs, headings, ordered/unordered lists, blockquotes, fenced code and inline formatting with clickable links. Use explicit Markdown links or angle-bracket autolinks such as `<https://example.com>`. This is a native text preview, not an HTML renderer; images, tables and embedded HTML are not rendered as rich content. Checklist controls remain above Notes and change only the check marker.
+Notes show rendered Markdown by default: paragraphs, headings, ordered/unordered lists, blockquotes, fenced code and inline formatting with clickable links. Click the notes (or **Add notes…**) to edit their source with normal autosave. Moving focus elsewhere, clicking outside the field or pressing Escape returns to rendered text without discarding edits. Keyboard users can focus either rendered field and press Return to edit. There is no separate preview mode or duplicate title preview.
 
-Previews use the current draft, including unsaved edits, and never rewrite Markdown. Titles remain strings in frontmatter and notes remain the file body; CLI output, copying, search and sorting continue to use the source text.
+Use explicit Markdown links or angle-bracket autolinks such as `<https://example.com>`. This is native text rendering, not an HTML renderer; images, tables and embedded HTML are not rendered as rich content. Checklist controls remain above Notes and change only the check marker.
+
+Rendered fields use the current draft, including unsaved edits, and never rewrite Markdown. Titles remain strings in frontmatter and notes remain the file body; CLI output, copying, search and sorting continue to use the source text.
 
 ## Repeat And Checklists
 

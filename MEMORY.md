@@ -299,6 +299,30 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The user wants enabling the CLI to handle installation and terminal registration automatically. This explicitly revises the 2026-09-18 Save-panel, no-privilege and sandbox-retention decisions after the conflict was raised in conversation. Linking the bundled executable also follows app updates at the same location. Moved apps can repair registration by enabling again; temporary/translocated app copies must be moved first.
 - What was rejected and why: Manual file saving and PATH editing were rejected by the user. An additional installer helper was not selected in favor of the direct native-authorization flow. Overwriting unrelated commands, editing shell profiles and persisting a vault-level enable flag were rejected because registration is a machine-level filesystem operation.
 
+### 2026-09-21: Pair Community Themes With Independent Appearance
+
+- What was decided: Add Catppuccin (Latte light/Mocha dark) and Dracula (Alucard light/Dracula dark) as built-in palette choices. Persist `catppuccin` and `dracula` through the shared configuration validator; retain independent System/Light/Dark appearance, native text/control semantics and stylesheet precedence.
+- Why: This supplies the requested two Catppuccin variants and light/dark Dracula within the existing paired-palette model. Catppuccin uses upstream pane colors and Mauve; Dracula uses upstream Background/Purple with documented secondary-pane adaptations.
+- What was rejected and why: Separate fixed-appearance tiles were rejected because they would conflict with the established independent appearance setting. Inventing a light Dracula palette was unnecessary because upstream publishes the open-source Alucard palette.
+
+### 2026-09-21: Bundle A Separate Direct-File Vault Skill
+
+- What was decided: Add a portable `taskmark-vault` skill with bundled schema/configuration and recurrence references for agents without the CLI or handling explicitly requested file-level work. Keep `taskmark` as the CLI-first skill and document both in the README.
+- Why: User-owned Markdown must remain usable independently of the app and executable. Direct-file agents need exact path identity, preservation rules, shared configuration, lifecycle semantics, and honest concurrency/publication limits available without a source checkout.
+- What was rejected and why: Making CLI installation a prerequisite was rejected because the requested workflow explicitly lacks it. Expanding the CLI-only skill into two competing mutation modes was rejected in favor of precise discovery. Claiming generic file writes match coordinated storage guarantees, or enabling sequential collection moves, was rejected because it would weaken the existing contract.
+
+### 2026-09-21: Render Markdown Fields Until They Are Edited
+
+- What was decided: At the user's request, replace the Notes Edit/Preview control and duplicate title preview with rendered-first fields. Clicking or keyboard-activating a field exposes source; focus loss, an outside click or Escape restores rendering. Command-E opens the title source directly. This explicitly revises the earlier same-day source-editor/preview presentation decision.
+- Why: One field should alternate naturally between reading formatted content and editing source, while workspace-owned drafts continue to preserve and autosave input. A field-local AppKit event boundary handles clicks on non-focusable Form space without consuming the destination event or affecting other windows.
+- What was rejected and why: Persistent source plus preview and explicit mode tabs were rejected by the user. Rich-text serialization remains unnecessary because rendered text is still a read-only projection of canonical Markdown.
+
+### 2026-09-21: Edit Task Titles Inline Through Workspace Drafts
+
+- What was decided: Double-clicking a center-pane task title opens a native inline source field in automatic and Custom ordering. Enter, click-away, native editing end and row disappearance request immediate draft autosave; typing also retains the existing debounced autosave safety net. Invalid/conflicting drafts remain available through the inspector.
+- Why: The user requested fast inline renaming with Enter/click-away saving. Reusing workspace drafts preserves native history, external-change handling and close/quit flushing. A title-bounded AppKit event observer handles double-clicks without taking over single-click or drag tracking, and detects clicks outside the active editor even on non-focusable content.
+- What was rejected and why: View-local document copies and direct file writes were rejected because they bypass draft lifetime and conflict handling. SwiftUI double-tap gestures were rejected after hosted mouse-event tests failed in native Custom-order lists, including with high priority. Focus-state changes alone did not reliably report native editing end.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

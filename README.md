@@ -44,7 +44,7 @@ Open a new terminal and run `taskmark --help`. App updates at the same location 
 
 The CLI runs independently; the app does not need to be open. If a customized shell excludes `/usr/local/bin` or an older manual install shadows the command, use `command -v taskmark` to check resolution and `/usr/local/bin/taskmark --help` to check the registered tool directly. Taskmark does not rewrite shell configuration or remove older exported copies.
 
-For development, run `swift build -c release` to build `.build/release/taskmark`, or use `swift run taskmark`. The portable agent skill is [skills/taskmark/SKILL.md](skills/taskmark/SKILL.md).
+For development, run `swift build -c release` to build `.build/release/taskmark`, or use `swift run taskmark`.
 
 ```text
 init       Initialize a vault
@@ -76,7 +76,14 @@ taskmark move --vault "$HOME/Taskmark" --dry-run --json \
 taskmark doctor --vault "$HOME/Taskmark" --json
 ```
 
-Entity identity is the exact, case-sensitive, vault-relative path. Use the CLI for task moves and the app or CLI for known-field mutations so unknown frontmatter and Markdown bodies are preserved. Change project/area titles without renaming their files for now; external path moves can break references. Move dry runs perform the same preflight validation without writing, but cannot reserve paths against later external changes.
+Entity identity is the exact, case-sensitive, vault-relative path. Prefer the CLI for task moves and the app or CLI for known-field mutations so unknown frontmatter and Markdown bodies are preserved; without them, follow the direct-file skill below. Change project/area titles without renaming their files for now; external path moves can break references. Move dry runs perform the same preflight validation without writing, but cannot reserve paths against later external changes.
+
+## Agent Skills
+
+- [taskmark](skills/taskmark/SKILL.md): manage vaults through the CLI, using shared validation, dry runs, and coordinated mutations.
+- [taskmark-vault](skills/taskmark-vault/SKILL.md): understand and work directly with vault folders, `.config/`, Markdown, and YAML frontmatter when the CLI is unavailable or file-level work is requested. Includes task/project/area schemas, saved filters, lifecycle and recurrence rules, and conflict-aware editing guidance.
+
+Copy the selected skill's entire directory into your agent's skills location, including `references/` when present. The file-level skill is self-contained and requires neither the Taskmark app nor a source checkout. Direct filesystem tools must still provide the publication and concurrency protections described by the skill.
 
 ## Development
 
@@ -97,7 +104,8 @@ Sources/LocalTodoDomain/   domain values and rules
 Sources/LocalTodoMarkdown/ schema, revision checks and atomic file operations
 Sources/LocalTodoCLI/      taskmark command-line interface
 Tests/                     domain, storage, and CLI tests
-skills/taskmark/           portable agent skill
+skills/taskmark/           CLI-based agent skill
+skills/taskmark-vault/     self-contained direct-file vault skill
 docs/                      contracts, user guides, roadmap and CI/release setup
 ```
 
