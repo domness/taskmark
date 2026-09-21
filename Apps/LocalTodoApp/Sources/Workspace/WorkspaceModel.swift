@@ -21,7 +21,7 @@ final class WorkspaceModel {
 
     var selectedTaskPath: VaultPath?
     var searchText = ""
-    var isInspectorPresented = true
+    var isInspectorPresented = false
     var isCommandPalettePresented = false
     var isQuickCapturePresented = false
     var quickCaptureTitle = "" {

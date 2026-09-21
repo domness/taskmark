@@ -37,6 +37,7 @@ struct TaskRow: View {
                     .accessibilityHint(overdue.explanation)
             }
         }
+        .padding(.vertical, 6)
         .fixedSize(horizontal: false, vertical: true)
         .modifier(TaskAssignmentDrag(model: model, task: task))
         .contextMenu {
@@ -107,8 +108,10 @@ struct TaskRow: View {
         default: return .primary
         }
     }
+}
 
-    private var metadata: some View {
+private extension TaskRow {
+    var metadata: some View {
         ViewThatFits(in: .horizontal) {
             HStack(spacing: 8) {
                 planningMetadata
@@ -141,7 +144,7 @@ struct TaskRow: View {
                     .foregroundStyle(priorityColor)
                     .accessibilityLabel("Priority \(priority.rawValue.uppercased())")
             }
-            if let scheduled = task.scheduled {
+            if showsScheduledDate, let scheduled = task.scheduled {
                 Label(
                     model.preferences.dateFormat.string(scheduled, calendar: model.vaultCalendar),
                     systemImage: "calendar"
@@ -152,15 +155,18 @@ struct TaskRow: View {
                 Label(model.preferences.dateFormat.string(deadline, calendar: model.vaultCalendar), systemImage: "flag")
                     .foregroundStyle(overdue.deadline ? Color.red : Color.secondary)
             }
+            if task.recurrence != nil {
+                Label("Repeats", systemImage: "repeat")
+            }
         }
     }
 
     private var organizationMetadata: some View {
         HStack(spacing: 8) {
-            if displayOptions.showsProject, let project = task.project {
+            if showsProject, let project = task.project {
                 projectLabel(project)
             }
-            if displayOptions.showsArea, let area = task.area {
+            if showsArea, let area = task.area {
                 areaLabel(area)
             }
         }
@@ -177,7 +183,15 @@ struct TaskRow: View {
     }
 
     private var hasPlanningMetadata: Bool {
-        task.priority != nil || task.scheduled != nil || task.deadline != nil
+        task.priority != nil || showsScheduledDate || task.deadline != nil || task.recurrence != nil
+    }
+
+    private var showsScheduledDate: Bool {
+        TaskListDisplayOptions.showsScheduledDate(
+            task.scheduled,
+            route: model.route,
+            today: try? CalendarDate(date: model.clock(), calendar: model.vaultCalendar)
+        )
     }
 
     private var hasMetadata: Bool {
@@ -185,8 +199,16 @@ struct TaskRow: View {
     }
 
     private var hasOrganizationMetadata: Bool {
-        displayOptions.showsProject && task.project != nil
-            || displayOptions.showsArea && task.area != nil
+        showsProject && task.project != nil
+            || showsArea && task.area != nil
+    }
+
+    private var showsProject: Bool {
+        displayOptions.showsProject && displayOptions.grouping != .project
+    }
+
+    private var showsArea: Bool {
+        displayOptions.showsArea && displayOptions.grouping != .area
     }
 
     @ViewBuilder

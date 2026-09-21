@@ -7,9 +7,10 @@ struct ProjectListHeader: View {
 
     var body: some View {
         HStack(spacing: 8) {
-            Text(draft.title)
-                .themeFont(.headline)
-                .lineLimit(1)
+            Text(TaskMarkdown.inline(draft.title, links: false))
+                .themeFont(.largeTitle)
+                .fontWeight(.bold)
+                .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
                 .help(draft.title)
             Text(draft.status.rawValue.capitalized)

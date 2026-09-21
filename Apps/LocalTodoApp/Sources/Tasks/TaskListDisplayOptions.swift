@@ -8,16 +8,23 @@ struct TaskListDisplayOptions: Codable, Equatable {
     var grouping: TaskListGrouping
     var sort: TaskSort?
 
+    static func showsScheduledDate(_ date: CalendarDate?, route: WorkspaceRoute, today: CalendarDate?) -> Bool {
+        guard let date else { return false }
+        return route != .today || date != today
+    }
+
     static func defaults(for route: WorkspaceRoute) -> Self {
         switch route {
         case .project:
-            Self(showsProject: false, showsArea: true, showsTags: true, grouping: .none)
+            Self(showsProject: false, showsArea: false, showsTags: false, grouping: .none)
         case .area:
-            Self(showsProject: true, showsArea: false, showsTags: true, grouping: .none)
+            Self(showsProject: true, showsArea: false, showsTags: false, grouping: .project)
         case .tag:
-            Self(showsProject: true, showsArea: true, showsTags: false, grouping: .none)
+            Self(showsProject: true, showsArea: false, showsTags: false, grouping: .none)
+        case .today, .upcoming:
+            Self(showsProject: true, showsArea: false, showsTags: false, grouping: .project)
         default:
-            Self(showsProject: true, showsArea: true, showsTags: true, grouping: .none)
+            Self(showsProject: true, showsArea: false, showsTags: false, grouping: .none)
         }
     }
 }

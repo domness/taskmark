@@ -7,7 +7,7 @@ description: A focused local-first task manager built on transparent Markdown fi
 
 ## 1. Overview
 
-**Creative North Star: "The Quiet Workbench"**
+**Creative North Star: "The Focused Canvas"**
 
 The interface is a precise working surface where tasks, dates, and file-backed structure remain close at hand without competing for attention. Things leads the hierarchy and interaction craft, while file-native details appear only when they help users understand or control their data.
 
@@ -49,7 +49,7 @@ The palette uses adaptive, subtly tinted near-neutrals. The built-in Taskmark to
 
 ### Hierarchy
 - **Empty states**: Native `ContentUnavailableView` hierarchy.
-- **Headline**: Route/project headings and inspector title fields use `.headline`.
+- **Page heading**: Route/project headings use bold `.largeTitle`, remain visible at narrow widths and wrap when needed. Inspector title fields retain `.headline`.
 - **Task titles**: Theme body font in rows and inline editors; neutral color with completion strikethrough. Incomplete overdue tasks use semantic red plus an explicit Overdue warning label; only planning dates before the vault-local day qualify.
 - **Body**: `.body` for notes and editors; prose line lengths should remain comfortable as views expand.
 - **Metadata**: `.caption` and secondary styling in rows; `.callout` for tag tokens and supporting Settings content.
@@ -68,10 +68,10 @@ The system is flat by default. Tonal surface changes and native dividers establi
 
 ## 5. Components
 
-- **Workspace**: Sidebar, task-list header/list and collapsible inspector. Inbox appears above Today. The inspector toggle belongs to the trailing window toolbar; capture/search/display controls belong to the list header.
+- **Workspace**: Two-column sidebar and opaque task canvas by default, with an explicitly opened trailing inspector. The reading canvas is capped at 760 points. Inbox appears above Today; Tags and Priorities start collapsed. The inspector toggle belongs to the trailing window toolbar; compact capture/search/display controls belong to the list header. Search reveals its field on the Search route. Project notes appear below the project heading (three-line reading summary; Edit Project opens the complete source).
 - **Window sizing**: New vault windows default to 1120×720 points and respect the workspace minimum. The sidebar has a 180–320-point range (220 ideal); the inspector belongs to the detail column and retains its 280–480-point range (340 ideal). Flexible detail/inspector content accepts the allocated width instead of driving the split beyond the window during vault loading.
-- **Selection and editing**: A row's title/metadata area selects and opens details with list focus. Double-click a task title in the center pane to edit its Markdown source inline; Enter, click-away or leaving the row saves through the shared task draft. Invalid titles retain their draft and surface an error. Command-E explicitly focuses the inspector title. Inspector task titles are placeholder-only multiline fields, expanding up to six visible lines. Date metadata participates in intrinsic row sizing.
-- **Organization**: Project, Area, Tags and Repeat are always visible in the task inspector. Tags use removable wrapping tokens and an add popover; advanced recurrence fields appear only when relevant to the selected mode. This direct-access inspector is the user-requested exception to progressive metadata disclosure.
+- **Selection and editing**: A row's title/metadata area selects with list focus without changing inspector visibility. Double-click a task title in the center pane to edit its Markdown source inline; Enter, click-away or leaving the row saves through the shared task draft. Invalid titles retain their draft and surface an error. Command-E opens details and explicitly focuses the inspector title. Inspector task titles are placeholder-only multiline fields, expanding up to six visible lines. Date metadata participates in intrinsic row sizing.
+- **Organization**: The flat inspector places title, notes and checklist before properties. Project, Area, Tags and Repeat remain directly visible without disclosures. Tags use removable wrapping tokens and an add popover; advanced recurrence fields appear only when relevant to the selected mode. New Today/Upcoming/Area display defaults group by project; rows suppress the grouping's repeated label. Area and tag row metadata defaults off, with existing saved choices preserved and View Options available.
 - **Markdown**: Task rows render inline title formatting while preserving selection and drag gestures. Task and project inspector titles and notes render by default; clicking a field or pressing Return on it reveals its source editor. Focus loss, an outside click or Escape returns to rendered text. Command-E directly edits the selected title. There are no mode tabs or duplicate previews; native links and theme typography remain, with native monospaced code, no web view or remote image loading.
 - **Dates**: Compact scheduled/deadline controls open native popovers with suggestions, exact ISO entry and a graphical calendar.
 - **Ordering**: Native List insertion gestures reorder collections and tasks in Custom mode. Automatic task sorts permit assignment drags to sidebar collections.
@@ -93,7 +93,7 @@ Native controls own interaction feedback. Any future custom motion should remain
 - **Don't** introduce hidden storage behavior, opaque database semantics, or surprising file mutations.
 - **Don't** enforce GTD through blocking steps or a rigid navigation sequence.
 - **Don't** expose every advanced control in the task list or require organization during capture.
-- **Don't** use decorative motion, nested cards, glass effects, gradient text, or colored side-stripe borders.
+- **Don't** use decorative motion, nested cards, gradient text, or colored side-stripe borders. Native Liquid Glass is limited to navigation/controls: the compact list command group uses the macOS 26+ API, while macOS 15, Reduce Transparency and Increase Contrast retain standard controls. Task rows, notes and inspector content remain opaque. Older SDK builds omit the glass API. Existing palette and stylesheet surface tokens remain authoritative for content.
 - **Don't** use pure black, pure white, or chroma-free gray as final production colors.
 
 ## 7. Implemented macOS Settings And Appearance

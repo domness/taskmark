@@ -8,99 +8,102 @@ struct TaskInspectorView: View {
     @State private var isTitleEditing = false
 
     var body: some View {
-        Form {
-            TaskMarkdownField(text: $draft.title, kind: .title, subject: "Task", isEditing: $isTitleEditing)
-            Picker("Status", selection: status) {
-                ForEach(TaskStatus.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
-            }
-            Picker("Priority", selection: priority) {
-                Text("None").tag(TaskPriority?.none)
-                ForEach(TaskPriority.allCases, id: \.self) { Text($0.rawValue.uppercased()).tag(Optional($0)) }
-            }
-            HStack {
-                CalendarDateField(
-                    label: "Scheduled",
-                    systemImage: "calendar",
-                    text: draft.scheduled,
-                    calendar: model.planningCalendar,
-                    onCalendarChange: {
-                        model.changeDraft(
-                            draft,
-                            keyPath: \.scheduled,
-                            to: $0,
-                            actionName: "Change Scheduled Date"
-                        )
-                    }
-                )
-                CalendarDateField(
-                    label: "Deadline",
-                    systemImage: "flag",
-                    text: draft.deadline,
-                    calendar: model.planningCalendar,
-                    onCalendarChange: {
-                        model.changeDraft(draft, keyPath: \.deadline, to: $0, actionName: "Change Deadline")
-                    }
-                )
-                Spacer()
-            }
-            Section {
-                Picker("Project", selection: project) {
-                    Text("None").tag("")
-                    ForEach(projects, id: \.path) { project in
-                        Text(model.projectDisplayTitle(project.path)).tag(project.path.value)
-                    }
-                    if !draft.project.isEmpty, !projects.contains(where: { $0.path.value == draft.project }) {
-                        Text("Missing: \(draft.project)").tag(draft.project)
-                    }
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                TaskMarkdownField(text: $draft.title, kind: .title, subject: "Task", isEditing: $isTitleEditing)
+                TaskNotesView(draft: draft)
+                TaskChecklistView(model: model, draft: draft)
+                Divider()
+                Picker("Status", selection: status) {
+                    ForEach(TaskStatus.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
                 }
-                Picker("Area", selection: area) {
-                    Text("None").tag("")
-                    ForEach(areas, id: \.path) { area in
-                        Text(model.areaDisplayTitle(area.path)).tag(area.path.value)
-                    }
-                    if !draft.area.isEmpty, !areas.contains(where: { $0.path.value == draft.area }) {
-                        Text("Missing: \(draft.area)").tag(draft.area)
-                    }
+                Picker("Priority", selection: priority) {
+                    Text("None").tag(TaskPriority?.none)
+                    ForEach(TaskPriority.allCases, id: \.self) { Text($0.rawValue.uppercased()).tag(Optional($0)) }
                 }
-                TaskTagsView(model: model, draft: draft)
-            }
-            TaskRecurrenceView(model: model, draft: draft)
-            TaskChecklistView(model: model, draft: draft)
-            TaskNotesView(draft: draft)
-            Section("File") {
-                LabeledContent("Created", value: model.formattedTimestamp(draft.sourceTask.createdAt))
-                LabeledContent("Updated", value: model.formattedTimestamp(draft.sourceTask.updatedAt))
                 HStack {
-                    Button("Reveal in Finder") { reveal() }
-                    Button("Open Externally") { openExternally() }
-                }
-            }
-            if let sourceUnavailableMessage = draft.sourceUnavailableMessage {
-                Section("Task File Unavailable") {
-                    Text(sourceUnavailableMessage)
-                        .foregroundStyle(.secondary)
-                    HStack {
-                        if draft.canRecreateSource {
-                            Button("Recreate Task") { Task { await model.recreateTask(draft) } }
-                        } else {
-                            Button("Save Copy") { Task { await model.saveTaskCopy(draft) } }
+                    CalendarDateField(
+                        label: "Scheduled",
+                        systemImage: "calendar",
+                        text: draft.scheduled,
+                        calendar: model.planningCalendar,
+                        onCalendarChange: {
+                            model.changeDraft(
+                                draft,
+                                keyPath: \.scheduled,
+                                to: $0,
+                                actionName: "Change Scheduled Date"
+                            )
                         }
-                        Button("Discard Changes") { model.discardChanges(for: draft.path) }
-                    }
+                    )
+                    CalendarDateField(
+                        label: "Deadline",
+                        systemImage: "flag",
+                        text: draft.deadline,
+                        calendar: model.planningCalendar,
+                        onCalendarChange: {
+                            model.changeDraft(draft, keyPath: \.deadline, to: $0, actionName: "Change Deadline")
+                        }
+                    )
+                    Spacer()
                 }
-            } else if draft.hasConflicts {
-                Section("Changed In File") {
-                    Text("Conflicting changes: \(conflictNames).")
-                        .foregroundStyle(.secondary)
+                Section {
+                    Picker("Project", selection: project) {
+                        Text("None").tag("")
+                        ForEach(projects, id: \.path) { project in
+                            Text(model.projectDisplayTitle(project.path)).tag(project.path.value)
+                        }
+                        if !draft.project.isEmpty, !projects.contains(where: { $0.path.value == draft.project }) {
+                            Text("Missing: \(draft.project)").tag(draft.project)
+                        }
+                    }
+                    Picker("Area", selection: area) {
+                        Text("None").tag("")
+                        ForEach(areas, id: \.path) { area in
+                            Text(model.areaDisplayTitle(area.path)).tag(area.path.value)
+                        }
+                        if !draft.area.isEmpty, !areas.contains(where: { $0.path.value == draft.area }) {
+                            Text("Missing: \(draft.area)").tag(draft.area)
+                        }
+                    }
+                    TaskTagsView(model: model, draft: draft)
+                }
+                TaskRecurrenceView(model: model, draft: draft)
+                Section("File") {
+                    LabeledContent("Created", value: model.formattedTimestamp(draft.sourceTask.createdAt))
+                    LabeledContent("Updated", value: model.formattedTimestamp(draft.sourceTask.updatedAt))
                     HStack {
-                        Button("Use File Version") { model.discardChanges(for: draft.path) }
-                        Button("Keep My Changes") { draft.resolveConflictsKeepingLocalChanges() }
+                        Button("Reveal in Finder") { reveal() }
+                        Button("Open Externally") { openExternally() }
                     }
                 }
+                if let sourceUnavailableMessage = draft.sourceUnavailableMessage {
+                    Section("Task File Unavailable") {
+                        Text(sourceUnavailableMessage)
+                            .foregroundStyle(.secondary)
+                        HStack {
+                            if draft.canRecreateSource {
+                                Button("Recreate Task") { Task { await model.recreateTask(draft) } }
+                            } else {
+                                Button("Save Copy") { Task { await model.saveTaskCopy(draft) } }
+                            }
+                            Button("Discard Changes") { model.discardChanges(for: draft.path) }
+                        }
+                    }
+                } else if draft.hasConflicts {
+                    Section("Changed In File") {
+                        Text("Conflicting changes: \(conflictNames).")
+                            .foregroundStyle(.secondary)
+                        HStack {
+                            Button("Use File Version") { model.discardChanges(for: draft.path) }
+                            Button("Keep My Changes") { draft.resolveConflictsKeepingLocalChanges() }
+                        }
+                    }
+                }
+                saveStatus
             }
-            saveStatus
+            .padding(20)
         }
-        .formStyle(.grouped)
         .scrollContentBackground(.hidden)
         .disabled(model.deletingTaskPaths.contains(draft.path))
         .padding(.vertical)
