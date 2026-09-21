@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-21: Bound Resize Tests By Both Screen And Window Limits
+
+- What did not work: The hosted macOS runner clamped the Settings test's requested 800-point content height to 684. Making the target screen-aware but subtracting a fixed 40 points for the smaller size then requested 624 points, below the runner's 628-point content minimum.
+- What worked instead: Derive the larger size from the screen's visible content area and clamp the smaller size to the actual window minimum. Require at least ten points of resize range and check both growth and shrinkage with bounded layout polling. The revised test passes the local full quality gate.
+- Note for next time: Native window tests must account for screen chrome and runtime content minima on the actual runner, rather than assuming development-display dimensions.
+
 ## 2026-09-21: Wait For Native Inspector Toolbar Propagation
 
 - What did not work: Two full quality runs failed the existing inspector-toggle label assertion after a fixed 300 ms sleep, with stale labels in different presentation states.

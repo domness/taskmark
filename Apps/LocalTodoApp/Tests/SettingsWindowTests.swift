@@ -28,9 +28,12 @@ import Testing
     // AppKit constrains windows to the visible screen, including on small CI displays.
     let available = settings.contentRect(forFrameRect: screen.visibleFrame).size
     let large = NSSize(width: min(1000, available.width - 20), height: min(800, available.height - 20))
-    let small = NSSize(width: large.width - 40, height: large.height - 40)
-    try #require(small.width >= settings.contentMinSize.width)
-    try #require(small.height >= settings.contentMinSize.height)
+    let small = NSSize(
+        width: max(settings.contentMinSize.width, large.width - 40),
+        height: max(settings.contentMinSize.height, large.height - 40)
+    )
+    try #require(large.width - small.width >= 10)
+    try #require(large.height - small.height >= 10)
     try await resize(settings, to: small)
     try await resize(settings, to: large)
     try await resize(settings, to: small)
