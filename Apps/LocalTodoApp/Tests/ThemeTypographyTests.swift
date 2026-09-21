@@ -77,38 +77,60 @@ struct ThemeTypographyTests {
             let window = NSWindow(contentViewController: controller)
             window.isReleasedWhenClosed = false
             window.setContentSize(NSSize(width: 500, height: 260))
-            window.makeKeyAndOrderFront(nil)
             defer { window.close() }
-            try await Task.sleep(for: .milliseconds(100))
-            model.beginInlineTitleEditing(at: path)
+            try await presentForNativeInput(window)
+            try await beginInlineEditing(model: model, draft: draft, window: window)
 
             for theme in [AppTheme.catppuccin, .dracula, .standard, .catppuccin] {
                 model.preferences.theme = theme
                 let size = theme == .catppuccin ? 14.0 : 13.0
-                try await expectEditorFont(in: controller.view, text: draft.title, theme: theme, size: size)
-                try await expectEditorFont(in: controller.view, text: "Body sample", theme: theme)
-                try await expectEditorFont(in: controller.view, text: "Heading sample", theme: theme)
+                try await expectEditorFont(in: window, text: draft.title, theme: theme, size: size)
+                try await expectEditorFont(in: window, text: "Body sample", theme: theme)
+                try await expectEditorFont(in: window, text: "Heading sample", theme: theme)
             }
             model.vaultAppearance = try VaultAppearance.parse(":root { --task-font-size: 18px; }")
-            try await expectEditorFont(in: controller.view, text: draft.title, theme: .catppuccin, size: 18)
+            try await expectEditorFont(in: window, text: draft.title, theme: .catppuccin, size: 18)
         }
     }
 
-    private func expectEditorFont(in view: NSView, text: String, theme: AppTheme, size: Double? = nil) async throws {
-        let expectedFamily = theme.typography.family ?? NSFont.systemFont(ofSize: 13).familyName
-        for _ in 0 ..< 40 {
-            view.layoutSubtreeIfNeeded()
-            let font = field(in: view, text: text)?.font
-            let matchesSize = size == nil || font?.pointSize == size.map { CGFloat($0) }
-            if font?.familyName == expectedFamily, matchesSize {
-                return
+    private func beginInlineEditing(model: WorkspaceModel, draft: TaskDraft, window: NSWindow) async throws {
+        let host = try #require(window.contentView)
+        try await waitForNativeUI("typography host presentation", in: window) {
+            window.isVisible && field(in: host, text: "Body sample") != nil
+        }
+        field(in: host, text: "Body sample")?.selectText(nil)
+        try await waitForNativeUI("initial typography field focus", in: window) {
+            (window.firstResponder as? NSTextView)?.string == "Body sample"
+        }
+        model.beginInlineTitleEditing(at: draft.path)
+        // Do not change the font environment while the inline field is still being inserted/focused.
+        try await waitForNativeUI(
+            "inline title editor ready before theme changes", in: window,
+            diagnostics: { "inlinePath=\(String(describing: model.inlineTitleEditingPath))" },
+            until: {
+                let field = field(in: host, text: draft.title)
+                return field?.currentEditor() != nil && field?.currentEditor() === window.firstResponder
             }
-            try await Task.sleep(for: .milliseconds(25))
+        )
+    }
+
+    private func expectEditorFont(
+        in window: NSWindow,
+        text: String,
+        theme: AppTheme,
+        size: Double? = nil
+    ) async throws {
+        let view = try #require(window.contentView)
+        let expectedFamily = theme.typography.family ?? NSFont.systemFont(ofSize: 13).familyName
+        try await waitForNativeUI("\(theme) font for \(text)", in: window) {
+            let font = field(in: view, text: text)?.font
+            let matchesSize = size.map { abs((font?.pointSize ?? 0) - CGFloat($0)) < 0.01 } ?? true
+            return font != nil && font?.familyName == expectedFamily && matchesSize
         }
         let font = try #require(field(in: view, text: text)?.font, "Missing native field: \(text), theme: \(theme)")
         #expect(font.familyName == expectedFamily)
         if let size {
-            #expect(font.pointSize == size)
+            #expect(abs(font.pointSize - CGFloat(size)) < 0.01)
         }
     }
 

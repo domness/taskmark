@@ -329,6 +329,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The user approved these UI font picks and requested a small Catppuccin size increase. This explicitly extends the previous system-font-only design direction while preserving its one-family hierarchy, native control semantics, per-vault appearance and scalable text. Fonts ship offline and register only for the app process.
 - What was rejected and why: A full-interface monospaced face was not selected because the approved picks are proportional UI fonts. A new font preference/schema, downloads or system font installation are unnecessary for these theme defaults. Increasing every Catppuccin label would alter native density beyond the small task-text adjustment.
 
+### 2026-09-21: Synchronize Hosted Tests On Native State
+
+- What was decided: Replace fixed sleeps in the failing Markdown, keyboard-deletion and typography test scenarios with bounded waits on the actual native responder, editor lifetime, selection and completed mutation. Add compact timeout diagnostics and present native hosts through their controller lifecycle. Keep the app behavior and all core regression assertions intact.
+- Why: CI on macOS 15/Xcode 16.4 exposed assumptions that passed locally on macOS 27/Xcode 27. An inserted editor is not necessarily focused, and draft flushing cannot wait for an as-yet-undispatched keyboard action. The user's request is to fix unreliable checks rather than rerun them until green.
+- What was rejected and why: Blindly increasing sleeps, dropping focus/deletion checks, automatic test retries and changing runner versions would conceal failures. Requiring OS app activation was rejected after it remained false in the background test host; window-local responder checks are the available behavioral boundary.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

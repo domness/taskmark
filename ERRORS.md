@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-21: Observe Native Test Readiness Instead Of Sleeping
+
+- What did not work: PR #7 passed locally on Xcode 27/macOS 27 but failed Markdown reopening, list Backspace and inline-font checks on Xcode 16.4/macOS 15 CI. Fixed 100–150 ms waits, checking only editor insertion, and flushing drafts after posting an event did not establish native focus or completion of the queued command. Diagnostic iterations also showed that `activate()` cannot make this background test process active, cached native field references can be replaced during SwiftUI transitions, and the list can have no native selection despite a selected model path.
+- What worked instead: Wait with bounded predicates for current native responders, editor removal, selection and the deletion result; issue each action only once. Resolve native controls after transitions, select the list row explicitly for the keyboard scenario, finish the separate text edit before posting a fresh list key event, and wait for inline-editor readiness before changing theme fonts. Keep all focus/content/deletion/family assertions, using a 0.01-point tolerance for native floating-point font sizes. Diagnostic failures report activation, responder class, modal/sheet state and scenario details.
+- Note for next time: Hosted tests must exercise the window-local responder chain without assuming OS key-window activation. Avoid caching sibling native fields across conditional SwiftUI edits. A passing local run on a newer OS/toolchain is not CI evidence; verify the hosted macOS 15 run before handoff. Retain the earlier workspace-resource cleanup; readiness waits do not replace fixture cleanup or cure unexpected modal dialogs.
+
 ## 2026-09-21: Validate Bundled Fonts In The Actual App Host
 
 - What did not work: The initial font test fixture used a nonexistent empty display-options initializer. After correcting it, runtime checks found that an arbitrary `INFOPLIST_KEY_ATSApplicationFontsPath` build setting was omitted from the generated Info.plist, and an inline editor activated before window presentation disappeared during initial focus setup.
