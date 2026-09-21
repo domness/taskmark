@@ -16,7 +16,7 @@ struct IssueCenterView: View {
                         Text(diagnostic.message)
                         if let path = diagnostic.path {
                             Text(path.value)
-                                .font(.caption.monospaced())
+                                .themeFont(.caption, design: .monospaced)
                                 .foregroundStyle(.secondary)
                         }
                     }

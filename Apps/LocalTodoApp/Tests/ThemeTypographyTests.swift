@@ -58,7 +58,7 @@ struct ThemeTypographyTests {
         }
     }
 
-    @Test func nativeEditorsFollowThemeSwitchesAndRowSizeOverrides() async throws {
+    @Test func taskEditorsFollowWindowThemeSwitchesAndSizeOverrides() async throws {
         try await withWorkspace { model, _ in
             model.route = .inbox
             await model.createTask(title: "Theme font sample", vaultSession: model.vaultSession)
@@ -117,22 +117,50 @@ struct ThemeTypographyTests {
         )
     }
 
-    @Test func semanticEditorFontsFollowTheAppearanceEnvironment() async throws {
+    @Test func inheritedAndSemanticEditorFontsFollowWindowAppearance() async throws {
         try await withWorkspace { model, _ in
             let controller = NSHostingController(rootView: VStack {
+                TextField("Inherited sample", text: .constant("Inherited sample"))
                 TextField("Body sample", text: .constant("Body sample")).themeFont(.body)
-                TextField("Heading sample", text: .constant("Heading sample")).themeFont(.headline)
+                TextField("Title sample", text: .constant("Title sample")).themeFont(.title2)
+                TextField("Path sample", text: .constant("Path sample"))
+                    .themeFont(.body, design: .monospaced)
             }.modifier(AppAppearanceModifier(model: model)))
             let window = NativeInputTestWindow(contentViewController: controller)
             window.isReleasedWhenClosed = false
             defer { window.close() }
             try await presentForNativeInput(window)
             for theme in [AppTheme.catppuccin, .dracula, .standard] {
-                model.preferences.theme = theme
-                try await expectEditorFont(in: window, text: "Body sample", theme: theme)
-                try await expectEditorFont(in: window, text: "Heading sample", theme: theme)
+                let bodySize = theme == .catppuccin ? 14.0 : 13.0
+                try await expectWindowTypography(in: window, model: model, theme: theme, bodySize: bodySize)
             }
+            model.vaultAppearance = try VaultAppearance.parse(":root { --task-font-size: 18px; }")
+            try await expectWindowTypography(in: window, model: model, theme: .standard, bodySize: 18)
         }
+    }
+
+    private func expectWindowTypography(
+        in window: NSWindow,
+        model: WorkspaceModel,
+        theme: AppTheme,
+        bodySize: Double
+    ) async throws {
+        model.preferences.theme = theme
+        try await expectEditorFont(in: window, text: "Inherited sample", theme: theme, size: bodySize)
+        try await expectEditorFont(in: window, text: "Body sample", theme: theme, size: bodySize)
+        try await expectEditorFontLargerThan(
+            in: window,
+            text: "Title sample",
+            theme: theme,
+            minimumSize: bodySize
+        )
+        try await expectEditorFont(
+            in: window,
+            text: "Path sample",
+            theme: theme,
+            size: bodySize,
+            family: NSFont.monospacedSystemFont(ofSize: CGFloat(bodySize), weight: .regular).familyName
+        )
     }
 
     private func findTable(in view: NSView) -> NSTableView? {
@@ -143,10 +171,11 @@ struct ThemeTypographyTests {
         in window: NSWindow,
         text: String,
         theme: AppTheme,
-        size: Double? = nil
+        size: Double? = nil,
+        family: String? = nil
     ) async throws {
         let view = try #require(window.contentView)
-        let expectedFamily = theme.typography.family ?? NSFont.systemFont(ofSize: 13).familyName
+        let expectedFamily = family ?? theme.typography.family ?? NSFont.systemFont(ofSize: 13).familyName
         try await waitForNativeUI("\(theme) font for \(text)", in: window) {
             let font = field(in: view, text: text)?.font
             let matchesSize = size.map { abs((font?.pointSize ?? 0) - CGFloat($0)) < 0.01 } ?? true
@@ -157,6 +186,23 @@ struct ThemeTypographyTests {
         if let size {
             #expect(abs(font.pointSize - CGFloat(size)) < 0.01)
         }
+    }
+
+    private func expectEditorFontLargerThan(
+        in window: NSWindow,
+        text: String,
+        theme: AppTheme,
+        minimumSize: Double
+    ) async throws {
+        let view = try #require(window.contentView)
+        let expectedFamily = theme.typography.family ?? NSFont.systemFont(ofSize: 13).familyName
+        try await waitForNativeUI("scaled font for \(text)", in: window) {
+            let font = field(in: view, text: text)?.font
+            return font?.familyName == expectedFamily && (font?.pointSize ?? 0) > CGFloat(minimumSize)
+        }
+        let font = try #require(field(in: view, text: text)?.font)
+        #expect(font.familyName == expectedFamily)
+        #expect(font.pointSize > CGFloat(minimumSize))
     }
 
     private func field(in view: NSView, text: String) -> NSTextField? {

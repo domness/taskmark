@@ -9,18 +9,24 @@ extension EnvironmentValues {
 struct AppAppearanceModifier: ViewModifier {
     let model: WorkspaceModel
     @Environment(\.colorScheme) private var systemScheme
+    @ScaledMetric(relativeTo: .body) private var scaledBodySize = 13.0
 
     func body(content: Content) -> some View {
         let scheme = model.preferences.appearance.colorScheme ?? systemScheme
+        let appearance = model.effectiveAppearance
+        let configuredBodySize = appearance.number("--task-font-size", scheme: scheme, fallback: 13)
+        let typography = model.preferences.theme.typography.scaled(
+            toBodySize: scaledBodySize * configuredBodySize / 13
+        )
         content
             .preferredColorScheme(model.preferences.appearance.colorScheme)
-            .environment(\.vaultAppearance, model.effectiveAppearance)
-            .environment(\.themeTypography, model.preferences.theme.typography)
-            .font(model.preferences.theme.typography.font(.body))
+            .environment(\.vaultAppearance, appearance)
+            .environment(\.themeTypography, typography)
+            .font(typography.font(.body))
             .environment(\.displayDateFormat, model.preferences.dateFormat)
             .environment(\.calendar, model.planningCalendar)
             .environment(\.timeZone, model.vaultCalendar.timeZone)
-            .tint(model.effectiveAppearance.color("--accent", scheme: scheme, fallback: .accentColor))
+            .tint(appearance.color("--accent", scheme: scheme, fallback: .accentColor))
     }
 }
 

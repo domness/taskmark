@@ -13,7 +13,7 @@ struct NewEntitySheet: View {
                 .themeFont(.title2, weight: .semibold)
             TextField("Title", text: $title)
             TextField("Vault-relative path", text: $path, prompt: Text(defaultPath))
-                .font(.body.monospaced())
+                .themeFont(.body, design: .monospaced)
             HStack {
                 Spacer()
                 Button("Cancel") { dismiss() }

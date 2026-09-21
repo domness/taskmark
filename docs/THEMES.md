@@ -5,7 +5,7 @@ Taskmark is SwiftUI/AppKit, not a web view. Themes customize native appearance t
 ## Appearance And Precedence
 
 1. **Settings → Theme → Appearance** selects System, Light or Dark. System follows the Mac, while explicit modes override the application's window appearance.
-2. The selected built-in theme provides background/sidebar/inspector surfaces and an accent for that appearance, plus its interface font and default task-title size.
+2. The selected built-in theme provides background/sidebar/inspector surfaces and an accent for that appearance, plus its interface font and default base size.
 3. If **Apply vault stylesheet** is enabled, valid `.config/style.css` tokens override only those supplied. Other tokens retain the built-in palette or native control default.
 4. Within a stylesheet, matching rules/declarations apply in source order. Put appearance overrides after `:root` rules.
 
@@ -43,19 +43,19 @@ Both palettes are MIT-licensed; attribution and license notices are in [THIRD_PA
 
 ### Theme Typography
 
-| Theme | Interface family | Default task-title size |
+| Theme | Interface family | Default interface base size |
 | --- | --- | --- |
 | Taskmark, Slate, Forest, Sand | Native system font (SF on macOS) | 13 points |
 | Dracula (Alucard / Dracula) | Inter | 13 points |
 | Catppuccin (Latte / Mocha) | Figtree | 14 points |
 
-Task titles and inline editors share the same font and size, scaled relative to body text. Headings, metadata, notes and other app-authored text use the theme family at native semantic sizes and weights. The extra point applies to Catppuccin's task-list titles, not every UI label. Theme preview samples show each theme's own font and task size.
+The theme family and base size apply at the workspace and Settings roots, including sidebars, headers, inspectors, sheets, app-authored controls and editors. Explicit headings, metadata and notes retain their relative native semantic sizes and weights. Catppuccin's extra point therefore applies across the app-authored window rather than only to task titles. Theme preview samples show each theme's own typography.
 
 Code and exact file paths retain native monospaced typography; native menus, system dialogs and system-owned control text retain platform behavior. The font follows the selected theme in each vault window and its Settings context. Fonts are theme defaults, with no separate font picker or CSS font-family token in this version.
 
 Inter and Figtree are bundled locally as upright/italic variable TrueType fonts, including real bold and italic faces for Markdown emphasis. They work offline without installation. The SIL Open Font License 1.1 notices ship with the fonts; see [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) and the pinned source details in `Apps/LocalTodoApp/Resources/Fonts/README.md`.
 
-The existing `--task-font-size` token overrides either theme's default, including appearance-specific values. Disabling the stylesheet restores the selected theme's size. Title/metadata spacing defaults to 3 points. Appearance tokens color broad native surfaces, not decorative borders or nested cards.
+The existing `--task-font-size` token name is retained for stylesheet compatibility, but its value now overrides the whole interface base size, including appearance-specific values. Disabling the stylesheet restores the selected theme's size. Title/metadata spacing defaults to 3 points. Appearance tokens color broad native surfaces, not decorative borders or nested cards.
 
 ## Custom Theme Example
 
@@ -96,7 +96,7 @@ Create the optional file `<vault>/.config/style.css`:
 | `--inspector-background` | `#RRGGBB` | Task/project inspector surface |
 | `--accent` | `#RRGGBB` | SwiftUI interactive control tint |
 | `--priority-1`, `--priority-2`, `--priority-3` | `#RRGGBB` | Incomplete-task completion indicators and priority labels |
-| `--task-font-size` | `11px`–`24px`, decimals allowed | Task-title theme font, scaled relative to body; default 14 for Catppuccin, 13 otherwise |
+| `--task-font-size` | `11px`–`24px`, decimals allowed | App-authored window typography base size; default 14 for Catppuccin, 13 otherwise |
 | `--row-spacing` | `2px`–`16px`, decimals allowed | Task-title/metadata gap |
 
 Selectors are exactly `:root`, `:root[data-appearance=light]` and `:root[data-appearance=dark]`. Tokens are case-sensitive. Whitespace, block comments and optional final semicolons are supported. `px` maps to native logical points. CSS imports, URLs, arbitrary selectors, variables, named/alpha colors, media queries and layout properties are unsupported and produce a diagnostic.
@@ -118,7 +118,7 @@ Source paths below are relative to `Apps/LocalTodoApp/Sources/`. For window comp
 - `Workspace/VaultAppearance.swift`: validates the CSS subset and merges overrides. Add new tokens to its allowlist with validation, tests and an entry in this document; never silently accept unsupported declarations.
 - `Settings/AppAppearanceModifier.swift`: applies preference-driven native appearance at **both scene roots**, propagates calendar/date-format/theme environments, and defines `ThemeSurface` for explicit semantic surfaces. Do not force every text/control fill to a custom color; macOS still owns focus, selection and form-control states.
 - `Settings/ThemePreview.swift`: displays the same built-in tokens as the workspace. Keep the textual selected state and checkmark; color alone is insufficient.
-- `Settings/ThemeTypography.swift`: maps themes to bundled families, uses scalable native semantic text sizes, and supplies `themeFont` for explicit roles. Row sizes are already scaled and use a fixed-size font to avoid double scaling. `project.yml` copies the Fonts resource folder and generates the `ATSApplicationFontsPath` Info.plist entry for app-local registration.
+- `Settings/ThemeTypography.swift`: maps themes to bundled families, scales native semantic roles from the effective interface base size, and supplies `themeFont` for explicit roles. `project.yml` copies the Fonts resource folder and generates the `ATSApplicationFontsPath` Info.plist entry for app-local registration.
 - New surfaces should opt into the appropriate surface token and otherwise inherit native appearance. Use `CalendarDateField` or the shared display formatter for dates; persisted values remain ISO.
 
-Tests cover paired tokens, override precedence, disabling overrides, malformed-file fallback, reload, persistence, bundled font resolution (including bold/italic and license resources), and native editor family/size updates across theme switches. Full visual contrast and system-appearance interaction still require native window testing; build success alone is not that evidence.
+Tests cover paired tokens, override precedence, disabling overrides, malformed-file fallback, reload, persistence, bundled font resolution (including bold/italic and license resources), and inherited/semantic native editor family and size updates across theme switches. Full visual contrast and system-appearance interaction still require native window testing; build success alone is not that evidence.

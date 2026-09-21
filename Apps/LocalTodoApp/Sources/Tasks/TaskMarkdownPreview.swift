@@ -26,7 +26,7 @@ struct TaskMarkdownPreview: View {
 
     private func font(for block: TaskMarkdown.Block) -> Font {
         if block.isCode {
-            return .body.monospaced()
+            return typography.font(.body, design: .monospaced)
         }
         switch block.headingLevel {
         case 1: return typography.font(.title2, weight: .bold)

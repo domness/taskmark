@@ -341,6 +341,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: Project content should have the same reading and editing experience as task content, while filenames and repeated rules add visual noise to the daily workspace.
 - What was rejected and why: Keeping exact project paths in the inspector was intentionally revised at the user's request; diagnostics and deliberate file actions still expose identity when needed. Separate project Markdown rendering and custom row dividers were rejected because the shared native behavior already satisfies the interaction.
 
+### 2026-09-21: Apply Theme Typography Across Each Window
+
+- What was decided: Apply the selected theme family and effective typography base size at both scene roots, scaling explicit semantic roles across workspace and Settings content. Catppuccin's built-in 14-point size and stylesheet `--task-font-size` overrides now affect all app-authored window typography, revising the task-title-only sizing decision from earlier the same day. Retain the shipped token name for stylesheet compatibility.
+- Why: A theme should shape the complete interface rather than only task rows. Root propagation keeps inherited controls consistent, while scaled semantic roles preserve hierarchy and explicit monospaced code/path exceptions.
+- What was rejected and why: Keeping size overrides task-specific was rejected because it left sidebars, headers, inspectors and Settings visually disconnected. Renaming the existing stylesheet token was rejected because stylesheets may already use it; native menus, system dialogs and system-owned typography remain outside the app theme.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

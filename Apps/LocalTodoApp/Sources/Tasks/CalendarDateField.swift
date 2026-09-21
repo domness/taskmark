@@ -126,7 +126,7 @@ struct CalendarDateField: View {
         HStack(spacing: 8) {
             TextField("YYYY-MM-DD", text: $exactDateText)
                 .textFieldStyle(.plain)
-                .font(.body.monospacedDigit())
+                .themeFont(.body, design: .monospacedDigits)
                 .onSubmit { applyExactDate() }
                 .accessibilityLabel("Exact \(label.lowercased()) date")
             if !exactDateText.isEmpty, exactDate == nil {
