@@ -1,6 +1,7 @@
 import Foundation
 @testable import LocalTodoApp
 import LocalTodoDomain
+import LocalTodoMarkdown
 import Testing
 
 @MainActor
@@ -75,15 +76,35 @@ func nextWeekHonorsConfiguredWeekStart(firstWeekday: Int) throws {
             #expect(theme.tokens.light["--background"] != theme.tokens.dark["--background"])
             model.preferences.theme = theme
             #expect(model.effectiveAppearance == theme.tokens)
+            model.vaultAppearance = try VaultAppearance.parse(":root { --background: #123456; --row-spacing: 8px; }")
+            #expect(model.effectiveAppearance.light["--background"] == "#123456")
+            #expect(model.effectiveAppearance.dark["--row-spacing"] == "8px")
+            #expect(model.effectiveAppearance.light["--accent"] == theme.tokens.light["--accent"])
+            #expect(model.effectiveAppearance.dark["--accent"] == theme.tokens.dark["--accent"])
+            model.usesVaultStylesheet = false
+            #expect(model.effectiveAppearance == theme.tokens)
+            model.vaultAppearance = .init()
+            model.usesVaultStylesheet = true
         }
-        model.vaultAppearance = try VaultAppearance.parse(":root { --background: #123456; --row-spacing: 8px; }")
-        #expect(model.effectiveAppearance.light["--background"] == "#123456")
-        #expect(model.effectiveAppearance.dark["--row-spacing"] == "8px")
-        #expect(model.effectiveAppearance.light["--accent"] == AppTheme.sand.tokens.light["--accent"])
-        model.usesVaultStylesheet = false
-        #expect(model.effectiveAppearance == AppTheme.sand.tokens)
         #expect(AppAppearance.system.colorScheme == nil)
         #expect(AppAppearance.dark.colorScheme == .dark)
         #expect(AppAppearance.light.colorScheme == .light)
+    }
+}
+
+@MainActor
+@Test func everySelectableThemePersistsAndRestoresWithIndependentAppearance() async throws {
+    try await withWorkspace { model, root in
+        for theme in AppTheme.allCases {
+            for appearance in AppAppearance.allCases {
+                model.preferences.theme = theme
+                model.preferences.appearance = appearance
+                #expect(await model.flushPreferences())
+                let record = try await VaultStore(root: root).configurationRecord()
+                let restored = AppPreferences(values: record.value.preferences)
+                #expect(restored.theme == theme)
+                #expect(restored.appearance == appearance)
+            }
+        }
     }
 }

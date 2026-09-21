@@ -22,7 +22,7 @@ enum AppAppearance: String, CaseIterable, Identifiable {
 /// Native surface tokens, not browser layout rules. Each palette defines both appearances;
 /// a valid vault stylesheet overrides individual tokens after the selected palette.
 enum AppTheme: String, CaseIterable, Identifiable {
-    case standard, slate, forest, sand
+    case standard, slate, forest, sand, catppuccin, dracula
     var id: String {
         rawValue
     }
@@ -37,6 +37,8 @@ enum AppTheme: String, CaseIterable, Identifiable {
         case .slate: "Cool blue-gray"
         case .forest: "Soft green"
         case .sand: "Warm earth"
+        case .catppuccin: "Latte / Mocha"
+        case .dracula: "Alucard / Dracula"
         }
     }
 
@@ -61,6 +63,18 @@ enum AppTheme: String, CaseIterable, Identifiable {
             palette(
                 light: ["#faf6ef", "#efe7da", "#f4ede2", "#8b562c"],
                 dark: ["#2b2520", "#211c17", "#342d25", "#dfb486"]
+            )
+        case .catppuccin:
+            // Upstream Base, Crust, Mantle and Mauve; see docs/THEMES.md for attribution.
+            palette(
+                light: ["#eff1f5", "#dce0e8", "#e6e9ef", "#8839ef"],
+                dark: ["#1e1e2e", "#11111b", "#181825", "#cba6f7"]
+            )
+        case .dracula:
+            // Upstream backgrounds/purple accents with native pane adaptations documented in THEMES.md.
+            palette(
+                light: ["#fffbeb", "#f4f0e1", "#f8f4e5", "#644ac9"],
+                dark: ["#282a36", "#22242e", "#2e303d", "#bd93f9"]
             )
         }
     }

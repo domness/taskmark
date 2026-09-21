@@ -293,6 +293,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The user reported side panels extending outside new windows. A hosted vault-loading regression reproduced a native constraint-update failure; detail-owned inspector composition with flexible content now passes startup, hide/show and task-selection checks at 840, 1088 and 1120 points.
 - What was rejected and why: Clipping overflow would hide controls rather than fix layout. Adding more fixed content minima and a GeometryReader wrapper did not resolve the native constraint feedback, so they were removed.
 
+### 2026-09-21: Pair Community Themes With Independent Appearance
+
+- What was decided: Add Catppuccin (Latte light/Mocha dark) and Dracula (Alucard light/Dracula dark) as built-in palette choices. Persist `catppuccin` and `dracula` through the shared configuration validator; retain independent System/Light/Dark appearance, native text/control semantics and stylesheet precedence.
+- Why: This supplies the requested two Catppuccin variants and light/dark Dracula within the existing paired-palette model. Catppuccin uses upstream pane colors and Mauve; Dracula uses upstream Background/Purple with documented secondary-pane adaptations.
+- What was rejected and why: Separate fixed-appearance tiles were rejected because they would conflict with the established independent appearance setting. Inventing a light Dracula palette was unnecessary because upstream publishes the open-source Alucard palette.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

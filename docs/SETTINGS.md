@@ -33,7 +33,7 @@ Dirty or conflicting drafts must finish saving before changing the time zone. An
 ## Theme
 
 - **System / Light / Dark** controls appearance independently of the chosen palette. System follows macOS. Native controls, sheets, popovers, editors and text use the resolved appearance.
-- **Taskmark, Slate, Forest, Sand** each provide paired light/dark palettes. Selection applies immediately to sidebar, list, inspector and Settings surfaces and control accents.
+- **Taskmark, Slate, Forest, Sand, Catppuccin, Dracula** each provide paired light/dark palettes. Catppuccin uses Latte in Light and Mocha in Dark; Dracula uses Alucard in Light and Dracula in Dark. Selection applies immediately to sidebar, list, inspector and Settings surfaces and control accents.
 - **Apply vault stylesheet** enables `.config/style.css` overrides on top of the selected theme. This preference is saved with the vault. Missing/invalid styles fall back to the selected built-in theme. The Settings section shows parse diagnostics and provides Reveal Vault and Reload Stylesheet actions.
 
 See [THEMES.md](THEMES.md) for every built-in token, custom-theme examples, override precedence and implementation extension points.
