@@ -38,9 +38,11 @@ Use **File → New Vault Window** (`Command-Shift-N`) to work with multiple vaul
 
 ## CLI
 
-Choose **Taskmark → Install Command-Line Tool…** in the macOS app. Save the bundled `taskmark` executable in a writable folder on your shell's PATH, such as `~/.local/bin`; the native Save dialog supports creating folders and Go to Folder (`Shift-Command-G`). No Xcode or separate download is needed. The installer exports a standalone copy; run it again after updating the app to update the command. Canceling leaves files unchanged, and replacing an existing command uses the Save dialog's normal confirmation.
+Move **Taskmark.app** into Applications, open **Settings → General**, and enable **Command-line interface**. Approve the native macOS administrator prompt. Taskmark automatically registers `/usr/local/bin/taskmark` as a symlink to its bundled CLI—no file picker, separate download, Xcode, or manual shell-profile edits are needed on a standard macOS setup. This setting belongs to the Mac and is available without opening a vault.
 
-If needed, add `export PATH="$HOME/.local/bin:$PATH"` to your shell configuration (for zsh, `~/.zshrc`) and open a new terminal. Verify with `taskmark --help`. The installer does not edit shell configuration or require administrator privileges; choose a user-writable destination.
+Open a new terminal and run `taskmark --help`. App updates at the same location automatically update the command. If you move the app, open the relocated copy and enable the CLI again to repair registration. Disabling the setting removes the registered link with administrator authorization; it leaves the bundled CLI intact. Taskmark refuses to replace unrelated files or links at the registration path. Canceling authorization leaves registration unchanged.
+
+The CLI runs independently; the app does not need to be open. If a customized shell excludes `/usr/local/bin` or an older manual install shadows the command, use `command -v taskmark` to check resolution and `/usr/local/bin/taskmark --help` to check the registered tool directly. Taskmark does not rewrite shell configuration or remove older exported copies.
 
 For development, run `swift build -c release` to build `.build/release/taskmark`, or use `swift run taskmark`. The portable agent skill is [skills/taskmark/SKILL.md](skills/taskmark/SKILL.md).
 

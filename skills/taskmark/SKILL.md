@@ -7,7 +7,7 @@ description: Manage a Taskmark Markdown vault through the taskmark CLI. Use when
 
 Use `taskmark` for mutations. Markdown is user-owned, exact path identity is significant, and direct YAML edits can break references or discard unknown fields.
 
-Taskmark was previously named Local Todo. The command is now `taskmark`, without a `localtodo` alias. Install it from **Taskmark → Install Command-Line Tool…**, choosing a writable folder on the shell's PATH. Reinstall after app updates to refresh the exported command. Vault schema 2 uses `.config/` for metadata and shared preferences; there is no migration or fallback for the earlier development layout.
+Taskmark was previously named Local Todo. The command is now `taskmark`, without a `localtodo` alias. Enable **Settings → General → Command-line interface** in the macOS app and approve native administrator authorization. This automatically links `/usr/local/bin/taskmark` to the bundled CLI; updates at the same app location are reflected automatically. Open a new terminal after registration. The CLI runs without the app being open. Vault schema 2 uses `.config/` for metadata and shared preferences; there is no migration or fallback for the earlier development layout.
 
 ## Establish Context
 

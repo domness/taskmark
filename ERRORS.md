@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-21: Count Indentation In Embedded Shell Diagnostics
+
+- What did not work: The CLI-registration lint pass failed on long UI/shell strings. Splitting the shell case arm still left its diagnostic two characters over the line limit because indentation counts too.
+- What worked instead: Shorten the shell diagnostic and split Swift UI copy into concatenated literals. The full formatting/lint gate then passed.
+- Note for next time: SwiftFormat does not wrap multiline shell-string contents; account for leading indentation when checking the 120-character limit.
+
 ## 2026-09-21: Startup Split Layout Needs Flexible Content Boundaries
 
 - What did not work: Sidebar width/default-window adjustments alone did not fix the vault-loading regression. A detail minimum of 320 points caused more native constraint-update failures; an outer GeometryReader also failed to resolve the cycle.

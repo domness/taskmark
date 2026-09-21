@@ -12,7 +12,7 @@ Status reviewed against the repository on 2026-09-18. Implemented features below
 - Revision-checked atomic updates, preservation of unknown frontmatter and Markdown bodies, visible malformed-file and missing-reference diagnostics.
 - Workspace-owned task/project autosave, non-overlapping rebases, explicit conflict resolution, task-file recovery and native Undo/Redo.
 - Independent vault windows through File → New Vault Window, focused-window commands and per-window Undo/Redo. Closing flushes the affected workspace; quitting checks all open workspaces. Full multi-vault session restoration remains outside the implemented behavior.
-- `taskmark` CLI entity/query/lifecycle commands, task moves, JSON output, mutation dry runs and `doctor`; a portable `taskmark` agent skill. The app bundles the CLI and exports it through Taskmark → Install Command-Line Tool… to a user-selected location.
+- `taskmark` CLI entity/query/lifecycle commands, task moves, JSON output, mutation dry runs and `doctor`; a portable `taskmark` agent skill. Settings → General → Command-line interface automatically registers the bundled CLI at `/usr/local/bin/taskmark` with native administrator authorization. Registration follows updates at the same app location and can be disabled from Settings.
 
 ### Daily Workflows
 

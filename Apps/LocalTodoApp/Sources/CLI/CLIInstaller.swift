@@ -2,48 +2,60 @@ import Foundation
 
 enum CLIInstallationError: LocalizedError {
     case missingExecutable
-    case sameLocation
+    case temporaryApplication
+    case authorizationCancelled
+    case registrationFailed(String)
 
     var errorDescription: String? {
         switch self {
         case .missingExecutable: "The bundled taskmark command is missing or is not executable. Reinstall Taskmark."
-        case .sameLocation: "Choose a location outside the Taskmark app bundle."
+        case .temporaryApplication: "Move Taskmark to Applications and open it there before enabling the CLI."
+        case .authorizationCancelled: "CLI registration was canceled."
+        case let .registrationFailed(message): message
         }
     }
 }
 
-/// Exports the signed standalone tool into a location authorized by the native Save panel.
+/// Registers the bundled tool using the standard macOS administrator authorization dialog.
 enum CLIInstaller {
+    static let destination = URL(fileURLWithPath: "/usr/local/bin/taskmark")
+
     static func bundledExecutable(in bundle: Bundle = .main) -> URL {
         bundle.bundleURL.appendingPathComponent("Contents/Helpers/taskmark")
     }
 
-    static func install(from source: URL, to destination: URL) throws {
-        let files = FileManager.default
-        guard files.isExecutableFile(atPath: source.path) else { throw CLIInstallationError.missingExecutable }
-        guard source.resolvingSymlinksInPath() != destination.resolvingSymlinksInPath() else {
-            throw CLIInstallationError.sameLocation
+    static func isRegistered(source: URL, destination: URL = destination) -> Bool {
+        guard let target = try? FileManager.default.destinationOfSymbolicLink(atPath: destination.path) else {
+            return false
         }
-        let wrapper = try FileWrapper(regularFileWithContents: Data(contentsOf: source))
-        wrapper.fileAttributes = [
-            FileAttributeKey.type.rawValue: FileAttributeType.typeRegular.rawValue,
-            FileAttributeKey.posixPermissions.rawValue: 0o755,
-        ]
-        var coordinationError: NSError?
-        var writeError: (any Error)?
-        // Foundation coordinates the Save-panel grant and atomic replacement within the sandbox.
-        NSFileCoordinator().coordinate(writingItemAt: destination, options: .forReplacing, error: &coordinationError) {
-            do {
-                try wrapper.write(to: $0, options: .atomic, originalContentsURL: nil)
-            } catch {
-                writeError = error
+        return target == source.path && FileManager.default.isExecutableFile(atPath: destination.path)
+    }
+
+    static func setEnabled(_ enabled: Bool, source: URL) throws {
+        if enabled {
+            guard FileManager.default.isExecutableFile(atPath: source.path) else {
+                throw CLIInstallationError.missingExecutable
+            }
+            guard !source.path.contains("/AppTranslocation/"), !source.path.hasPrefix("/Volumes/") else {
+                throw CLIInstallationError.temporaryApplication
+            }
+            if isRegistered(source: source) {
+                return
             }
         }
-        if let coordinationError {
-            throw coordinationError
+        let command = CLIRegistrationScript.command(enabled: enabled, source: source, destination: destination)
+        let scriptSource = CLIRegistrationScript.authorizationScript(command: command)
+        guard let script = NSAppleScript(source: scriptSource) else {
+            throw CLIInstallationError.registrationFailed("Could not prepare CLI registration. Try reopening Taskmark.")
         }
-        if let writeError {
-            throw writeError
+        var error: NSDictionary?
+        script.executeAndReturnError(&error)
+        if let error {
+            if (error[NSAppleScript.errorNumber] as? NSNumber)?.intValue == -128 {
+                throw CLIInstallationError.authorizationCancelled
+            }
+            let message = error[NSAppleScript.errorMessage] as? String ?? "Could not register the taskmark command."
+            throw CLIInstallationError.registrationFailed(message)
         }
     }
 }

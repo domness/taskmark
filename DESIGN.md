@@ -75,7 +75,7 @@ The system is flat by default. Tonal surface changes and native dividers establi
 - **Markdown**: Task rows render inline title formatting while preserving selection and drag gestures. The inspector retains the source title field with a selectable, link-enabled preview for formatted titles. Notes use a native Edit/Preview segmented control; preview blocks use system typography and selectable text, with no web view or remote image loading.
 - **Dates**: Compact scheduled/deadline controls open native popovers with suggestions, exact ISO entry and a graphical calendar.
 - **Ordering**: Native List insertion gestures reorder collections and tasks in Custom mode. Automatic task sorts permit assignment drags to sidebar collections.
-- **Settings**: Fixed 170-point native sidebar beneath a compact titlebar; grouped General controls and a scrollable Theme grid.
+- **Settings**: Fixed 170-point native sidebar beneath a compact titlebar; grouped General controls and a scrollable Theme grid. General includes a machine-local Command-line interface toggle, available without a vault, with native administrator authorization, progress and error feedback.
 
 Native controls own interaction feedback. Any future custom motion should remain functional, respect Reduce Motion and avoid decorative transitions; no custom animation-duration token system is implemented.
 

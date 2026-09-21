@@ -2,10 +2,16 @@ import SwiftUI
 
 struct SettingsView: View {
     let model: WorkspaceModel
+    let cliRegistration: CLIRegistration
     @State private var section: SettingsSection? = .general
 
-    init(model: WorkspaceModel, initialSection: SettingsSection = .general) {
+    init(
+        model: WorkspaceModel,
+        initialSection: SettingsSection = .general,
+        cliRegistration: CLIRegistration = CLIRegistration()
+    ) {
         self.model = model
+        self.cliRegistration = cliRegistration
         _section = State(initialValue: initialSection)
     }
 
@@ -21,11 +27,13 @@ struct SettingsView: View {
             Divider()
             Group {
                 switch section ?? .general {
-                case .general: GeneralSettingsView(model: model, preferences: model.preferences)
-                case .theme: ThemeSettingsView(model: model, preferences: model.preferences)
+                case .general:
+                    GeneralSettingsView(model: model, preferences: model.preferences, cliRegistration: cliRegistration)
+                case .theme:
+                    ThemeSettingsView(model: model, preferences: model.preferences)
+                        .disabled(model.snapshot == nil)
                 }
             }
-            .disabled(model.snapshot == nil)
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .themeSurface()
             .navigationTitle((section ?? .general).title)

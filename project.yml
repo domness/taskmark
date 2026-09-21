@@ -68,6 +68,8 @@ targets:
         INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
         CODE_SIGN_STYLE: Automatic
         CODE_SIGN_ENTITLEMENTS: Apps/LocalTodoApp/LocalTodoApp.entitlements
+        ENABLE_APP_SANDBOX: NO
+        ENABLE_HARDENED_RUNTIME: YES
   LocalTodoAppTests:
     type: bundle.unit-test
     platform: macOS
