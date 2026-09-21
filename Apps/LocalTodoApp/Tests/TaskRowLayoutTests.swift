@@ -66,6 +66,8 @@ import Testing
             windowNumber: window.windowNumber, context: nil, characters: "\u{7F}",
             charactersIgnoringModifiers: "\u{7F}", isARepeat: false, keyCode: 51
         ))
+        model.editTask(at: path)
+        try await Task.sleep(for: .milliseconds(100))
         try await checkTextBackspace(in: host, draft: draft, event: event)
         #expect(model.snapshot?.tasks[path] != nil)
         #expect(window.makeFirstResponder(table))

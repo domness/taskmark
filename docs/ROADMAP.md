@@ -30,7 +30,7 @@ See [daily workflows and shortcuts](DAILY_WORK.md).
 - A row click selects the task and opens its details while retaining list focus. Backspace deletes from the list, while inspector text editing retains normal Backspace behavior.
 - Incomplete tasks past their scheduled date or deadline are highlighted with semantic red and an Overdue label, using the vault-local day.
 - Placeholder-only, multiline title entry; always-visible project, area, tag and repeat controls. Tags are removable tokens with an add button and existing-tag suggestions.
-- Inline Markdown task titles and native notes Edit/Preview, including clickable inspector links, headings, lists, quotes and code; source text remains canonical.
+- Rendered-first Markdown task titles and notes, with click-to-edit source and return to rendering on focus loss; includes inspector links, headings, lists, quotes and code. Source text remains canonical.
 - Task rows resize as planning metadata appears or disappears. Search/list headers stay top-aligned; Switch Vault has its own footer; the inspector toggle is at the trailing window toolbar.
 - Task Duplicate/Delete/Copy actions; project/area context-menu deletion with reference protection. Successful deletions support exact-byte Undo/Redo during the vault session.
 - Independent native Projects/Areas sidebar ordering, with Move Up/Move Down/Restore Default Order actions.
