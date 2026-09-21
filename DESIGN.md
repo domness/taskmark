@@ -42,15 +42,15 @@ The palette uses adaptive, subtly tinted near-neutrals. The built-in Taskmark to
 
 ## 3. Typography
 
-**Interface Font:** Native system typography (SF on macOS).
+**Interface Font:** Native system typography (SF on macOS) for Taskmark, Slate, Forest and Sand; bundled Inter for Dracula and Figtree for Catppuccin. One family follows each vault's selected theme across app-authored text and editors. Native menus, system dialogs and system-owned control typography retain platform behavior.
 **File Paths:** Native monospaced caption styling where exact identity is shown.
 
-**Character:** System text styles provide familiar density, legibility and hierarchy. Task-list title size defaults to 13 logical points and scales relative to body text; the stylesheet may set a bounded 11–24-point value.
+**Character:** Native semantic text sizes provide familiar density, legibility and hierarchy in each family. Task-list title size defaults to 13 logical points, or 14 for Catppuccin, and scales relative to body text; the stylesheet may set a bounded 11–24-point value. Upright and italic variable fonts preserve weight hierarchy and Markdown emphasis without network access or system font installation.
 
 ### Hierarchy
 - **Empty states**: Native `ContentUnavailableView` hierarchy.
 - **Headline**: Route/project headings and inspector title fields use `.headline`.
-- **Task titles**: Scaled system font in rows; neutral color with completion strikethrough. Incomplete overdue tasks use semantic red plus an explicit Overdue warning label; only planning dates before the vault-local day qualify.
+- **Task titles**: Scaled theme font in rows and inline editors; neutral color with completion strikethrough. Incomplete overdue tasks use semantic red plus an explicit Overdue warning label; only planning dates before the vault-local day qualify.
 - **Body**: `.body` for notes and editors; prose line lengths should remain comfortable as views expand.
 - **Metadata**: `.caption` and secondary styling in rows; `.callout` for tag tokens and supporting Settings content.
 
@@ -72,7 +72,7 @@ The system is flat by default. Tonal surface changes and native dividers establi
 - **Window sizing**: New vault windows default to 1120×720 points and respect the workspace minimum. The sidebar has a 180–320-point range (220 ideal); the inspector belongs to the detail column and retains its 280–480-point range (340 ideal). Flexible detail/inspector content accepts the allocated width instead of driving the split beyond the window during vault loading.
 - **Selection and editing**: A row's title/metadata area selects and opens details with list focus. Double-click a task title in the center pane to edit its Markdown source inline; Enter, click-away or leaving the row saves through the shared task draft. Invalid titles retain their draft and surface an error. Command-E explicitly focuses the inspector title. Inspector task titles are placeholder-only multiline fields, expanding up to six visible lines. Date metadata participates in intrinsic row sizing.
 - **Organization**: Project, Area, Tags and Repeat are always visible in the task inspector. Tags use removable wrapping tokens and an add popover; advanced recurrence fields appear only when relevant to the selected mode. This direct-access inspector is the user-requested exception to progressive metadata disclosure.
-- **Markdown**: Task rows render inline title formatting while preserving selection and drag gestures. Inspector titles and notes render by default; clicking a field or pressing Return on it reveals its source editor. Focus loss, an outside click or Escape returns to rendered text. Command-E directly edits the title. There are no mode tabs or duplicate previews; native links and system typography remain, with no web view or remote image loading.
+- **Markdown**: Task rows render inline title formatting while preserving selection and drag gestures. Inspector titles and notes render by default; clicking a field or pressing Return on it reveals its source editor. Focus loss, an outside click or Escape returns to rendered text. Command-E directly edits the title. There are no mode tabs or duplicate previews; native links and theme typography remain, with native monospaced code, no web view or remote image loading.
 - **Dates**: Compact scheduled/deadline controls open native popovers with suggestions, exact ISO entry and a graphical calendar.
 - **Ordering**: Native List insertion gestures reorder collections and tasks in Custom mode. Automatic task sorts permit assignment drags to sidebar collections.
 - **Settings**: Fixed 170-point native sidebar beneath a compact titlebar; grouped General controls and a scrollable Theme grid. General includes a machine-local Command-line interface toggle, available without a vault, with native administrator authorization, progress and error feedback.
@@ -98,11 +98,11 @@ Native controls own interaction feedback. Any future custom motion should remain
 
 ## 7. Implemented macOS Settings And Appearance
 
-The Settings surface inherits the native system font, sidebar navigation, visible keyboard focus and flat working plane. General uses native grouped form controls; Theme uses a segmented appearance picker and six compact selectable previews with text/checkmark selection cues. Preferences apply immediately and autosave to the active vault's `.config/config.yml`; other windows/machines opening that vault reload the same choices. Different vaults may use different palettes. Configuration save errors and conflicts have visible resolution controls.
+The Settings surface inherits the selected theme's font, native sidebar navigation, visible keyboard focus and flat working plane. General uses native grouped form controls; Theme uses a segmented appearance picker and six compact selectable previews with text/checkmark selection cues. Preview task samples use each tile's own font and default task size. Preferences apply immediately and autosave to the active vault's `.config/config.yml`; other windows/machines opening that vault reload the same choices. Different vaults may use different palettes. Configuration save errors and conflicts have visible resolution controls.
 
 Appearance is independently System, Light or Dark. Slate, Forest and Sand extend the default Taskmark palette's restrained surface language. Catppuccin pairs Latte/Mocha and Dracula pairs Alucard/Dracula, bringing their upstream backgrounds and purple accents into the same native surface system. All paired token values and extension rules are documented in [docs/THEMES.md](docs/THEMES.md), with code in `Apps/LocalTodoApp/Sources/Settings/AppTheme.swift`.
 
-Native primary/secondary text and control state semantics remain adaptive. Custom vault styles override named surface/accent/priority tokens, task-title size (11–24 logical points, default 13, scaled relative to body), and row metadata spacing (2–16, default 3). They do not replace keyboard focus or selection behavior. Window rendering and contrast require visual acceptance; parser/model/build checks do not establish that evidence.
+Native primary/secondary text and control state semantics remain adaptive. Custom vault styles override named surface/accent/priority tokens, task-title size (11–24 logical points, default 14 for Catppuccin and 13 otherwise, scaled relative to body), and row metadata spacing (2–16, default 3). They do not replace keyboard focus or selection behavior. Window rendering and contrast require visual acceptance; parser/model/build checks do not establish that evidence.
 
 ## 8. App Icon
 

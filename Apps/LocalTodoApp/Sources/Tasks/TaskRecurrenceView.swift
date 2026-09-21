@@ -30,10 +30,10 @@ struct TaskRecurrenceView: View {
                                 .toggleStyle(.checkbox)
                         }
                         Text("With no weekdays selected, repeat on the task’s current weekday.")
-                            .font(.caption).foregroundStyle(.secondary)
+                            .themeFont(.caption).foregroundStyle(.secondary)
                     }
                     Text("Missed occurrences are skipped when you complete the task.")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .themeFont(.caption).foregroundStyle(.secondary)
                 } else {
                     Picker("Unit", selection: binding(\.unit)) {
                         Text("Days").tag(RecurrenceInterval.Unit.day)
@@ -42,7 +42,7 @@ struct TaskRecurrenceView: View {
                         Text("Years").tag(RecurrenceInterval.Unit.year)
                     }
                     Text("The next date is calculated from the day you complete the task.")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .themeFont(.caption).foregroundStyle(.secondary)
                 }
                 Toggle("Reset checklist on repeat", isOn: Binding(
                     get: { draft.resetChecklistOnRepeat },

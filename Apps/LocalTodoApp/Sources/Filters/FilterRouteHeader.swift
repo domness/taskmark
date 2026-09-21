@@ -9,7 +9,7 @@ struct FilterRouteHeader: View {
             Divider()
         } else if case let .savedFilter(name) = model.route {
             HStack {
-                Text(name).font(.headline)
+                Text(name).themeFont(.headline)
                 Spacer()
                 Button("Edit Filter") { model.beginFilterEditing(name: name) }
             }

@@ -10,7 +10,7 @@ struct NewEntitySheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             Text("New \(kind.rawValue.capitalized)")
-                .font(.title2.weight(.semibold))
+                .themeFont(.title2, weight: .semibold)
             TextField("Title", text: $title)
             TextField("Vault-relative path", text: $path, prompt: Text(defaultPath))
                 .font(.body.monospaced())

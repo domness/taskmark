@@ -323,6 +323,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The user requested fast inline renaming with Enter/click-away saving. Reusing workspace drafts preserves native history, external-change handling and close/quit flushing. A title-bounded AppKit event observer handles double-clicks without taking over single-click or drag tracking, and detects clicks outside the active editor even on non-focusable content.
 - What was rejected and why: View-local document copies and direct file writes were rejected because they bypass draft lifetime and conflict handling. SwiftUI double-tap gestures were rejected after hosted mouse-event tests failed in native Custom-order lists, including with high priority. Focus-state changes alone did not reliably report native editing end.
 
+### 2026-09-21: Bundle Theme-Specific Interface Fonts
+
+- What was decided: At the user's request, bundle Inter for Dracula and Figtree for Catppuccin, including upright/italic variable files and SIL OFL notices. Apply one selected family to app-authored text and editors using native semantic roles; keep code/file paths monospaced. Catppuccin task-list titles default to 14 points, versus 13 elsewhere, with existing stylesheet size overrides taking precedence. Preview samples use their own theme's typography.
+- Why: The user approved these UI font picks and requested a small Catppuccin size increase. This explicitly extends the previous system-font-only design direction while preserving its one-family hierarchy, native control semantics, per-vault appearance and scalable text. Fonts ship offline and register only for the app process.
+- What was rejected and why: A full-interface monospaced face was not selected because the approved picks are proportional UI fonts. A new font preference/schema, downloads or system font installation are unnecessary for these theme defaults. Increasing every Catppuccin label would alter native density beyond the small task-text adjustment.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

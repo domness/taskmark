@@ -8,7 +8,7 @@ struct ProjectInspectorView: View {
     var body: some View {
         Form {
             TextField("Project title", text: $draft.title)
-                .font(.headline)
+                .themeFont(.headline)
             Picker("Project status", selection: Binding(
                 get: { draft.status },
                 set: { model.changeProjectField(draft, field: .status, to: $0.rawValue) }
@@ -20,10 +20,10 @@ struct ProjectInspectorView: View {
             }
             .disabled(!draft.conflicts.isEmpty || draft.unavailableMessage != nil)
             Text("Project status does not change its tasks.")
-                .font(.caption).foregroundStyle(.secondary)
+                .themeFont(.caption).foregroundStyle(.secondary)
             Section("Project Notes") {
                 TextEditor(text: $draft.notes)
-                    .font(.body)
+                    .themeFont(.body)
                     .frame(minHeight: 180)
                     .accessibilityLabel("Project notes, Markdown")
             }

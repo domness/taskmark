@@ -2,6 +2,19 @@
 
 Taskmark's native theme tokens use colors from the following MIT-licensed palettes.
 
+The app also bundles **Inter** for Dracula and **Figtree** for Catppuccin under
+the SIL Open Font License 1.1. Both upright and italic variable fonts are
+unmodified, sourced from Google Fonts at commit
+`e44c4b011a820c2cbe2fd2cfa8052037d7edb571`.
+
+- Inter: Copyright 2020 The Inter Project Authors (https://github.com/rsms/inter).
+- Figtree: Copyright 2022 The Figtree Project Authors (https://github.com/erikdkennedy/figtree).
+
+The complete copyright notices and license texts ship alongside the fonts in
+`Taskmark.app/Contents/Resources/Fonts/Inter-OFL.txt` and `Figtree-OFL.txt`.
+Repository copies are in `Apps/LocalTodoApp/Resources/Fonts/`, with pinned source
+paths recorded in that directory's README.
+
 ## Catppuccin
 
 Source: https://github.com/catppuccin/catppuccin

@@ -6,6 +6,7 @@ struct ThemePreview: View {
     let scheme: ColorScheme
     let isSelected: Bool
     let select: () -> Void
+    @ScaledMetric(relativeTo: .body) private var baseFontSize = 13.0
 
     var body: some View {
         Button(action: select) {
@@ -21,11 +22,11 @@ struct ThemePreview: View {
                     .frame(maxHeight: .infinity)
                     .background(color("--sidebar-background"))
                     VStack(alignment: .leading, spacing: 10) {
-                        Text("Today").font(.caption.weight(.semibold))
+                        Text("Today").font(theme.typography.font(.caption, weight: .semibold))
                         Label("Plan the week", systemImage: "circle")
                         Label("Review notes", systemImage: "checkmark.circle").foregroundStyle(.secondary)
                     }
-                    .font(.caption)
+                    .font(theme.typography.taskFont(scaledSize: sampleFontSize))
                     .padding(10)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -38,13 +39,13 @@ struct ThemePreview: View {
                         lineWidth: isSelected ? 2 : 1
                     ))
                 HStack {
-                    Text(theme.title).font(.body.weight(.medium))
+                    Text(theme.title).themeFont(.body, weight: .medium)
                     Spacer()
                     if isSelected {
                         Image(systemName: "checkmark.circle.fill").foregroundStyle(color("--accent"))
                     }
                 }
-                Text(theme.summary).font(.caption).foregroundStyle(.secondary)
+                Text(theme.summary).themeFont(.caption).foregroundStyle(.secondary)
             }
             .contentShape(Rectangle())
         }
@@ -56,5 +57,9 @@ struct ThemePreview: View {
 
     private func color(_ token: String) -> Color {
         theme.tokens.color(token, scheme: scheme, fallback: .accentColor)
+    }
+
+    private var sampleFontSize: Double {
+        baseFontSize * theme.tokens.number("--task-font-size", scheme: scheme, fallback: 13) / 13
     }
 }

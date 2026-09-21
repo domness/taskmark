@@ -82,8 +82,10 @@ enum AppTheme: String, CaseIterable, Identifiable {
     private func palette(light: [String], dark: [String]) -> VaultAppearance {
         let keys = ["--background", "--sidebar-background", "--inspector-background", "--accent"]
         return VaultAppearance(
-            light: Dictionary(uniqueKeysWithValues: zip(keys, light)),
+            light: Dictionary(uniqueKeysWithValues: zip(keys, light))
+                .merging(["--task-font-size": self == .catppuccin ? "14px" : "13px"]) { _, value in value },
             dark: Dictionary(uniqueKeysWithValues: zip(keys, dark))
+                .merging(["--task-font-size": self == .catppuccin ? "14px" : "13px"]) { _, value in value }
         )
     }
 }

@@ -40,9 +40,18 @@ targets:
     type: application
     platform: macOS
     deploymentTarget: "15.0"
+    info:
+      path: .build/Taskmark-Info.plist
+      properties:
+        ATSApplicationFontsPath: Fonts
     sources:
       - path: Apps/LocalTodoApp/Sources
       - path: Apps/LocalTodoApp/Resources
+        excludes:
+          - Fonts
+      - path: Apps/LocalTodoApp/Resources/Fonts
+        type: folder
+        buildPhase: resources
       - path: THIRD_PARTY_NOTICES.md
         buildPhase: resources
     dependencies:

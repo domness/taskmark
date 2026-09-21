@@ -26,7 +26,7 @@ struct TaskRescheduleSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Reschedule Task").font(.headline)
+            Text("Reschedule Task").themeFont(.headline)
             Text("Move the scheduled date, or the deadline if that is the only date. Paired dates move together.")
                 .foregroundStyle(.secondary)
             TextField("New date (YYYY-MM-DD)", text: $date)

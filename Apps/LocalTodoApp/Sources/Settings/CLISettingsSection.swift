@@ -16,12 +16,12 @@ struct CLISettingsSection: View {
                 "Register taskmark in /usr/local/bin to use it from your terminal. "
                     + "macOS will ask for administrator permission."
             )
-            .font(.caption).foregroundStyle(.secondary)
+            .themeFont(.caption).foregroundStyle(.secondary)
             if registration.isWorking {
                 ProgressView("Updating CLI registration…").controlSize(.small)
             } else if registration.isEnabled {
                 Text("Registered. Open a new terminal and run taskmark --help.")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .themeFont(.caption).foregroundStyle(.secondary)
             }
         }
         .task { registration.refresh() }

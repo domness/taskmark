@@ -12,7 +12,7 @@ struct IssueCenterView: View {
                             diagnostic.kind.rawValue.replacingOccurrences(of: "_", with: " ").capitalized,
                             systemImage: icon
                         )
-                        .font(.headline)
+                        .themeFont(.headline)
                         Text(diagnostic.message)
                         if let path = diagnostic.path {
                             Text(path.value)

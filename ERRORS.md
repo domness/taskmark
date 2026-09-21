@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-21: Validate Bundled Fonts In The Actual App Host
+
+- What did not work: The initial font test fixture used a nonexistent empty display-options initializer. After correcting it, runtime checks found that an arbitrary `INFOPLIST_KEY_ATSApplicationFontsPath` build setting was omitted from the generated Info.plist, and an inline editor activated before window presentation disappeared during initial focus setup.
+- What worked instead: Generate the font-registration entry explicitly through XcodeGen's `info.properties`, copy the Fonts directory intact, and request inline editing after presenting the hosted window. Tests verify actual Core Text font URLs inside the app bundle, bold/italic faces, and live native field family/size changes.
+- Note for next time: A successful build does not prove font registration. Inspect the running app's Info.plist and resolved font file URLs; use the real display-options defaults and follow established hosted-window focus lifecycle.
+
 ## 2026-09-21: Count Indentation In Embedded Shell Diagnostics
 
 - What did not work: The CLI-registration lint pass failed on long UI/shell strings. Splitting the shell case arm still left its diagnostic two characters over the line limit because indentation counts too.

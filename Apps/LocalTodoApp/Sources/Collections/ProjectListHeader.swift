@@ -8,12 +8,12 @@ struct ProjectListHeader: View {
     var body: some View {
         HStack(spacing: 8) {
             Text(draft.title)
-                .font(.headline)
+                .themeFont(.headline)
                 .lineLimit(1)
                 .accessibilityAddTraits(.isHeader)
                 .help(draft.title)
             Text(draft.status.rawValue.capitalized)
-                .font(.caption)
+                .themeFont(.caption)
                 .foregroundStyle(.secondary)
                 .fixedSize()
             if compact {

@@ -22,14 +22,14 @@ struct GeneralSettingsView: View {
                         .foregroundStyle(.secondary)
                 }
                 Text("Date display follows your preference. Exact date entry and Markdown files use YYYY-MM-DD.")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .themeFont(.caption).foregroundStyle(.secondary)
             }
             .disabled(model.snapshot == nil)
             Section("Vault Time Zone") {
                 if model.snapshot != nil {
                     TimezoneSetting(model: model)
                     Text("Applies to \(model.vaultName ?? "this vault"), including Today, recurring tasks and the CLI.")
-                        .font(.caption).foregroundStyle(.secondary)
+                        .themeFont(.caption).foregroundStyle(.secondary)
                 } else {
                     Text("Open a vault to choose its time zone.").foregroundStyle(.secondary)
                 }
@@ -40,7 +40,7 @@ struct GeneralSettingsView: View {
                     ForEach(InitialView.allCases) { Text($0.title).tag($0) }
                 }
                 Text("Used when opening the app or switching vaults.")
-                    .font(.caption).foregroundStyle(.secondary)
+                    .themeFont(.caption).foregroundStyle(.secondary)
             }
             .disabled(model.snapshot == nil)
             CLISettingsSection(registration: cliRegistration)
