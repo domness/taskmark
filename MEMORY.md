@@ -299,6 +299,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: User-owned Markdown must remain usable independently of the app and executable. Direct-file agents need exact path identity, preservation rules, shared configuration, lifecycle semantics, and honest concurrency/publication limits available without a source checkout.
 - What was rejected and why: Making CLI installation a prerequisite was rejected because the requested workflow explicitly lacks it. Expanding the CLI-only skill into two competing mutation modes was rejected in favor of precise discovery. Claiming generic file writes match coordinated storage guarantees, or enabling sequential collection moves, was rejected because it would weaken the existing contract.
 
+### 2026-09-21: Render Markdown Fields Until They Are Edited
+
+- What was decided: At the user's request, replace the Notes Edit/Preview control and duplicate title preview with rendered-first fields. Clicking or keyboard-activating a field exposes source; focus loss, an outside click or Escape restores rendering. Command-E opens the title source directly. This explicitly revises the earlier same-day source-editor/preview presentation decision.
+- Why: One field should alternate naturally between reading formatted content and editing source, while workspace-owned drafts continue to preserve and autosave input. A field-local AppKit event boundary handles clicks on non-focusable Form space without consuming the destination event or affecting other windows.
+- What was rejected and why: Persistent source plus preview and explicit mode tabs were rejected by the user. Rich-text serialization remains unnecessary because rendered text is still a read-only projection of canonical Markdown.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

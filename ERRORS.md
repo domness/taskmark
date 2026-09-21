@@ -8,6 +8,12 @@ Read this file before suggesting an approach similar to a previous multi-attempt
 - What worked instead: Create a dedicated temporary Python virtual environment, install PyYAML there, and run `quick_validate.py` with that environment's Python.
 - Note for next time: Check the validator's Python dependencies first; an existing documentation environment does not imply YAML support. Keep validation dependencies outside the repository.
 
+## 2026-09-21: Markdown Field Focus Tests In Background Windows
+
+- What did not work: Synthetic mouse-down/up events posted through NSApp or sent directly to a background hosted window did not activate the rendered SwiftUI field reliably. Repeated coordinate/hit-test inspection still left the window's SwiftUI focus proxy as first responder.
+- What worked instead: Request editing through the same binding used by Command-E, then exercise the real native source editor, text input, first-responder transfer and field-scoped outside-click handling. These establish editing/focus behavior without claiming physical click or link-activation acceptance.
+- Note for next time: Background hosted-window event dispatch is not full WindowServer mouse automation. Keep synthetic click limitations distinct from a reproduced product interaction defect.
+
 ## 2026-09-21: Startup Split Layout Needs Flexible Content Boundaries
 
 - What did not work: Sidebar width/default-window adjustments alone did not fix the vault-loading regression. A detail minimum of 320 points caused more native constraint-update failures; an outer GeometryReader also failed to resolve the cycle.
