@@ -44,7 +44,7 @@ See [personalization](PERSONALIZATION.md).
 - Persistent week start, date/time display, startup view, appearance, palette and stylesheet preferences.
 - All vault preferences, including sidebar/custom order and per-view display options, travel with `.config/config.yml`. External changes reload; same-field conflicts require explicit resolution. Bookmarks and window geometry remain machine-local.
 - Canonical active-vault timezone editing shared with CLI date semantics.
-- System/Light/Dark appearance and Taskmark, Slate, Forest and Sand palettes, with custom-style diagnostics and reload.
+- System/Light/Dark appearance and Taskmark, Slate, Forest, Sand, Catppuccin (Latte/Mocha) and Dracula (Alucard/Dracula) palettes, with custom-style diagnostics and reload.
 
 See [settings](SETTINGS.md) and [themes](THEMES.md).
 

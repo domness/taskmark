@@ -34,7 +34,7 @@ Typed Markdown files may live anywhere below the vault except `.config/`. Folder
 | Key | Values / default |
 | --- | --- |
 | `appearance` | `system` (default), `light`, `dark` |
-| `theme` | `standard` (Taskmark, default), `slate`, `forest`, `sand` |
+| `theme` | `standard` (Taskmark, default), `slate`, `forest`, `sand`, `catppuccin`, `dracula` |
 | `week_start` | Integer 1–7, Sunday–Saturday; default 2 (Monday) |
 | `date_format` | `system` (default), `iso`, `dayFirst`, `monthFirst` |
 | `time_format` | `system` (default), `twelveHour`, `twentyFourHour` |

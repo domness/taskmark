@@ -10,7 +10,7 @@ enum VaultPreferenceValidation {
     private static func validateScalars(_ preferences: [String: ConfigurationValue]) throws {
         let enums = [
             "appearance": ["system", "light", "dark"],
-            "theme": ["standard", "slate", "forest", "sand"],
+            "theme": ["standard", "slate", "forest", "sand", "catppuccin", "dracula"],
             "date_format": ["system", "iso", "dayFirst", "monthFirst"],
             "time_format": ["system", "twelveHour", "twentyFourHour"],
             "initial_view": ["today", "inbox", "next", "upcoming", "waiting", "someday", "all", "search"],

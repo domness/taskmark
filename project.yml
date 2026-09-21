@@ -43,6 +43,8 @@ targets:
     sources:
       - path: Apps/LocalTodoApp/Sources
       - path: Apps/LocalTodoApp/Resources
+      - path: THIRD_PARTY_NOTICES.md
+        buildPhase: resources
     dependencies:
       - target: TaskmarkCLI
         link: false
