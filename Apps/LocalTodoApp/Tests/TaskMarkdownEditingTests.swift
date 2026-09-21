@@ -8,7 +8,7 @@ struct TaskMarkdownEditingTests {
     @Test(arguments: [TaskMarkdownField.Kind.title, .notes])
     func editingUsesSourceAndFocusLossRestoresRendering(kind: TaskMarkdownField.Kind) async throws {
         let state = MarkdownFieldTestState()
-        let host = NSHostingView(rootView: VStack {
+        let controller = NSHostingController(rootView: VStack {
             TaskMarkdownField(
                 text: Binding(get: { state.text }, set: { state.text = $0 }),
                 kind: kind,
@@ -17,12 +17,13 @@ struct TaskMarkdownEditingTests {
             .frame(width: 360, height: 180)
             TextField("Other field", text: .constant("Other"))
         }.padding())
+        let host = controller.view
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 400, height: 300),
             styleMask: [.titled, .resizable], backing: .buffered, defer: false
         )
         window.isReleasedWhenClosed = false
-        window.contentView = host
+        window.contentViewController = controller
         window.makeKeyAndOrderFront(nil)
         defer { window.close() }
         try await Task.sleep(for: .milliseconds(100))
@@ -45,9 +46,26 @@ struct TaskMarkdownEditingTests {
     }
 
     private func checkOutsideClick(state: MarkdownFieldTestState, window: NSWindow, host: NSView) async throws {
+        // Finish the competing field's native editing session before starting the next scenario.
+        #expect(window.makeFirstResponder(nil))
+        for _ in 0 ..< 40 {
+            if descendant(in: host, as: MarkdownEditingBoundaryView.self) == nil {
+                break
+            }
+            try await Task.sleep(for: .milliseconds(50))
+        }
+        let oldEditorWasRemoved = descendant(in: host, as: MarkdownEditingBoundaryView.self) == nil
+        try #require(oldEditorWasRemoved)
         state.isEditing = true
-        try await Task.sleep(for: .milliseconds(100))
-        let boundary = try #require(descendant(in: host, as: MarkdownEditingBoundaryView.self))
+        for _ in 0 ..< 40 {
+            if descendant(in: host, as: MarkdownEditingBoundaryView.self) != nil {
+                break
+            }
+            try await Task.sleep(for: .milliseconds(50))
+        }
+        let installedBoundary = descendant(in: host, as: MarkdownEditingBoundaryView.self)
+        #expect(state.isEditing, "The reopened editor should remain active")
+        let boundary = try #require(installedBoundary)
         try boundary.handleMouseDown(mouseDown(window, at: NSPoint(x: 1, y: 1)))
         try await Task.sleep(for: .milliseconds(100))
         #expect(!state.isEditing)

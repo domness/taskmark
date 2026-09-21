@@ -2,6 +2,18 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-21: Count Indentation In Embedded Shell Diagnostics
+
+- What did not work: The CLI-registration lint pass failed on long UI/shell strings. Splitting the shell case arm still left its diagnostic two characters over the line limit because indentation counts too.
+- What worked instead: Shorten the shell diagnostic and split Swift UI copy into concatenated literals. The full formatting/lint gate then passed.
+- Note for next time: SwiftFormat does not wrap multiline shell-string contents; account for leading indentation when checking the 120-character limit.
+
+## 2026-09-21: Host Markdown Focus Tests Through A View Controller
+
+- What did not work: The Markdown title editor reopened successfully in isolation but immediately lost focus in the full macOS suite when hosted as a bare NSHostingView. Longer waits, waiting for the prior editor to disappear, ending the competing native field session, and extracting product FocusState ownership did not resolve the full-suite failure.
+- What worked instead: Use NSHostingController as the test window's contentViewController. Retain bounded removal/insertion waits and the focus-loss, reopening, outside-click and content assertions. Revert the ineffective product changes. The full macOS suite passed with the controller-backed test host.
+- Note for next time: Native focus lifecycle depends on the hosting boundary. Check a focused test in the complete app suite before treating an isolated pass or a longer delay as a fix; do not print entire NSHostingView values in failed requirements.
+
 ## 2026-09-21: Skill Validation Requires PyYAML
 
 - What did not work: The skill validator failed under system Python and an existing documentation virtual environment because neither had PyYAML; `uv` was also unavailable.

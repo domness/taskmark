@@ -293,6 +293,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The user reported side panels extending outside new windows. A hosted vault-loading regression reproduced a native constraint-update failure; detail-owned inspector composition with flexible content now passes startup, hide/show and task-selection checks at 840, 1088 and 1120 points.
 - What was rejected and why: Clipping overflow would hide controls rather than fix layout. Adding more fixed content minima and a GeometryReader wrapper did not resolve the native constraint feedback, so they were removed.
 
+### 2026-09-21: Register The CLI Automatically Like Obsidian
+
+- What was decided: At the user's explicit request to follow Obsidian, replace Save-panel CLI export with Settings → General → Command-line interface. Enabling registers `/usr/local/bin/taskmark` as a symlink to the bundled executable through native administrator authorization; disabling removes the recognized link. Keep registration machine-local and derived from the filesystem, available without a vault. Remove App Sandbox from the directly distributed macOS app while retaining Hardened Runtime, signing, notarization and bookmark support.
+- Why: The user wants enabling the CLI to handle installation and terminal registration automatically. This explicitly revises the 2026-09-18 Save-panel, no-privilege and sandbox-retention decisions after the conflict was raised in conversation. Linking the bundled executable also follows app updates at the same location. Moved apps can repair registration by enabling again; temporary/translocated app copies must be moved first.
+- What was rejected and why: Manual file saving and PATH editing were rejected by the user. An additional installer helper was not selected in favor of the direct native-authorization flow. Overwriting unrelated commands, editing shell profiles and persisting a vault-level enable flag were rejected because registration is a machine-level filesystem operation.
+
 ### 2026-09-21: Pair Community Themes With Independent Appearance
 
 - What was decided: Add Catppuccin (Latte light/Mocha dark) and Dracula (Alucard light/Dracula dark) as built-in palette choices. Persist `catppuccin` and `dracula` through the shared configuration validator; retain independent System/Light/Dark appearance, native text/control semantics and stylesheet precedence.

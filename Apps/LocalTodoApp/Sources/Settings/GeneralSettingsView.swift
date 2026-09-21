@@ -3,6 +3,7 @@ import SwiftUI
 struct GeneralSettingsView: View {
     let model: WorkspaceModel
     @Bindable var preferences: AppPreferences
+    let cliRegistration: CLIRegistration
 
     var body: some View {
         Form {
@@ -23,6 +24,7 @@ struct GeneralSettingsView: View {
                 Text("Date display follows your preference. Exact date entry and Markdown files use YYYY-MM-DD.")
                     .font(.caption).foregroundStyle(.secondary)
             }
+            .disabled(model.snapshot == nil)
             Section("Vault Time Zone") {
                 if model.snapshot != nil {
                     TimezoneSetting(model: model)
@@ -32,6 +34,7 @@ struct GeneralSettingsView: View {
                     Text("Open a vault to choose its time zone.").foregroundStyle(.secondary)
                 }
             }
+            .disabled(model.snapshot == nil)
             Section("Startup") {
                 Picker("Initial view", selection: $preferences.initialView) {
                     ForEach(InitialView.allCases) { Text($0.title).tag($0) }
@@ -39,6 +42,8 @@ struct GeneralSettingsView: View {
                 Text("Used when opening the app or switching vaults.")
                     .font(.caption).foregroundStyle(.secondary)
             }
+            .disabled(model.snapshot == nil)
+            CLISettingsSection(registration: cliRegistration)
         }
         .formStyle(.grouped)
         .scrollContentBackground(.hidden)

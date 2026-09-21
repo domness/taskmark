@@ -4,6 +4,7 @@ import SwiftUI
 struct LocalTodoApp: App {
     @NSApplicationDelegateAdaptor(LocalTodoAppDelegate.self) private var appDelegate
     @State private var windows = WorkspaceWindows()
+    @State private var cliRegistration = CLIRegistration()
 
     var body: some Scene {
         WindowGroup("Taskmark", id: "vault") {
@@ -14,10 +15,9 @@ struct LocalTodoApp: App {
         .defaultSize(width: 1120, height: 720)
         .commands {
             WorkspaceCommands(windows: windows)
-            CLIInstallationCommands()
         }
         Settings {
-            SettingsView(model: windows.settingsWorkspace)
+            SettingsView(model: windows.settingsWorkspace, cliRegistration: cliRegistration)
                 .modifier(AppAppearanceModifier(model: windows.settingsWorkspace))
                 .disabled(windows.isFlushingAll || windows.settingsWorkspace.isClosingWindow)
         }
