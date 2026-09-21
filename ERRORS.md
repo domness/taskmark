@@ -8,6 +8,12 @@ Read this file before suggesting an approach similar to a previous multi-attempt
 - What worked instead: Request editing through the same binding used by Command-E, then exercise the real native source editor, text input, first-responder transfer and field-scoped outside-click handling. These establish editing/focus behavior without claiming physical click or link-activation acceptance.
 - Note for next time: Background hosted-window event dispatch is not full WindowServer mouse automation. Keep synthetic click limitations distinct from a reproduced product interaction defect.
 
+## 2026-09-21: Inline Editing In Native Reorderable Lists
+
+- What did not work: SwiftUI simultaneous and high-priority double-tap gestures did not activate editing in the Custom-order native List. FocusState observation alone left the editor open after native first-responder loss. Looking for a SwiftUI accessibility identifier through NSView.identifier also missed the native field in hosted tests.
+- What worked instead: A title-bounded local AppKit event observer receives double-clicks while passing ordinary presses/drags through. Use the TextField editing-end callback plus an outside-click observer for non-focusable destinations. Hosted tests locate the native field by its placeholder and post mouse/key events through NSApp.
+- Note for next time: Validate actual double-click dispatch in both sort modes rather than testing only model activation. Return a Sendable Boolean from MainActor.assumeIsolated in local event monitors, not NSEvent. Keep physical drag acceptance distinct from hosted event tests.
+
 ## 2026-09-21: Startup Split Layout Needs Flexible Content Boundaries
 
 - What did not work: Sidebar width/default-window adjustments alone did not fix the vault-loading regression. A detail minimum of 320 points caused more native constraint-update failures; an outer GeometryReader also failed to resolve the cycle.
