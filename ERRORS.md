@@ -14,6 +14,12 @@ Read this file before suggesting an approach similar to a previous multi-attempt
 - What worked instead: Use NSHostingController as the test window's contentViewController. Retain bounded removal/insertion waits and the focus-loss, reopening, outside-click and content assertions. Revert the ineffective product changes. The full macOS suite passed with the controller-backed test host.
 - Note for next time: Native focus lifecycle depends on the hosting boundary. Check a focused test in the complete app suite before treating an isolated pass or a longer delay as a fix; do not print entire NSHostingView values in failed requirements.
 
+## 2026-09-21: Release Workspace Fixtures Before Deleting Their Vaults
+
+- What did not work: The controller-hosting change above passed locally but did not eliminate CI failures. Isolated Markdown repetitions passed while full-suite reopening failed. Waiting for window visibility, ordering regardless of activation and disabling window animations did not fix it; replacing the product's focus task with default focus also failed and was reverted.
+- What worked instead: Native responder stack traces exposed a SwiftUI NSAlert presentation, and refresh diagnostics identified retained workspaces repeatedly reading deleted fixture vaults. Add deferred `releaseWindowResources()` to `withWorkspace` before its filesystem cleanup. Retain repeated title/notes reopening and verify the native text responder after insertion; cover retained-model cleanup on both normal and throwing fixture exits.
+- Note for next time: A failure in a later focus test can originate in an earlier fixture's background work. Closing a bare hosted NSWindow does not invoke the real app's workspace lifecycle cleanup. Trace the full native call stack and async errors before changing product focus behavior. Xcode 27 test iterations can repeat individual Swift Testing cases within each process as well as relaunching the process; use separate normal full-suite invocations to check cross-test isolation.
+
 ## 2026-09-21: Skill Validation Requires PyYAML
 
 - What did not work: The skill validator failed under system Python and an existing documentation virtual environment because neither had PyYAML; `uv` was also unavailable.

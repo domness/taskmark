@@ -42,7 +42,9 @@ struct TaskMarkdownEditingTests {
         try await Task.sleep(for: .milliseconds(100))
         #expect(!state.isEditing)
         #expect(state.text == "Updated **Markdown**")
-        try await checkOutsideClick(state: state, window: window, host: host)
+        for _ in 0 ..< 10 {
+            try await checkOutsideClick(state: state, window: window, host: host)
+        }
     }
 
     private func checkOutsideClick(state: MarkdownFieldTestState, window: NSWindow, host: NSView) async throws {
@@ -64,7 +66,11 @@ struct TaskMarkdownEditingTests {
             try await Task.sleep(for: .milliseconds(50))
         }
         let installedBoundary = descendant(in: host, as: MarkdownEditingBoundaryView.self)
+        // Insertion alone can pass before a queued native dialog steals focus.
+        // Keep the editor active through another update and verify its actual responder.
+        try await Task.sleep(for: .milliseconds(150))
         #expect(state.isEditing, "The reopened editor should remain active")
+        #expect((window.firstResponder as? NSTextView)?.string == state.text)
         let boundary = try #require(installedBoundary)
         try boundary.handleMouseDown(mouseDown(window, at: NSPoint(x: 1, y: 1)))
         try await Task.sleep(for: .milliseconds(100))

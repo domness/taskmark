@@ -275,6 +275,9 @@ func withWorkspace(
         preferences: AppPreferences(),
         clock: { now ?? Date() }
     )
+    // Native hosts may retain their models after closing. Stop background work before
+    // deleting the fixture vault, otherwise later tests can receive missing-vault alerts.
+    defer { model.releaseWindowResources() }
     await model.createVault(at: root)
     let configuration = VaultConfiguration(timezone: "Europe/London")
     try Data(configuration.encoded().utf8).write(to: root.appendingPathComponent(LocalTodoSchema.manifestPath))
