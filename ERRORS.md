@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-21: Skill Validation Requires PyYAML
+
+- What did not work: The skill validator failed under system Python and an existing documentation virtual environment because neither had PyYAML; `uv` was also unavailable.
+- What worked instead: Create a dedicated temporary Python virtual environment, install PyYAML there, and run `quick_validate.py` with that environment's Python.
+- Note for next time: Check the validator's Python dependencies first; an existing documentation environment does not imply YAML support. Keep validation dependencies outside the repository.
+
 ## 2026-09-21: Markdown Field Focus Tests In Background Windows
 
 - What did not work: Synthetic mouse-down/up events posted through NSApp or sent directly to a background hosted window did not activate the rendered SwiftUI field reliably. Repeated coordinate/hit-test inspection still left the window's SwiftUI focus proxy as first responder.

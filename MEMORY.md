@@ -293,6 +293,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The user reported side panels extending outside new windows. A hosted vault-loading regression reproduced a native constraint-update failure; detail-owned inspector composition with flexible content now passes startup, hide/show and task-selection checks at 840, 1088 and 1120 points.
 - What was rejected and why: Clipping overflow would hide controls rather than fix layout. Adding more fixed content minima and a GeometryReader wrapper did not resolve the native constraint feedback, so they were removed.
 
+### 2026-09-21: Bundle A Separate Direct-File Vault Skill
+
+- What was decided: Add a portable `taskmark-vault` skill with bundled schema/configuration and recurrence references for agents without the CLI or handling explicitly requested file-level work. Keep `taskmark` as the CLI-first skill and document both in the README.
+- Why: User-owned Markdown must remain usable independently of the app and executable. Direct-file agents need exact path identity, preservation rules, shared configuration, lifecycle semantics, and honest concurrency/publication limits available without a source checkout.
+- What was rejected and why: Making CLI installation a prerequisite was rejected because the requested workflow explicitly lacks it. Expanding the CLI-only skill into two competing mutation modes was rejected in favor of precise discovery. Claiming generic file writes match coordinated storage guarantees, or enabling sequential collection moves, was rejected because it would weaken the existing contract.
+
 ### 2026-09-21: Render Markdown Fields Until They Are Edited
 
 - What was decided: At the user's request, replace the Notes Edit/Preview control and duplicate title preview with rendered-first fields. Clicking or keyboard-activating a field exposes source; focus loss, an outside click or Escape restores rendering. Command-E opens the title source directly. This explicitly revises the earlier same-day source-editor/preview presentation decision.
