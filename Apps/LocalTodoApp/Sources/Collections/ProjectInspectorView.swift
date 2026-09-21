@@ -4,11 +4,17 @@ import SwiftUI
 struct ProjectInspectorView: View {
     let model: WorkspaceModel
     @Bindable var draft: ProjectDraft
+    @State private var isTitleEditing = false
+    @State private var isNotesEditing = false
 
     var body: some View {
         Form {
-            TextField("Project title", text: $draft.title)
-                .themeFont(.headline)
+            TaskMarkdownField(
+                text: $draft.title,
+                kind: .title,
+                subject: "Project",
+                isEditing: $isTitleEditing
+            )
             Picker("Project status", selection: Binding(
                 get: { draft.status },
                 set: { model.changeProjectField(draft, field: .status, to: $0.rawValue) }
@@ -22,13 +28,12 @@ struct ProjectInspectorView: View {
             Text("Project status does not change its tasks.")
                 .themeFont(.caption).foregroundStyle(.secondary)
             Section("Project Notes") {
-                TextEditor(text: $draft.notes)
-                    .themeFont(.body)
-                    .frame(minHeight: 180)
-                    .accessibilityLabel("Project notes, Markdown")
-            }
-            Section("File") {
-                Text(draft.path.value).font(.caption.monospaced()).textSelection(.enabled)
+                TaskMarkdownField(
+                    text: $draft.notes,
+                    kind: .notes,
+                    subject: "Project",
+                    isEditing: $isNotesEditing
+                )
             }
             if let message = draft.unavailableMessage {
                 Section("Project File Unavailable") {
@@ -57,5 +62,14 @@ struct ProjectInspectorView: View {
         .scrollContentBackground(.hidden)
         .disabled(model.deletingCollectionPaths.contains(draft.path))
         .padding(.vertical)
+        .onAppear { focusTitleIfRequested() }
+        .onChange(of: model.titleEditRequest) { _, _ in focusTitleIfRequested() }
+    }
+
+    private func focusTitleIfRequested() {
+        if model.titleEditingPath == draft.path {
+            isTitleEditing = true
+            model.consumeTitleEditRequest(at: draft.path)
+        }
     }
 }
