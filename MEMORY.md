@@ -305,6 +305,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: One field should alternate naturally between reading formatted content and editing source, while workspace-owned drafts continue to preserve and autosave input. A field-local AppKit event boundary handles clicks on non-focusable Form space without consuming the destination event or affecting other windows.
 - What was rejected and why: Persistent source plus preview and explicit mode tabs were rejected by the user. Rich-text serialization remains unnecessary because rendered text is still a read-only projection of canonical Markdown.
 
+### 2026-09-21: Edit Task Titles Inline Through Workspace Drafts
+
+- What was decided: Double-clicking a center-pane task title opens a native inline source field in automatic and Custom ordering. Enter, click-away, native editing end and row disappearance request immediate draft autosave; typing also retains the existing debounced autosave safety net. Invalid/conflicting drafts remain available through the inspector.
+- Why: The user requested fast inline renaming with Enter/click-away saving. Reusing workspace drafts preserves native history, external-change handling and close/quit flushing. A title-bounded AppKit event observer handles double-clicks without taking over single-click or drag tracking, and detects clicks outside the active editor even on non-focusable content.
+- What was rejected and why: View-local document copies and direct file writes were rejected because they bypass draft lifetime and conflict handling. SwiftUI double-tap gestures were rejected after hosted mouse-event tests failed in native Custom-order lists, including with high priority. Focus-state changes alone did not reliably report native editing end.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

@@ -37,6 +37,7 @@ final class WorkspaceModel {
     var isHistoryBusy = false
     var titleEditRequest = 0
     var titleEditingPath: VaultPath?
+    var inlineTitleEditingPath: VaultPath?
     var searchFocusRequest = 0
     var taskListDisplayOptionsByRoute: [String: TaskListDisplayOptions]
     let filterState = FilterWorkspaceState()
@@ -216,6 +217,7 @@ extension WorkspaceModel {
     }
 
     private func resetDocumentState() {
+        inlineTitleEditingPath = nil
         taskDrafts.removeAll()
         projectDrafts.removeAll()
         autosaveTasks.removeAll()
@@ -247,6 +249,7 @@ extension WorkspaceModel {
         }
         autosaveTasks.removeAll()
         clearHistory()
+        inlineTitleEditingPath = nil
         taskDrafts.removeAll()
         projectDrafts.removeAll()
         snapshot = nil
