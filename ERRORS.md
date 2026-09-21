@@ -2,6 +2,24 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-21: Startup Split Layout Needs Flexible Content Boundaries
+
+- What did not work: Sidebar width/default-window adjustments alone did not fix the vault-loading regression. A detail minimum of 320 points caused more native constraint-update failures; an outer GeometryReader also failed to resolve the cycle.
+- What worked instead: Place the inspector on the detail content, with explicit flexible minimum-zero width wrappers for detail and inspector content, alongside native column/window sizing. The hosted regression passes across 840/1088/1120-point windows, inspector toggles and selection.
+- Note for next time: Test the chooser-to-loaded-vault transition and content minima, not only windows created with an already-loaded model. Put Swift Testing UI regressions in a named suite to run them directly with Xcode's test filter; inspect xcresult summaries for quiet-run failures.
+
+## 2026-09-21: Bound Resize Tests By Both Screen And Window Limits
+
+- What did not work: The hosted macOS runner clamped the Settings test's requested 800-point content height to 684. Making the target screen-aware but subtracting a fixed 40 points for the smaller size then requested 624 points, below the runner's 628-point content minimum.
+- What worked instead: Derive the larger size from the screen's visible content area and clamp the smaller size to the actual window minimum. Require at least ten points of resize range and check both growth and shrinkage with bounded layout polling. The revised test passes the local full quality gate.
+- Note for next time: Native window tests must account for screen chrome and runtime content minima on the actual runner, rather than assuming development-display dimensions.
+
+## 2026-09-21: Wait For Native Inspector Toolbar Propagation
+
+- What did not work: Two full quality runs failed the existing inspector-toggle label assertion after a fixed 300 ms sleep, with stale labels in different presentation states.
+- What worked instead: Poll for the single correctly labeled toolbar item with a bounded two-second timeout, then retain both original count and label assertions. The complete quality gate passed after this test synchronization change.
+- Note for next time: Native presentation and toolbar updates are asynchronous; wait for the observable state rather than assuming a fixed animation duration. Do not remove duplicate-item or stale-label assertions.
+
 ## 2026-09-18: Bundled CLI Export And Case-Insensitive App Paths
 
 - What did not work: Initial installer validation hit a formatter/linter disagreement around a compact catch and FileWrapper's string-keyed attributes. Embedding lowercase `taskmark` beside uppercase `Taskmark` overwrote the app executable on the default case-insensitive filesystem, causing the app test host to run the CLI.

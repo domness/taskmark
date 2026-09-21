@@ -17,7 +17,16 @@ func inspectorToggleRemainsSingleAcrossPresentationChanges(initiallyPresented: B
         defer { window.close() }
         for presented in [initiallyPresented, !initiallyPresented, initiallyPresented, !initiallyPresented] {
             model.isInspectorPresented = presented
-            try await Task.sleep(for: .milliseconds(300))
+            // Native inspector animation and toolbar propagation can outlast 300 ms.
+            // Wait for the observable result, retaining a bounded failure for stale/duplicate items.
+            let expectedLabel = presented ? "Hide Inspector" : "Show Inspector"
+            for _ in 0 ..< 40 {
+                try await Task.sleep(for: .milliseconds(50))
+                let items = window.toolbar?.items.filter { $0.label.contains("Inspector") } ?? []
+                if items.count == 1, items.first?.label == expectedLabel {
+                    break
+                }
+            }
             let toolbar = try #require(window.toolbar)
             let toggles = toolbar.items.filter { $0.label.contains("Inspector") }
             let labels = toolbar.items.map { "\($0.itemIdentifier.rawValue): \($0.label)" }.joined(separator: ", ")

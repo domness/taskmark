@@ -5,7 +5,7 @@ struct InspectorContentView: View {
 
     var body: some View {
         inspector
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity)
             .themeSurface("--inspector-background")
     }
 

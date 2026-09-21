@@ -65,7 +65,7 @@ struct TaskRow: View {
             alignment: .leading,
             spacing: model.effectiveAppearance.number("--row-spacing", scheme: colorScheme, fallback: 3)
         ) {
-            Text(task.title)
+            Text(TaskMarkdown.inline(task.title, links: false))
                 .font(.system(size: taskFontSize))
                 .strikethrough(task.status.isComplete)
                 .foregroundStyle(overdue.isOverdue ? Color.red : Color.primary)

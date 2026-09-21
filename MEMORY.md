@@ -281,6 +281,18 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The command and agent-facing instructions should match the app name, and app users should install the CLI without a developer toolchain. A user-selected destination works with the app sandbox and avoids administrator privileges. Exported copies run independently of the app location and are refreshed by reinstalling after updates.
 - What was rejected and why: Retaining the old command alias was explicitly not selected. Privileged installation and automatic shell-profile edits add unnecessary system changes; a symlink into the app would break when the app moves. Only the specific user-selected-executable entitlement is added rather than removing the app sandbox.
 
+### 2026-09-21: Render Task Markdown As A Read-Only Native Projection
+
+- What was decided: Render inline Markdown task titles in rows, with link activation in the inspector's formatted title preview. Add a Notes Edit/Preview switch backed by Foundation Markdown parsing and native SwiftUI text blocks for headings, paragraphs, lists, quotes and code. Keep source editors, workspace drafts and storage unchanged.
+- Why: The user requested Markdown titles/notes with links. Rendering a draft projection makes formatting useful while preserving exact source, autosave, conflicts, native selection and Custom-order dragging.
+- What was rejected and why: Rich-text serialization was rejected because it could normalize user-authored Markdown. A web view and remote image rendering are unnecessary for text/link support. Interactive row links were avoided because they would compete with the established row selection/drag behavior; inspector previews provide link activation.
+
+### 2026-09-21: Constrain Startup Layout At The Window And Column Boundaries
+
+- What was decided: Give vault windows a 1120×720 default size with content-minimum resizing, an explicit sidebar width range and a detail-owned inspector. Let detail and inspector content accept the width allocated by the native split. Keep the workspace root flexible above its existing minimum.
+- Why: The user reported side panels extending outside new windows. A hosted vault-loading regression reproduced a native constraint-update failure; detail-owned inspector composition with flexible content now passes startup, hide/show and task-selection checks at 840, 1088 and 1120 points.
+- What was rejected and why: Clipping overflow would hide controls rather than fix layout. Adding more fixed content minima and a GeometryReader wrapper did not resolve the native constraint feedback, so they were removed.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

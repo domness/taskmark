@@ -22,6 +22,14 @@ Appearance/calendar-display preferences belong to each vault's `.config/config.y
 - **View Options → Sort** offers title, priority, scheduled date, deadline, newest created/updated, and exact file path. Missing dates/priorities sort last; ties use exact paths.
 - Choose **View Options → Sort → Custom** to drag tasks into your own order. Order is saved separately for each view in the vault config and travels between machines; switching to another sort and back retains it. New tasks appear after ordered tasks. Grouped views support reordering within each group, and temporarily hidden tasks retain their places. Custom sorting is an app display override, including for saved filters; it does not rewrite task Markdown or change CLI sorting. While Custom is active, row drags reorder the list; use the inspector to assign projects/areas, or switch to another sort to drag onto sidebar destinations.
 
+## Markdown Titles And Notes
+
+Task titles support inline Markdown: `**bold**`, `*italic*`, `` `code` ``, and `[label](https://example.com)` links. Rows display the formatted title; the inspector keeps the source editable and shows a formatted preview beneath it when formatting is present. Open title links from this preview. Rows retain their selection and reorder gestures.
+
+Notes have **Edit** and **Preview** tabs. Edit Markdown source with normal autosave; Preview renders paragraphs, headings, ordered/unordered lists, blockquotes, fenced code and inline formatting with clickable links. Use explicit Markdown links or angle-bracket autolinks such as `<https://example.com>`. This is a native text preview, not an HTML renderer; images, tables and embedded HTML are not rendered as rich content. Checklist controls remain above Notes and change only the check marker.
+
+Previews use the current draft, including unsaved edits, and never rewrite Markdown. Titles remain strings in frontmatter and notes remain the file body; CLI output, copying, search and sorting continue to use the source text.
+
 ## Repeat And Checklists
 
 Use the always-visible **Repeat** picker in the task inspector. Choose a fixed schedule (frequency, interval and optional weekly weekdays) or an interval after completion.
