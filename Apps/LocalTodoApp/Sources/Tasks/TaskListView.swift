@@ -10,7 +10,6 @@ struct TaskListView: View {
     var body: some View {
         VStack(spacing: 0) {
             listHeader
-            Divider()
             FilterRouteHeader(model: model)
             if model.isQuickCapturePresented {
                 QuickCaptureRow(model: model)
@@ -21,6 +20,7 @@ struct TaskListView: View {
             listContent
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
+        .frame(maxWidth: 760, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .themeSurface()
         .onChange(of: model.route) { _, route in
@@ -31,45 +31,56 @@ struct TaskListView: View {
                 model.route = .search
             }
         }
-        .onChange(of: model.searchFocusRequest) { _, _ in isSearchFocused = true }
+        .onChange(of: model.searchFocusRequest) { _, _ in
+            model.route = .search
+            isSearchFocused = true
+        }
         .onAppear { isSearchFocused = model.route == .search }
     }
 
     private var listHeader: some View {
-        ViewThatFits(in: .horizontal) {
-            headerContent(showsTitle: true, minimumSearchWidth: 120)
-            headerContent(showsTitle: false, minimumSearchWidth: 80)
-            if let draft = model.selectedProjectDraft {
-                VStack(alignment: .leading, spacing: 8) {
-                    ProjectListHeader(model: model, draft: draft, compact: true)
-                    headerContent(showsTitle: false, minimumSearchWidth: 80, includesProject: false)
-                }
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Spacer()
+                headerControls
             }
-        }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 8)
-    }
-
-    private func headerContent(
-        showsTitle: Bool, minimumSearchWidth: CGFloat, includesProject: Bool = true
-    ) -> some View {
-        HStack(spacing: 8) {
-            if includesProject, let draft = model.selectedProjectDraft {
-                ProjectListHeader(model: model, draft: draft, compact: !showsTitle)
-            } else if showsTitle {
+            if let draft = model.selectedProjectDraft {
+                ProjectListHeader(model: model, draft: draft, compact: true)
+                if !draft.notes.isEmpty {
+                    Text(TaskMarkdown.inline(draft.notes, links: true))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(3)
+                }
+            } else {
                 routeHeading
             }
-            Spacer(minLength: 8)
-            TextField("Search tasks", text: $model.searchText)
-                .textFieldStyle(.roundedBorder)
-                .focused($isSearchFocused)
-                .frame(minWidth: minimumSearchWidth, idealWidth: 180, maxWidth: 240)
-                .layoutPriority(1)
+            if model.route == .search {
+                TextField("Search tasks", text: $model.searchText)
+                    .textFieldStyle(.roundedBorder)
+                    .focused($isSearchFocused)
+            }
+        }
+        .padding(.horizontal, 28)
+        .padding(.top, 12)
+        .padding(.bottom, 20)
+    }
+
+    private var headerControls: some View {
+        HStack(spacing: 12) {
+            Button("Search", systemImage: "magnifyingglass") {
+                model.route = .search
+                isSearchFocused = true
+            }
+            .labelStyle(.iconOnly)
+            .help("Search Tasks (Command-F)")
             Button("New Task", systemImage: "plus") { model.beginQuickCapture() }
                 .labelStyle(.iconOnly)
                 .help("New Task (Command-N)")
             displayOptionsMenu
         }
+        .buttonStyle(.borderless)
+        .padding(8)
+        .modifier(CanvasControlMaterial())
     }
 
     private var displayOptionsMenu: some View {
@@ -146,7 +157,6 @@ struct TaskListView: View {
         return ForEach(tasks, id: \.path) { task in
             TaskRow(model: model, task: task, displayOptions: model.currentTaskListDisplayOptions) {
                 model.selectTask(task.path)
-                model.isInspectorPresented = true
                 isListFocused = true
             }
             .tag(task.path)
@@ -227,8 +237,9 @@ private extension TaskListView {
 private extension TaskListView {
     var routeHeading: some View {
         Text(model.route.title)
-            .themeFont(.headline)
-            .lineLimit(1)
+            .themeFont(.largeTitle)
+            .fontWeight(.bold)
+            .fixedSize(horizontal: false, vertical: true)
             .accessibilityAddTraits(.isHeader)
     }
 
@@ -237,9 +248,6 @@ private extension TaskListView {
             get: { model.selectedTaskPath },
             set: {
                 model.selectTask($0)
-                if $0 != nil {
-                    model.isInspectorPresented = true
-                }
             }
         )
     }

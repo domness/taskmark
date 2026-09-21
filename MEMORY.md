@@ -347,6 +347,18 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: A theme should shape the complete interface rather than only task rows. Root propagation keeps inherited controls consistent, while scaled semantic roles preserve hierarchy and explicit monospaced code/path exceptions.
 - What was rejected and why: Keeping size overrides task-specific was rejected because it left sidebars, headers, inspectors and Settings visually disconnected. Renaming the existing stylesheet token was rejected because stylesheets may already use it; native menus, system dialogs and system-owned typography remain outside the app theme.
 
+### 2026-09-21: Select The Focused Canvas Design Direction
+
+- What was decided: The user selected concept B in `docs/design-exploration/`: a focused two-column task canvas with an explicitly opened optional inspector, quieter metadata, a stronger page heading and native Liquid Glass limited to appropriate navigation/control surfaces. Implement it in a new PR with screenshots. Continue implementation on Astra with Low effort, as explicitly requested.
+- Why: The user wants Things-like clarity with modern native macOS materials. This intentionally revises the existing auto-open-on-selection inspector interaction and proposes an exception to the blanket no-glass design rule; task content remains opaque. Preserve double-click inline title editing, Command-E, workspace-owned drafts and directly available inspector organization fields.
+- What was rejected and why: Concept A's always-open split retains unnecessary visual density for daily work. Concept C's inline detail expansion is not selected because it adds more editing, focus and drag interaction changes. Palette replacement is unnecessary: the existing six paired themes and bundled fonts remain useful. The HTML studies are proposals, not evidence of native Liquid Glass rendering; native implementation and screenshot acceptance are still pending.
+
+### 2026-09-21: Implement The Focused Canvas With Native Control Glass
+
+- What was decided: Default the workspace to two columns; selection preserves explicit inspector visibility, while Command-E opens details and double-click retains inline editing. Use a stable large page heading, compact search/capture/options, project-note summaries, quieter default metadata/grouping, and a flat notes-first inspector with visible organization fields. Preserve saved display preferences and all six theme/stylesheet semantics. Limit explicit macOS 26+ glass to the command capsule, with standard-control fallbacks for older SDKs/OS versions, Reduce Transparency and Increase Contrast.
+- Why: This implements the user's approved B direction and intentionally supersedes the earlier auto-open and blanket no-glass decisions. Native screenshots use production SwiftUI views hosted with an isolated example vault, captured through WindowServer rather than offscreen bitmaps.
+- What was rejected and why: Inline expanded details, palette replacement and web-rendered app content were rejected because they exceed the selected direction. Whole-pane custom glass was rejected because content must stay legible and opaque. A new preference schema was unnecessary; existing preferences and native accessibility settings provide the required controls.
+
 ### 2026-09-21: Capture The Release Workflow As A Repository Skill
 
 - What was decided: After publishing Taskmark 0.6.0, add `skills/taskmark-release/SKILL.md` and route release requests to it from `AGENTS.md`. Keep it portable Markdown with Git/gh commands and links to the authoritative release guide/workflow.

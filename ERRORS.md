@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-21: Capture Native Test Windows From The Authorized Process
+
+- What did not work: Repeated full-window captures launched inside Xcode's app test host returned “could not create image from window,” even after the user enabled Screen Recording for OpenChamber. Audio permission was not required. The session's Core Graphics preflight initially returned false because its actual host was the background `opencode` executable; granting that executable access made preflight true, but the test-host child still could not capture.
+- What worked instead: Keep the production native window visible in an opt-in test and emit its WindowServer ID. `scripts/capture-native-canvas.py` launches `screencapture` directly from the authorized session process. Full-window PNGs include titlebar, native controls and materials. These hosted windows are inactive, so their sidebar/titlebar use native inactive styling.
+- Note for next time: Check `CGPreflightScreenCaptureAccess()` in the capturing process, not the UI client. Use the external capture script rather than offscreen bitmaps or repeated test-host permission retries. Screen Recording suffices; no audio access is needed.
+
 ## 2026-09-21: Do Not Simulate macOS Text Scaling With DynamicTypeSize
 
 - What did not work: A hosted native typography regression tried to prove scalable text by injecting SwiftUI `dynamicTypeSize` values and requiring a larger AppKit `NSTextField` point size. Neither `@ScaledMetric` nor a custom font relative to a semantic style changed the bridged field under this macOS host. Exact custom title-size assertions also ignored SwiftUI's semantic relative scaling.

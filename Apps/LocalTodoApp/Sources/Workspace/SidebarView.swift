@@ -3,6 +3,8 @@ import SwiftUI
 
 struct SidebarView: View {
     @Bindable var model: WorkspaceModel
+    @State private var showsTags = false
+    @State private var showsPriorities = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -63,13 +65,13 @@ struct SidebarView: View {
                     Button("New Area", systemImage: "plus") { model.newEntityKind = .area }
                 }
                 if !model.allTags.isEmpty {
-                    Section("Tags") {
+                    Section("Tags", isExpanded: $showsTags) {
                         ForEach(model.allTags, id: \.self) { tag in
                             route(.tag(tag), tag, "tag")
                         }
                     }
                 }
-                Section("Priorities") {
+                Section("Priorities", isExpanded: $showsPriorities) {
                     ForEach(TaskPriority.allCases, id: \.self) { priority in
                         route(.priority(priority), priority.rawValue.uppercased(), "exclamationmark")
                     }

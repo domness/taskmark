@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Taskmark — a quieter workspace</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="mockups.js" defer></script>
+</head>
+<body>
+  <header class="review-header">
+    <div class="heading-line">
+      <div><h1>Taskmark, with room to think.</h1><p>Three macOS design studies · illustrative tasks · no vault connected</p></div>
+      <a href="REVIEW.md">Read the design review <span aria-hidden="true">↗</span></a>
+    </div>
+    <div class="review-controls">
+      <nav class="concepts" aria-label="Design concept">
+        <button data-concept="split" aria-pressed="false">A · Quiet split</button>
+        <button data-concept="focus" aria-pressed="true">B · Focused canvas</button>
+        <button data-concept="inline" aria-pressed="false">C · Inline workspace</button>
+      </nav>
+      <div class="appearance-controls">
+        <label>Palette <select id="palette"><option value="standard">Taskmark</option><option value="slate">Slate</option><option value="forest">Forest</option><option value="sand">Sand</option><option value="catppuccin">Catppuccin</option><option value="dracula">Dracula</option></select></label>
+        <button id="dark" aria-pressed="false">Dark</button>
+        <button id="solid" aria-pressed="false">Reduce transparency</button>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="stage-scroll">
+      <div class="stage">
+        <div class="window" id="app" data-concept="focus" data-theme="standard" data-dark="false" data-solid="false">
+          <aside class="sidebar" aria-label="Workspace navigation">
+            <div class="window-chrome"><div class="traffic-lights" aria-hidden="true"><i></i><i></i><i></i></div><span class="chrome-icon" data-icon="sidebar"></span></div>
+            <div class="navigation-scroll">
+              <nav aria-label="Task views" id="routes"></nav>
+              <details class="side-section" open><summary>Projects</summary><nav id="projects" aria-label="Projects"></nav></details>
+              <details class="side-section"><summary>Areas</summary><div class="sidebar-note">Work · Personal</div></details>
+              <details class="side-section"><summary>Saved filters</summary><div class="sidebar-note">Waiting on others · High priority</div></details>
+              <details class="side-section"><summary>Tags &amp; priorities</summary><div class="sidebar-note">Design · Writing · P1–P4</div></details>
+            </div>
+            <div class="vault-footer"><img src="../../Apps/LocalTodoApp/Resources/Assets.xcassets/AppIcon.appiconset/icon_32x32@2x.png" alt=""><div>Personal<span>Taskmark vault</span></div><span data-icon="chevron"></span></div>
+          </aside>
+          <section class="workspace" aria-label="Tasks">
+            <div class="workspace-toolbar">
+              <span class="toolbar-context" id="toolbar-context">Personal</span>
+              <div class="toolbar-actions material">
+                <button id="search-toggle" class="icon-button" aria-label="Search tasks" title="Search tasks"><span data-icon="search"></span></button>
+                <button id="options-toggle" class="icon-button" aria-label="View options" title="View options" aria-expanded="false"><span data-icon="sliders"></span></button>
+                <span class="toolbar-divider"></span>
+                <button id="new-task" class="new-task"><span data-icon="plus"></span>New Task</button>
+              </div>
+              <button id="inspector-toggle" class="icon-button material inspector-toggle" aria-label="Show inspector" title="Show inspector"><span data-icon="inspector"></span></button>
+            </div>
+            <div id="view-options" class="popover" hidden><strong>Row details</strong><label><input id="extra-metadata" type="checkbox"> Show tags and area</label><p>Project context stays visible in Today. Dates and priority remain distinct.</p></div>
+            <div class="content-scroll" id="content-scroll">
+              <div class="canvas">
+                <div class="page-heading"><span class="page-symbol" id="page-symbol"></span><div><h2 id="page-title">Today</h2><p id="page-subtitle">Monday, 21 September</p></div></div>
+                <p id="project-notes" class="project-notes" hidden>Keep the story simple. Show the work, explain the choices, and leave room for questions.</p>
+                <div class="search-field" id="search-field" hidden><span data-icon="search"></span><input id="search-input" type="search" placeholder="Search these example tasks" aria-label="Search these example tasks"><button id="close-search" class="icon-button" aria-label="Close search"><span data-icon="close"></span></button></div>
+                <form id="capture" class="capture" hidden><span data-icon="circle"></span><input id="capture-input" required placeholder="What needs to get done?" aria-label="New task title"><button type="submit">Add</button><button type="button" id="cancel-capture" class="icon-button" aria-label="Cancel new task"><span data-icon="close"></span></button></form>
+                <div id="tasks"></div>
+                <button class="add-row" id="add-row"><span data-icon="plus"></span>Add a task<span class="shortcut">⌘ N</span></button>
+              </div>
+            </div>
+            <aside class="inspector" id="inspector" aria-label="Task details" hidden></aside>
+          </section>
+        </div>
+      </div>
+    </div>
+    <section class="design-caption" aria-live="polite">
+      <div><h2 id="concept-title">B · Focused canvas</h2><p id="concept-description"></p></div>
+      <div><h3 id="concept-principle"></h3><p id="concept-tradeoff"></p></div>
+      <div><h3>Try the difference</h3><p id="concept-instructions"></p></div>
+    </section>
+    <footer class="review-footer">Design proposal, not the shipping app. Translucency approximates native materials; production glass belongs to macOS. Palette surfaces and bundled fonts follow the current themes; layout, hierarchy and material use are proposed.</footer>
+  </main>
+  <div id="announcement" class="sr-only" role="status"></div>
+</body>
+</html>

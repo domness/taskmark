@@ -38,6 +38,8 @@ import Testing
         table.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
         try await Task.sleep(for: .milliseconds(100))
         #expect(model.selectedTaskDraft?.title == "First")
+        #expect(!model.isInspectorPresented)
+        try model.editTask(at: #require(model.selectedTaskPath))
         #expect(model.isInspectorPresented)
     }
 }

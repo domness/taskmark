@@ -92,13 +92,13 @@ struct InlineTaskTitleTests {
     }
 
     private func doubleClickTitle(in host: NSView, window: NSWindow) async throws {
-        for _ in 0 ..< 40 where findTable(in: host) == nil {
+        for _ in 0 ..< 40 where findTitleTarget(in: host)?.visibleRect.isEmpty != false {
             try await Task.sleep(for: .milliseconds(50))
         }
-        let table = try #require(findTable(in: host))
+        let title = try #require(findTitleTarget(in: host))
         host.layoutSubtreeIfNeeded()
-        let row = table.rect(ofRow: 0)
-        let point = table.convert(NSPoint(x: 100, y: row.midY), to: nil)
+        let bounds = title.visibleRect
+        let point = title.convert(NSPoint(x: bounds.midX, y: bounds.midY), to: nil)
         for count in 1 ... 2 {
             for type in [NSEvent.EventType.leftMouseDown, .leftMouseUp] {
                 let event = try #require(NSEvent.mouseEvent(
@@ -112,11 +112,11 @@ struct InlineTaskTitleTests {
         }
     }
 
-    private func findTable(in view: NSView) -> NSTableView? {
-        if let table = view as? NSTableView {
-            return table
+    private func findTitleTarget(in view: NSView) -> TitleClickView? {
+        if let title = view as? TitleClickView {
+            return title
         }
-        return view.subviews.lazy.compactMap { findTable(in: $0) }.first
+        return view.subviews.lazy.compactMap { findTitleTarget(in: $0) }.first
     }
 
     private func titleField(in view: NSView) async throws -> NSTextField {

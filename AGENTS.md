@@ -120,7 +120,7 @@ make check
 
 - Follow the implemented native patterns and design direction in `DESIGN.md`; keep token documentation aligned with the source.
 - Preserve keyboard access, visible focus, reduced motion, scalable text, and non-color state cues.
-- Keep core interactions familiar. Do not use decorative motion, nested cards, glass effects, gradient text, or colored side stripes.
+- Keep core interactions familiar. Do not use decorative motion, nested cards, gradient text, or colored side stripes. Native glass is permitted only on navigation/control surfaces on macOS 26+, with accessibility and older-system fallbacks; persistent task content stays opaque.
 
 ## Commits
 
