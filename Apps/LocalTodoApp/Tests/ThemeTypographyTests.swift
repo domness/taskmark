@@ -62,21 +62,13 @@ struct ThemeTypographyTests {
         try await withWorkspace { model, _ in
             model.route = .inbox
             await model.createTask(title: "Theme font sample", vaultSession: model.vaultSession)
-            let path = try #require(model.selectedTaskPath)
             let draft = try #require(model.selectedTaskDraft)
-            let task = try #require(model.snapshot?.tasks[path]?.value)
-            let root = VStack {
-                TaskRow(model: model, task: task, displayOptions: .defaults(for: .inbox), onSelect: {})
-                TextField("Body sample", text: .constant("Body sample"))
-                    .themeFont(.body)
-                TextField("Heading sample", text: .constant("Heading sample"))
-                    .themeFont(.headline)
-            }
-            .modifier(AppAppearanceModifier(model: model))
+            let root = TaskListView(model: model)
+                .modifier(AppAppearanceModifier(model: model))
             let controller = NSHostingController(rootView: root)
-            let window = NSWindow(contentViewController: controller)
+            let window = NativeInputTestWindow(contentViewController: controller)
             window.isReleasedWhenClosed = false
-            window.setContentSize(NSSize(width: 500, height: 260))
+            window.setContentSize(NSSize(width: 600, height: 400))
             defer { window.close() }
             try await presentForNativeInput(window)
             try await beginInlineEditing(model: model, draft: draft, window: window)
@@ -85,8 +77,6 @@ struct ThemeTypographyTests {
                 model.preferences.theme = theme
                 let size = theme == .catppuccin ? 14.0 : 13.0
                 try await expectEditorFont(in: window, text: draft.title, theme: theme, size: size)
-                try await expectEditorFont(in: window, text: "Body sample", theme: theme)
-                try await expectEditorFont(in: window, text: "Heading sample", theme: theme)
             }
             model.vaultAppearance = try VaultAppearance.parse(":root { --task-font-size: 18px; }")
             try await expectEditorFont(in: window, text: draft.title, theme: .catppuccin, size: 18)
@@ -95,23 +85,58 @@ struct ThemeTypographyTests {
 
     private func beginInlineEditing(model: WorkspaceModel, draft: TaskDraft, window: NSWindow) async throws {
         let host = try #require(window.contentView)
-        try await waitForNativeUI("typography host presentation", in: window) {
-            window.isVisible && field(in: host, text: "Body sample") != nil
+        try await waitForNativeUI("native task row presentation", in: window) {
+            table(in: host)?.numberOfRows == 1
         }
-        field(in: host, text: "Body sample")?.selectText(nil)
-        try await waitForNativeUI("initial typography field focus", in: window) {
-            (window.firstResponder as? NSTextView)?.string == "Body sample"
+        let table = try #require(table(in: host))
+        table.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
+        #expect(window.makeFirstResponder(table))
+        try await waitForNativeUI("native task selection before editing", in: window) {
+            table.selectedRow == 0 && model.selectedTaskPath == draft.path && window.firstResponder === table
         }
         model.beginInlineTitleEditing(at: draft.path)
+        try await waitForNativeUI("inline field installed in the task row", in: window) {
+            field(in: host, text: draft.title) != nil && model.inlineTitleEditingPath == draft.path
+        }
+        // This test measures the native editor font. Explicitly enter its editing
+        // session instead of depending on automatic focus in a background test window.
+        field(in: host, text: draft.title)?.selectText(nil)
         // Do not change the font environment while the inline field is still being inserted/focused.
         try await waitForNativeUI(
             "inline title editor ready before theme changes", in: window,
-            diagnostics: { "inlinePath=\(String(describing: model.inlineTitleEditingPath))" },
+            diagnostics: {
+                "inlinePath=\(String(describing: model.inlineTitleEditingPath)), "
+                    + "field=\(field(in: host, text: draft.title) != nil), "
+                    + "rowView=\(table.view(atColumn: 0, row: 0, makeIfNecessary: false) != nil), "
+                    + "visible=\(model.visibleTasks.count), bounds=\(table.bounds)"
+            },
             until: {
                 let field = field(in: host, text: draft.title)
                 return field?.currentEditor() != nil && field?.currentEditor() === window.firstResponder
             }
         )
+    }
+
+    @Test func semanticEditorFontsFollowTheAppearanceEnvironment() async throws {
+        try await withWorkspace { model, _ in
+            let controller = NSHostingController(rootView: VStack {
+                TextField("Body sample", text: .constant("Body sample")).themeFont(.body)
+                TextField("Heading sample", text: .constant("Heading sample")).themeFont(.headline)
+            }.modifier(AppAppearanceModifier(model: model)))
+            let window = NativeInputTestWindow(contentViewController: controller)
+            window.isReleasedWhenClosed = false
+            defer { window.close() }
+            try await presentForNativeInput(window)
+            for theme in [AppTheme.catppuccin, .dracula, .standard] {
+                model.preferences.theme = theme
+                try await expectEditorFont(in: window, text: "Body sample", theme: theme)
+                try await expectEditorFont(in: window, text: "Heading sample", theme: theme)
+            }
+        }
+    }
+
+    private func table(in view: NSView) -> NSTableView? {
+        (view as? NSTableView) ?? view.subviews.lazy.compactMap { table(in: $0) }.first
     }
 
     private func expectEditorFont(

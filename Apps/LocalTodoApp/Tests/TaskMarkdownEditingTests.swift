@@ -55,7 +55,7 @@ struct TaskMarkdownEditingTests {
             .frame(width: 360, height: 180)
             TextField("Other field", text: .constant("Other"))
         }.padding())
-        let window = NSWindow(
+        let window = NativeInputTestWindow(
             contentRect: NSRect(x: 0, y: 0, width: 400, height: 300),
             styleMask: [.titled, .resizable], backing: .buffered, defer: false
         )
