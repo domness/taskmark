@@ -9,6 +9,8 @@ Use `taskmark` for mutations. Markdown is user-owned, exact path identity is sig
 
 Taskmark was previously named Local Todo. The command is now `taskmark`, without a `localtodo` alias. Install it from **Taskmark → Install Command-Line Tool…**, choosing a writable folder on the shell's PATH. Reinstall after app updates to refresh the exported command. Vault schema 2 uses `.config/` for metadata and shared preferences; there is no migration or fallback for the earlier development layout.
 
+If the CLI is unavailable or the user requests direct file-level work, use the separately distributed `taskmark-vault` skill when installed. It bundles the file schema and direct-edit workflow without requiring the CLI.
+
 ## Establish Context
 
 1. Run `taskmark --version` and `taskmark --help`.

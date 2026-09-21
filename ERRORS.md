@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-21: Skill Validation Requires PyYAML
+
+- What did not work: The skill validator failed under system Python and an existing documentation virtual environment because neither had PyYAML; `uv` was also unavailable.
+- What worked instead: Create a dedicated temporary Python virtual environment, install PyYAML there, and run `quick_validate.py` with that environment's Python.
+- Note for next time: Check the validator's Python dependencies first; an existing documentation environment does not imply YAML support. Keep validation dependencies outside the repository.
+
 ## 2026-09-21: Startup Split Layout Needs Flexible Content Boundaries
 
 - What did not work: Sidebar width/default-window adjustments alone did not fix the vault-loading regression. A detail minimum of 320 points caused more native constraint-update failures; an outer GeometryReader also failed to resolve the cycle.
