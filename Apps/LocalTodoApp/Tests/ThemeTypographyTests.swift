@@ -86,9 +86,9 @@ struct ThemeTypographyTests {
     private func beginInlineEditing(model: WorkspaceModel, draft: TaskDraft, window: NSWindow) async throws {
         let host = try #require(window.contentView)
         try await waitForNativeUI("native task row presentation", in: window) {
-            table(in: host)?.numberOfRows == 1
+            findTable(in: host)?.numberOfRows == 1
         }
-        let table = try #require(table(in: host))
+        let table = try #require(findTable(in: host))
         table.selectRowIndexes(IndexSet(integer: 0), byExtendingSelection: false)
         #expect(window.makeFirstResponder(table))
         try await waitForNativeUI("native task selection before editing", in: window) {
@@ -135,8 +135,8 @@ struct ThemeTypographyTests {
         }
     }
 
-    private func table(in view: NSView) -> NSTableView? {
-        (view as? NSTableView) ?? view.subviews.lazy.compactMap { table(in: $0) }.first
+    private func findTable(in view: NSView) -> NSTableView? {
+        (view as? NSTableView) ?? view.subviews.lazy.compactMap { findTable(in: $0) }.first
     }
 
     private func expectEditorFont(
