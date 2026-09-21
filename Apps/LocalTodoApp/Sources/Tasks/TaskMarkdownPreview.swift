@@ -15,7 +15,6 @@ struct TaskMarkdownPreview: View {
                     }
                     Text(block.text)
                         .font(font(for: block))
-                        .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding(.leading, CGFloat(max(0, block.listDepth - 1)) * 16)
@@ -33,37 +32,6 @@ struct TaskMarkdownPreview: View {
         case 2: return .title3.bold()
         case .some: return .headline
         case nil: return .body
-        }
-    }
-}
-
-struct TaskNotesView: View {
-    @Bindable var draft: TaskDraft
-    @State private var showsPreview = false
-
-    var body: some View {
-        Section("Notes") {
-            Picker("Notes mode", selection: $showsPreview) {
-                Text("Edit").tag(false)
-                Text("Preview").tag(true)
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
-            if showsPreview {
-                if draft.notes.isEmpty {
-                    Text("No notes yet.").foregroundStyle(.secondary)
-                } else {
-                    TaskMarkdownPreview(source: draft.notes)
-                }
-            } else {
-                TextEditor(text: $draft.notes)
-                    .font(.body)
-                    .frame(minHeight: 160)
-                    .accessibilityLabel("Task notes, Markdown")
-                Text("Markdown supported: **bold**, *italic*, [links](https://example.com), headings and lists.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
         }
     }
 }
