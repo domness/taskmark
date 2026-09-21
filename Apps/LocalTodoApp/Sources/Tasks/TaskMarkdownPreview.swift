@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TaskMarkdownPreview: View {
     let source: String
+    @Environment(\.themeTypography) private var typography
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -28,10 +29,10 @@ struct TaskMarkdownPreview: View {
             return .body.monospaced()
         }
         switch block.headingLevel {
-        case 1: return .title2.bold()
-        case 2: return .title3.bold()
-        case .some: return .headline
-        case nil: return .body
+        case 1: return typography.font(.title2, weight: .bold)
+        case 2: return typography.font(.title3, weight: .bold)
+        case .some: return typography.font(.headline)
+        case nil: return typography.font(.body)
         }
     }
 }

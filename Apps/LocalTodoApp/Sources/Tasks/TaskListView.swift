@@ -226,7 +226,7 @@ private extension TaskListView {
 private extension TaskListView {
     var routeHeading: some View {
         Text(model.route.title)
-            .font(.headline)
+            .themeFont(.headline)
             .lineLimit(1)
             .accessibilityAddTraits(.isHeader)
     }

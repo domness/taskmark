@@ -55,10 +55,10 @@ struct TaskMarkdownField: View {
             TextField("Title", text: $text, axis: .vertical)
                 .labelsHidden()
                 .lineLimit(1 ... 6)
-                .font(.headline)
+                .themeFont(.headline)
         } else {
             TextEditor(text: $text)
-                .font(.body)
+                .themeFont(.body)
                 .frame(minHeight: 160)
         }
     }
@@ -68,10 +68,10 @@ struct TaskMarkdownField: View {
         if text.isEmpty {
             Text(kind.placeholder)
                 .foregroundStyle(.secondary)
-                .font(kind == .title ? .headline : .body)
+                .themeFont(kind == .title ? .headline : .body)
         } else if kind == .title {
             Text(TaskMarkdown.inline(text))
-                .font(.headline)
+                .themeFont(.headline)
         } else {
             TaskMarkdownPreview(source: text)
         }

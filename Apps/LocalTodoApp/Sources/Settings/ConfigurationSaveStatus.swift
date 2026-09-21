@@ -21,12 +21,12 @@ struct ConfigurationSaveStatus: View {
                 }
                 .disabled(model.isSavingPreferences || model.isSavingConfiguration)
             }
-            .font(.callout)
+            .themeFont(.callout)
             .padding()
             .frame(maxWidth: .infinity, alignment: .leading)
         } else if model.isSavingPreferences || !model.pendingPreferenceChanges.isEmpty {
             Label("Saving vault preferences…", systemImage: "arrow.triangle.2.circlepath")
-                .font(.caption).foregroundStyle(.secondary).padding(8)
+                .themeFont(.caption).foregroundStyle(.secondary).padding(8)
         }
     }
 }

@@ -70,7 +70,7 @@ struct CalendarDateField: View {
                             }
                             if isSelected(suggestion) {
                                 Image(systemName: "checkmark")
-                                    .font(.caption.weight(.semibold))
+                                    .themeFont(.caption, weight: .semibold)
                                     .accessibilityHidden(true)
                             }
                         }

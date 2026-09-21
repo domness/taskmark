@@ -67,7 +67,7 @@ struct TaskRow: View {
         ) {
             if model.inlineTitleEditingPath == task.path, let draft = model.taskDrafts[task.path] {
                 InlineTaskTitleEditor(model: model, draft: draft)
-                    .font(.system(size: taskFontSize))
+                    .font(model.preferences.theme.typography.taskFont(scaledSize: taskFontSize))
             } else {
                 titleLabel
             }
@@ -83,7 +83,7 @@ struct TaskRow: View {
 
     private var titleLabel: some View {
         Text(TaskMarkdown.inline(task.title, links: false))
-            .font(.system(size: taskFontSize))
+            .font(model.preferences.theme.typography.taskFont(scaledSize: taskFontSize))
             .strikethrough(task.status.isComplete)
             .foregroundStyle(overdue.isOverdue ? Color.red : Color.primary)
             .contentShape(Rectangle())
@@ -130,7 +130,7 @@ struct TaskRow: View {
                 tagsMetadata
             }
         }
-        .font(.caption)
+        .themeFont(.caption)
         .foregroundStyle(.secondary)
     }
 

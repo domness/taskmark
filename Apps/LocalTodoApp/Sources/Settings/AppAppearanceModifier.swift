@@ -15,6 +15,8 @@ struct AppAppearanceModifier: ViewModifier {
         content
             .preferredColorScheme(model.preferences.appearance.colorScheme)
             .environment(\.vaultAppearance, model.effectiveAppearance)
+            .environment(\.themeTypography, model.preferences.theme.typography)
+            .font(model.preferences.theme.typography.font(.body))
             .environment(\.displayDateFormat, model.preferences.dateFormat)
             .environment(\.calendar, model.planningCalendar)
             .environment(\.timeZone, model.vaultCalendar.timeZone)

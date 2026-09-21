@@ -35,7 +35,7 @@ struct TaskTagsView: View {
                         .labelStyle(.iconOnly)
                         .buttonStyle(.plain)
                     }
-                    .font(.callout)
+                    .themeFont(.callout)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(.quaternary, in: RoundedRectangle(cornerRadius: 5))

@@ -23,7 +23,7 @@ struct FilterEditorView: View {
                         }
                         TextField("Required tags, comma separated", text: $state.editor.tags)
                         Text("All selected tags must match. Statuses and priorities are alternatives.")
-                            .font(.caption).foregroundStyle(.secondary)
+                            .themeFont(.caption).foregroundStyle(.secondary)
                         FilterDateRangesView(model: model, editor: $state.editor)
                         Toggle("Include completed and canceled tasks", isOn: $state.editor.includeCompleted)
                         Picker("Sort", selection: $state.editor.sort) {
