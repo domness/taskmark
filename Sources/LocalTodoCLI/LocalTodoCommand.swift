@@ -5,7 +5,7 @@ struct LocalTodoCommand: AsyncParsableCommand {
     static let configuration = CommandConfiguration(
         commandName: "taskmark",
         abstract: "Manage a Taskmark Markdown vault.",
-        version: "0.2.0",
+        version: "0.3.0",
         subcommands: [
             InitCommand.self,
             AddCommand.self,
