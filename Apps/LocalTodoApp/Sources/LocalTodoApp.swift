@@ -10,6 +10,8 @@ struct LocalTodoApp: App {
             WorkspaceWindowRoot(windows: windows)
                 .onAppear { appDelegate.windows = windows }
         }
+        .windowResizability(.contentMinSize)
+        .defaultSize(width: 1120, height: 720)
         .commands {
             WorkspaceCommands(windows: windows)
             CLIInstallationCommands()

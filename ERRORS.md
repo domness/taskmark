@@ -2,6 +2,12 @@
 
 Read this file before suggesting an approach similar to a previous multi-attempt failure. Add an entry when an approach takes more than 2 attempts to work.
 
+## 2026-09-21: Startup Split Layout Needs Flexible Content Boundaries
+
+- What did not work: Sidebar width/default-window adjustments alone did not fix the vault-loading regression. A detail minimum of 320 points caused more native constraint-update failures; an outer GeometryReader also failed to resolve the cycle.
+- What worked instead: Place the inspector on the detail content, with explicit flexible minimum-zero width wrappers for detail and inspector content, alongside native column/window sizing. The hosted regression passes across 840/1088/1120-point windows, inspector toggles and selection.
+- Note for next time: Test the chooser-to-loaded-vault transition and content minima, not only windows created with an already-loaded model. Put Swift Testing UI regressions in a named suite to run them directly with Xcode's test filter; inspect xcresult summaries for quiet-run failures.
+
 ## 2026-09-21: Bound Resize Tests By Both Screen And Window Limits
 
 - What did not work: The hosted macOS runner clamped the Settings test's requested 800-point content height to 684. Making the target screen-aware but subtracting a fixed 40 points for the smaller size then requested 624 points, below the runner's 628-point content minimum.

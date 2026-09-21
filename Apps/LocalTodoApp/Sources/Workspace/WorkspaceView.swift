@@ -24,25 +24,30 @@ struct WorkspaceView: View {
             } else {
                 NavigationSplitView {
                     SidebarView(model: model)
+                        .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 320)
                 } detail: {
-                    if model.route == .issues {
-                        IssueCenterView(model: model)
-                    } else {
-                        TaskListView(model: model)
+                    Group {
+                        if model.route == .issues {
+                            IssueCenterView(model: model)
+                        } else {
+                            TaskListView(model: model)
+                        }
+                    }
+                    .frame(minWidth: 0, maxWidth: .infinity)
+                    .inspector(isPresented: $model.isInspectorPresented) {
+                        InspectorContentView(model: model)
+                            .inspectorColumnWidth(min: 280, ideal: 340, max: 480)
+                            .toolbar {
+                                ToolbarItem(id: "taskmark.inspector-toggle", placement: .primaryAction) {
+                                    inspectorToggle
+                                }
+                            }
                     }
                 }
-                .inspector(isPresented: $model.isInspectorPresented) {
-                    InspectorContentView(model: model)
-                        .inspectorColumnWidth(min: 280, ideal: 340, max: 480)
-                        .toolbar {
-                            ToolbarItem(id: "taskmark.inspector-toggle", placement: .primaryAction) {
-                                inspectorToggle
-                            }
-                        }
-                }
+                .navigationSplitViewStyle(.balanced)
             }
         }
-        .frame(minWidth: 840, minHeight: 560)
+        .frame(minWidth: 840, maxWidth: .infinity, minHeight: 560, maxHeight: .infinity)
         .safeAreaInset(edge: .bottom) { ConfigurationSaveStatus(model: model) }
         .disabled(model.isSavingConfiguration)
         .sheet(isPresented: $model.isCommandPalettePresented) {

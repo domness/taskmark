@@ -287,6 +287,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The user requested Markdown titles/notes with links. Rendering a draft projection makes formatting useful while preserving exact source, autosave, conflicts, native selection and Custom-order dragging.
 - What was rejected and why: Rich-text serialization was rejected because it could normalize user-authored Markdown. A web view and remote image rendering are unnecessary for text/link support. Interactive row links were avoided because they would compete with the established row selection/drag behavior; inspector previews provide link activation.
 
+### 2026-09-21: Constrain Startup Layout At The Window And Column Boundaries
+
+- What was decided: Give vault windows a 1120×720 default size with content-minimum resizing, an explicit sidebar width range and a detail-owned inspector. Let detail and inspector content accept the width allocated by the native split. Keep the workspace root flexible above its existing minimum.
+- Why: The user reported side panels extending outside new windows. A hosted vault-loading regression reproduced a native constraint-update failure; detail-owned inspector composition with flexible content now passes startup, hide/show and task-selection checks at 840, 1088 and 1120 points.
+- What was rejected and why: Clipping overflow would hide controls rather than fix layout. Adding more fixed content minima and a GeometryReader wrapper did not resolve the native constraint feedback, so they were removed.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".
