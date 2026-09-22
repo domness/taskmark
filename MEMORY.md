@@ -365,6 +365,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The user requested reproducible releases with any future agent, without restating versioning, validation, publication and artifact-verification steps.
 - What was rejected and why: A machine-global or harness-specific skill would not travel with the repository. A second packaging script or copied signing implementation would drift from the existing workflow. Publication alone is not completion; the skill requires successful packaging and all three uploaded assets.
 
+### 2026-09-22: Use Secondary Notes And Add Sidebar Tag Drops
+
+- What was decided: Remove visible task/project notes headings and apply the shared native secondary text style to rendered notes and source editors across all themes. Extend the existing vault-session-bound sidebar assignment path to append tags, preserving order, rejecting duplicates and registering field-specific Undo after persistence. Provide a separate trailing organization drag handle in Custom mode while retaining native title/row reordering.
+- Why: The user requested quieter notes and drag organization onto projects, areas and tags. A dedicated Custom-mode hit region intentionally extends the earlier automatic-sort-only assignment decision without attaching a competing drag to the whole reorderable row. Reusing native secondary styling preserves appearance and accessibility adaptation.
+- What was rejected and why: Replacing the complete tag list would discard existing organization. External/cross-vault payloads, whole-task Undo restoration, and failed-write autosave retries remain rejected. Adding a whole-row transferable in Custom mode would compete with native insertion gestures; a dedicated handle keeps both actions available.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

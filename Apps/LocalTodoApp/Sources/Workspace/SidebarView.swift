@@ -67,7 +67,10 @@ struct SidebarView: View {
                 if !model.allTags.isEmpty {
                     Section("Tags", isExpanded: $showsTags) {
                         ForEach(model.allTags, id: \.self) { tag in
-                            route(.tag(tag), tag, "tag")
+                            SidebarAssignmentRoute(
+                                model: model, route: .tag(tag), title: tag,
+                                systemImage: "tag", target: .tag(tag)
+                            )
                         }
                     }
                 }

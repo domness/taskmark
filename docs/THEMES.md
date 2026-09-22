@@ -13,6 +13,8 @@ The appearance choice and palette are independent. Choosing Forest while in Dark
 
 Native primary/secondary text, focus, selection, disabled state, control fills and separators retain system semantics. Priority indicators keep P1 red/P2 orange/P3 blue by default, with explicit labels; P4/unset stay neutral and completed tasks use secondary styling. Themes do not change task order or content.
 
+Task and project inspector notes use the shared native **Secondary** text style in both rendered and source-editing modes. It provides a softer tone than titles and adapts to Light/Dark and accessibility contrast across every palette. Notes have no visible section heading; empty fields retain the “Add notes…” prompt and editors retain accessible labels.
+
 ## Built-In Tokens
 
 All colors are sRGB `#RRGGBB`. `AppTheme.swift` is the implementation source of truth.

@@ -44,6 +44,11 @@ targets:
       path: .build/Taskmark-Info.plist
       properties:
         ATSApplicationFontsPath: Fonts
+        UTExportedTypeDeclarations:
+          - UTTypeIdentifier: com.domness.localtodo.task-reference
+            UTTypeDescription: Taskmark Task Reference
+            UTTypeConformsTo:
+              - public.data
     sources:
       - path: Apps/LocalTodoApp/Sources
       - path: Apps/LocalTodoApp/Resources

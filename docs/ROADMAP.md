@@ -34,6 +34,7 @@ See [daily workflows and shortcuts](DAILY_WORK.md).
 - Task rows resize as planning metadata appears or disappears. Search/list headers stay top-aligned; Switch Vault has its own footer; the inspector toggle is at the trailing window toolbar.
 - Task Duplicate/Delete/Copy actions; project/area context-menu deletion with reference protection. Successful deletions support exact-byte Undo/Redo during the vault session.
 - Independent native Projects/Areas sidebar ordering, with Move Up/Move Down/Restore Default Order actions.
+- Drag tasks onto sidebar projects, areas or tags, with additive tag assignment and field-specific Undo/Redo. Custom-order rows provide a separate organization drag handle while title drags retain native reordering.
 - P1 red/P2 orange/P3 blue indicators and labels, neutral task titles and optional native CSS-token overrides in `.config/style.css`.
 
 See [personalization](PERSONALIZATION.md).

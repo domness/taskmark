@@ -27,7 +27,7 @@ struct ProjectInspectorView: View {
             .disabled(!draft.conflicts.isEmpty || draft.unavailableMessage != nil)
             Text("Project status does not change its tasks.")
                 .themeFont(.caption).foregroundStyle(.secondary)
-            Section("Project Notes") {
+            Section {
                 TaskMarkdownField(
                     text: $draft.notes,
                     kind: .notes,

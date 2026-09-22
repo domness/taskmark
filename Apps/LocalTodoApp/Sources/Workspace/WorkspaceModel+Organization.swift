@@ -43,6 +43,19 @@ extension WorkspaceModel {
         )
     }
 
+    func assignTask(at path: VaultPath, addingTag tag: String, vaultSession intentSession: UUID) async {
+        guard intentSession == vaultSession,
+              allTags.contains(tag),
+              let task = snapshot?.tasks[path]?.value,
+              !task.tags.contains(tag)
+        else { return }
+        var patch = TaskPatch()
+        patch.tags = .set(task.tags + [tag])
+        await assignTask(
+            at: path, applying: patch, field: .tags, actionName: "Add Tag", vaultSession: intentSession
+        )
+    }
+
     private func assignTask(
         at path: VaultPath,
         applying patch: TaskPatch,
@@ -108,6 +121,7 @@ extension WorkspaceModel {
         let historyField: TaskTransitionField = switch field {
         case .project: .project
         case .area: .area
+        case .tags: .tags
         }
         registerTaskTransitionHistory(restoring: task, fields: [historyField], actionName: actionName)
     }

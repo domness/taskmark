@@ -36,6 +36,9 @@ struct TaskRow: View {
                     .accessibilityLabel("Select \(task.title)")
                     .accessibilityHint(overdue.explanation)
             }
+            if model.isCustomTaskOrder {
+                TaskAssignmentHandle(model: model, task: task)
+            }
         }
         .padding(.vertical, 6)
         .fixedSize(horizontal: false, vertical: true)

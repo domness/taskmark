@@ -20,7 +20,7 @@ Choose **View Options → Sort → Custom**, then drag a task to an insertion po
 
 Custom order is independent per route and vault, including search and saved-filter views. In grouped lists, moves stay within that project/area group. Orders and their enabled flags live in `.config/config.yml` under `preferences.custom_order`. They travel with the vault, without rewriting entity files or canonical saved-filter sort values. Stale route/session/order/group drags are rejected.
 
-While Custom is active, row drags reorder tasks. Assign a project/area through the inspector, or select an automatic sort to restore task dragging onto sidebar destinations.
+While Custom is active, row/title drags reorder tasks. Use the trailing organization drag handle to drop a task onto a sidebar project, area or tag. With automatic sorts, drag the row itself. Project and area drops set only that reference; tag drops append the tag without replacing existing tags or adding duplicates. Expand Tags first to expose its destinations. Successful assignments support Undo/Redo; the inspector provides keyboard-accessible organization controls.
 
 ## Sidebar Order And Collection Deletion
 

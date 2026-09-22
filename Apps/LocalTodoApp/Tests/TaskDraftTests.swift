@@ -110,6 +110,29 @@ import Testing
 }
 
 @MainActor
+@Test(arguments: [false, true])
+func taskDraftReconcilesTagDropWithTyping(editedTags: Bool) throws {
+    let original = try taskRecord(path: "Tasks/One.md", title: "Original", revision: "first")
+    var patch = TaskPatch()
+    patch.tags = .set(["dropped"])
+    let saved = try VaultRecord(
+        value: patch.applying(to: original.value, now: Date()),
+        revision: FileRevision(data: Data("second".utf8))
+    )
+    let draft = TaskDraft(record: original, vaultSession: UUID())
+    let generation = draft.generation
+    draft.notes = "Typed while dropping"
+    if editedTags {
+        draft.tags = ["typed"]
+    }
+    draft.acceptOrganizationSave(saved, generation: generation, field: .tags)
+    let merged = try draft.patch().applying(to: draft.sourceTask, now: Date())
+    #expect(merged.tags == (editedTags ? ["typed"] : ["dropped"]))
+    #expect(merged.body == "Typed while dropping")
+    #expect(draft.isDirty)
+}
+
+@MainActor
 @Test func taskDraftSurfacesOverlappingExternalChanges() throws {
     let original = try taskRecord(path: "Tasks/One.md", title: "Original", revision: "first")
     let external = try taskRecord(path: "Tasks/One.md", title: "External", revision: "second")

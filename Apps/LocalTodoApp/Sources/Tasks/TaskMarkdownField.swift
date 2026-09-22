@@ -60,6 +60,7 @@ struct TaskMarkdownField: View {
         } else {
             TextEditor(text: $text)
                 .themeFont(.body)
+                .foregroundStyle(.secondary)
                 .frame(minHeight: 160)
         }
     }
@@ -75,6 +76,7 @@ struct TaskMarkdownField: View {
                 .themeFont(.headline)
         } else {
             TaskMarkdownPreview(source: text)
+                .foregroundStyle(.secondary)
         }
     }
 
@@ -89,8 +91,6 @@ struct TaskNotesView: View {
     @State private var isEditing = false
 
     var body: some View {
-        Section("Notes") {
-            TaskMarkdownField(text: $draft.notes, kind: .notes, subject: "Task", isEditing: $isEditing)
-        }
+        TaskMarkdownField(text: $draft.notes, kind: .notes, subject: "Task", isEditing: $isEditing)
     }
 }

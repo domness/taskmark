@@ -51,7 +51,7 @@ The palette uses adaptive, subtly tinted near-neutrals. The built-in Taskmark to
 - **Empty states**: Native `ContentUnavailableView` hierarchy.
 - **Page heading**: Route/project headings use bold `.largeTitle`, remain visible at narrow widths and wrap when needed. Inspector title fields retain `.headline`.
 - **Task titles**: Theme body font in rows and inline editors; neutral color with completion strikethrough. Incomplete overdue tasks use semantic red plus an explicit Overdue warning label; only planning dates before the vault-local day qualify.
-- **Body**: `.body` for notes and editors; prose line lengths should remain comfortable as views expand.
+- **Body**: `.body` for notes and editors, with native secondary text color across all palettes and appearances. Inspector notes are label-free; prose line lengths should remain comfortable as views expand.
 - **Metadata**: `.caption` and secondary styling in rows; `.callout` for tag tokens and supporting Settings content.
 
 ### Named Rules
@@ -74,7 +74,7 @@ The system is flat by default. Tonal surface changes and native dividers establi
 - **Organization**: The flat inspector places title, notes and checklist before properties. Project, Area, Tags and Repeat remain directly visible without disclosures. Tags use removable wrapping tokens and an add popover; advanced recurrence fields appear only when relevant to the selected mode. New Today/Upcoming/Area display defaults group by project; rows suppress the grouping's repeated label. Area and tag row metadata defaults off, with existing saved choices preserved and View Options available.
 - **Markdown**: Task rows render inline title formatting while preserving selection and drag gestures. Task and project inspector titles and notes render by default; clicking a field or pressing Return on it reveals its source editor. Focus loss, an outside click or Escape returns to rendered text. Command-E directly edits the selected title. There are no mode tabs or duplicate previews; native links and theme typography remain, with native monospaced code, no web view or remote image loading.
 - **Dates**: Compact scheduled/deadline controls open native popovers with suggestions, exact ISO entry and a graphical calendar.
-- **Ordering**: Native List insertion gestures reorder collections and tasks in Custom mode. Automatic task sorts permit assignment drags to sidebar collections.
+- **Ordering**: Native List insertion gestures reorder collections and tasks in Custom mode. Automatic task sorts permit row assignment drags to sidebar projects, areas and tags. Custom rows have a separate trailing organization drag handle so title drags continue to reorder.
 - **Settings**: Fixed 170-point native sidebar beneath a compact titlebar; grouped General controls and a scrollable Theme grid. General includes a machine-local Command-line interface toggle, available without a vault, with native administrator authorization, progress and error feedback.
 
 Native controls own interaction feedback. Any future custom motion should remain functional, respect Reduce Motion and avoid decorative transitions; no custom animation-duration token system is implemented.
