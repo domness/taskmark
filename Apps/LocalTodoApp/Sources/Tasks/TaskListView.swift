@@ -1,6 +1,7 @@
 import Foundation
 import LocalTodoDomain
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct TaskListView: View {
     @Bindable var model: WorkspaceModel
@@ -155,15 +156,16 @@ struct TaskListView: View {
     private func taskRows(_ tasks: [TodoTask]) -> some View {
         let context = model.taskReorderContext(for: tasks)
         return ForEach(tasks, id: \.path) { task in
-            TaskRow(model: model, task: task, displayOptions: model.currentTaskListDisplayOptions) {
-                model.selectTask(task.path)
-                isListFocused = true
-            }
+            TaskRow(
+                model: model, task: task,
+                displayOptions: model.currentTaskListDisplayOptions, reorderContext: context
+            )
             .tag(task.path)
             .listRowSeparator(.hidden)
-            .moveDisabled(!model.isCustomTaskOrder)
         }
-        .onMove { offsets, destination in model.moveTasks(from: offsets, to: destination, context: context) }
+        .onInsert(of: model.isCustomTaskOrder ? [UTType.localTodoTaskReference] : []) { destination, providers in
+            model.insertDraggedTask(from: providers, at: destination, context: context)
+        }
     }
 
     private var taskSections: [TaskListSection] {

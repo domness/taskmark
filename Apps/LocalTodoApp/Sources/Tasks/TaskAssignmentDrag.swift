@@ -1,38 +1,40 @@
 import LocalTodoDomain
 import SwiftUI
+import UniformTypeIdentifiers
 
-/// Native list moves and transferable drags compete for the same row gesture.
+/// One native row source serves both sidebar assignment and Custom-order insertion.
 struct TaskAssignmentDrag: ViewModifier {
     let model: WorkspaceModel
     let task: TodoTask
+    let context: TaskReorderContext
 
     func body(content: Content) -> some View {
-        if model.isCustomTaskOrder {
-            content
-        } else {
-            content.draggable(TaskDragItem(path: task.path.value, vaultSession: model.vaultSession)) {
-                Label(task.title, systemImage: "checklist").padding(8)
-            }
+        content.onDrag {
+            TaskDragItem(
+                path: task.path.value,
+                vaultSession: model.vaultSession,
+                reorder: model.isCustomTaskOrder ? TaskDragOrder(context: context) : nil
+            ).itemProvider()
+        } preview: {
+            Label(task.title, systemImage: "checklist").padding(8)
         }
     }
 }
 
-/// A separate hit region keeps Custom-order row dragging owned by the native List.
-struct TaskAssignmentHandle: View {
-    let model: WorkspaceModel
-    let task: TodoTask
-
-    var body: some View {
-        Image(systemName: "arrow.up.left.and.arrow.down.right")
-            .foregroundStyle(.secondary)
-            .padding(6)
-            .contentShape(Rectangle())
-            .draggable(TaskDragItem(path: task.path.value, vaultSession: model.vaultSession)) {
-                Label(task.title, systemImage: "checklist").padding(8)
+extension TaskDragItem {
+    func itemProvider() -> NSItemProvider {
+        let provider = NSItemProvider()
+        provider.registerDataRepresentation(
+            forTypeIdentifier: UTType.localTodoTaskReference.identifier,
+            visibility: .ownProcess
+        ) { completion in
+            do {
+                try completion(JSONEncoder().encode(self), nil)
+            } catch {
+                completion(nil, error)
             }
-            .help("Drag to a sidebar project, area or tag. Drag the title to reorder.")
-            .accessibilityLabel("Organize \(task.title)")
-            .accessibilityHint("Drag to a project, area or tag, or use task details")
-            .accessibilityAction(named: "Edit Organization") { model.editTask(at: task.path) }
+            return nil
+        }
+        return provider
     }
 }

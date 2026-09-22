@@ -371,6 +371,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The user requested quieter notes and drag organization onto projects, areas and tags. A dedicated Custom-mode hit region intentionally extends the earlier automatic-sort-only assignment decision without attaching a competing drag to the whole reorderable row. Reusing native secondary styling preserves appearance and accessibility adaptation.
 - What was rejected and why: Replacing the complete tag list would discard existing organization. External/cross-vault payloads, whole-task Undo restoration, and failed-write autosave retries remain rejected. Adding a whole-row transferable in Custom mode would compete with native insertion gestures; a dedicated handle keeps both actions available.
 
+### 2026-09-22: Unify Whole-Row Organization And Reordering Drags
+
+- What was decided: Replace the row-wide selection button and Custom-only organization handle with native List selection and a full-row `onDrag` source. Custom order uses `onInsert` with the same own-process task payload and captured route/group/order context, retaining existing move validation and configuration persistence.
+- Why: The user reported that dragging needed prior selection and only worked over a small region. This intentionally revises the handle-only decision above and the earlier separate native `onMove` approach: one drag source must support both destinations from an unselected row.
+- What was rejected and why: Keeping a row-wide Button or competing drag recognizers would retain gesture ownership conflicts. Removing Custom ordering would regress daily use. Hosted selection, payload compatibility and insertion checks are distinct from physical WindowServer drag acceptance. The complete quality gate passed on Xcode 27.0 (27A266a).
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".

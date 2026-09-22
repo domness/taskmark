@@ -5,7 +5,7 @@ struct TaskRow: View {
     let model: WorkspaceModel
     let task: TodoTask
     let displayOptions: TaskListDisplayOptions
-    let onSelect: () -> Void
+    let reorderContext: TaskReorderContext
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -27,22 +27,13 @@ struct TaskRow: View {
             .foregroundStyle(priorityColor)
             .accessibilityLabel(task.status.isComplete ? "Reopen task" : "Mark complete")
 
-            if model.inlineTitleEditingPath == task.path || model.isCustomTaskOrder {
-                // Leave mouse tracking to the native List so a press can become a reorder drag.
-                taskLabel
-            } else {
-                Button(action: onSelect) { taskLabel }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Select \(task.title)")
-                    .accessibilityHint(overdue.explanation)
-            }
-            if model.isCustomTaskOrder {
-                TaskAssignmentHandle(model: model, task: task)
-            }
+            // Native List selection lets the first press become a drag without a prior click.
+            taskLabel
         }
         .padding(.vertical, 6)
         .fixedSize(horizontal: false, vertical: true)
-        .modifier(TaskAssignmentDrag(model: model, task: task))
+        .contentShape(Rectangle())
+        .modifier(TaskAssignmentDrag(model: model, task: task, context: reorderContext))
         .contextMenu {
             Button("Edit Task") { model.editTask(at: task.path) }
             Button("Reschedule…") {
