@@ -6,6 +6,7 @@ struct TaskRow: View {
     let task: TodoTask
     let displayOptions: TaskListDisplayOptions
     let reorderContext: TaskReorderContext
+    let onSelect: () -> Void
     @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
@@ -27,8 +28,9 @@ struct TaskRow: View {
             .foregroundStyle(priorityColor)
             .accessibilityLabel(task.status.isComplete ? "Reopen task" : "Mark complete")
 
-            // Native List selection lets the first press become a drag without a prior click.
             taskLabel
+                .onTapGesture(perform: onSelect)
+                .accessibilityAction(named: "Show Details", onSelect)
         }
         .padding(.vertical, 6)
         .fixedSize(horizontal: false, vertical: true)

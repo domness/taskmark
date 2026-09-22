@@ -158,7 +158,8 @@ struct TaskListView: View {
         return ForEach(tasks, id: \.path) { task in
             TaskRow(
                 model: model, task: task,
-                displayOptions: model.currentTaskListDisplayOptions, reorderContext: context
+                displayOptions: model.currentTaskListDisplayOptions, reorderContext: context,
+                onSelect: { openTaskDetails(task.path) }
             )
             .tag(task.path)
             .listRowSeparator(.hidden)
@@ -214,6 +215,12 @@ struct TaskListView: View {
 }
 
 private extension TaskListView {
+    func openTaskDetails(_ path: VaultPath) {
+        model.selectTask(path)
+        model.isInspectorPresented = true
+        isListFocused = true
+    }
+
     func metadataBinding(_ field: TaskListMetadataField) -> Binding<Bool> {
         Binding(
             get: {

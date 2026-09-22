@@ -2,7 +2,7 @@
 
 ## Task Rows And Context Actions
 
-Click anywhere in the task content to the right of its completion control to select the task without opening the inspector. Focus stays in the list, where **Backspace** deletes the selection. Use **Command-E** or **Edit Task** to open details and focus the title; double-click the title to edit inline. Backspace inside an inspector text editor edits text normally. Right-click a task for Duplicate, Delete and Copy actions; the **Task** menu also exposes these for the selection. Actions operate on one task at a time.
+Click anywhere in the task content to the right of its completion control to select the task and open the inspector without entering edit mode. Focus stays in the list, where **Backspace** deletes the selection. Use **Command-E** or **Edit Task** to focus the inspector title; double-click the title to edit inline. Backspace inside an inspector text editor edits text normally. Right-click a task for Duplicate, Delete and Copy actions; the **Task** menu also exposes these for the selection. Actions operate on one task at a time.
 
 New Today, Upcoming and Area views group by project. Area/tag row metadata starts hidden; existing saved display preferences remain in effect. Grouped rows omit the repeated project/area label. Today omits a scheduled date only when it equals the vault-local current day; overdue dates, deadlines and recurrence remain visible. Both dates remain editable in details. View Options retains all existing metadata and grouping choices.
 

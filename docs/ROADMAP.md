@@ -27,7 +27,7 @@ See [daily workflows and shortcuts](DAILY_WORK.md).
 
 ### Task Editing And Personalization
 
-- The focused canvas opens with two columns. A row click selects without opening details; the toolbar or Command-E opens the optional notes-first inspector. Backspace deletes from the list, while inspector text editing retains normal Backspace behavior.
+- The focused canvas opens with two columns. A row click selects and opens the optional notes-first inspector without entering edit mode; the toolbar toggles it and Command-E focuses the title. Backspace deletes from the list, while inspector text editing retains normal Backspace behavior.
 - Incomplete tasks past their scheduled date or deadline are highlighted with semantic red and an Overdue label, using the vault-local day.
 - Placeholder-only, multiline title entry; always-visible project, area, tag and repeat controls. Tags are removable tokens with an add button and existing-tag suggestions.
 - Rendered-first Markdown task and project titles and notes, with click-to-edit source and return to rendering on focus loss; includes inspector links, headings, lists, quotes and code. Source text remains canonical.

@@ -377,6 +377,12 @@ This file records significant project decisions and end-of-session summaries. Re
 - Why: The user reported that dragging needed prior selection and only worked over a small region. This intentionally revises the handle-only decision above and the earlier separate native `onMove` approach: one drag source must support both destinations from an unselected row.
 - What was rejected and why: Keeping a row-wide Button or competing drag recognizers would retain gesture ownership conflicts. Removing Custom ordering would regress daily use. Hosted selection, payload compatibility and insertion checks are distinct from physical WindowServer drag acceptance. The complete quality gate passed on Xcode 27.0 (27A266a).
 
+### 2026-09-22: Open Task Details On A Row Click
+
+- What was decided: At the user's explicit request, a single click on task title or metadata selects the task, keeps list focus and opens the inspector without starting title editing. Use a tap gesture rather than restoring the row-wide Button, so the same content remains a direct drag source in automatic and Custom ordering.
+- Why: The user reported after the 0.8.1 release that a TODO could no longer be opened in the right panel with one click. This intentionally revises the 2026-09-21 Focused Canvas rule that selection preserve inspector visibility while retaining its two-column default and explicit editing behavior.
+- What was rejected and why: Selection-only row clicks were rejected by the user. A row-wide Button was not restored because it previously consumed the drag gesture; automatically focusing the title was also rejected because ordinary selection should open details in reading mode.
+
 ## Session Summaries
 
 Add summaries here when the user says "session end", "wrapping up", or "let's stop here".
