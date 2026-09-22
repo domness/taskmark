@@ -1,129 +1,174 @@
-# Mac Mini CI And macOS Releases
+# Hosted CI And macOS Releases
 
-## Workflows
+Taskmark uses GitHub-hosted runners for every workflow. Your Mac does not need to be online or signed into Xcode for CI. Standard hosted runners are used; larger runners are not required.
+
+## Workflows And Trust Boundaries
 
 ### Quality — `.github/workflows/quality.yml`
 
-- Pushes to `main` and manual runs use `[self-hosted, macOS]`, matching Lumelo (`domness/baby-journal`). The Mac Mini must be registered/available to **this repository**, not only Lumelo.
-- Pull requests keep GitHub-hosted `macos-15` validation and Ubuntu Conventional Commit checks. PR code does not execute on the personal signing runner.
-- The Swift job runs the actual `make check`: formatter, strict lint, release-script input/syntax tests, Swift package tests, macOS app tests, and unsigned Debug app build.
-- Each run has isolated DerivedData under `RUNNER_TEMP`, uploads its log and `.xcresult`, and removes only its own temporary build directory. It does not kill Xcode processes or purge another project's caches/keychains. Quality logs are retained for seven days.
-- Per-ref concurrency avoids overlapping validation for the same branch without interrupting an active run. GitHub may replace older pending runs with a newer pending commit.
+PRs, pushes to `main` and manual runs execute `make check` on `macos-15`, selecting `/Applications/Xcode_26.3.app/Contents/Developer` explicitly. Homebrew supplies SwiftFormat, SwiftLint and XcodeGen. PR Conventional Commit checks run on Ubuntu. Tool versions are printed; the hosted image and Homebrew tools can update, so diagnose tool drift from each run's logs.
+
+The complete gate includes formatting/lint, release-script tests, Swift package tests, macOS app tests and an unsigned Debug app build. Validation receives no signing secrets and only a read-only repository token. PRs use `pull_request`, never privileged execution of contributor code through `pull_request_target`. Validation logs and `.xcresult` files are retained for seven days.
 
 ### macOS Release — `.github/workflows/release.yml`
 
-Publishing a GitHub release (including a prerelease) checks out **that exact tag**, runs `make check`, then builds a Release archive for Apple Silicon and Intel (`arm64` + `x86_64`, macOS 15+). Draft releases and bare tag pushes do not package automatically. Tags must contain a three-part numeric version, such as `v1.0.0`, `1.0.0`, or `v1.0.0-rc.1`.
+Publishing a release (including a prerelease) starts packaging. Drafts and bare tag pushes do not. A manual dispatch from **main** retries an existing published tag.
 
-Release signing is pinned to Dominic Wroblewski:
+1. **Validate:** require a three-part numeric version, an existing published release and a tag whose commit is in `origin/main` history. Resolve the tag to a full SHA once, check out that SHA and run `make check`, without Apple credentials.
+2. **Sign:** wait for the `release` environment's owner approval. A fresh hosted Mac checks out the validated SHA, imports environment credentials into a temporary Keychain, archives a universal app/CLI, verifies Developer ID signatures, notarizes/staples the app and DMG, and checks Gatekeeper. Cleanup runs even after failure. Only explicit installer paths and diagnostic logs are uploaded; credential directories are never artifacts or caches. This job has read-only repository access.
+3. **Publish:** an Ubuntu job downloads installers from this run, checks hashes and confirms the exact tag still resolves to the validated SHA and the release remains published. It uploads assets using the job-scoped `GITHUB_TOKEN`. Only this job has `contents: write`; it never checks out or executes repository source.
 
-```text
-Apple team:        4K4TD4WZ4C
-Signing identity:  Developer ID Application: Dominic Wroblewski (4K4TD4WZ4C)
-Notary profile:    local-todo-dominic
-Notary Keychain:   $HOME/Library/Keychains/login.keychain-db (explicit path)
+All external actions are pinned to full commit SHAs. Releases have per-tag concurrency; signing is limited to 90 minutes, with each Apple submission waiting up to 30 minutes. Logs are retained for 14 days, intermediate installer artifacts for three days. A timeout requires inspecting Apple's submission status before retrying.
+
+Environment rules apply to the workflow's ref, not the input tag. Manual runs must use `--ref main`; source validation separately checks the requested tag. Environment approval is still necessary: repository build scripts and dependencies executing in an approved signing job can access its credentials. Review the source SHA in the validation summary before approving. Repository administrators and the GitHub/Apple accounts remain trusted.
+
+## One-Time GitHub Setup
+
+Run as the repository owner (`domness`) or a repository administrator:
+
+```sh
+gh auth status
+gh api repos/domness/taskmark --jq .permissions
+python3 scripts/configure-github-actions.py --apply
 ```
 
-The team matches Lumelo's project and the available Dominic Wroblewski distribution identities. The workflow uses manual identity selection, enables hardened runtime and secure timestamps, verifies the resulting Developer ID certificate/team requirement, notarizes and staples the app, and packages it. It then signs, notarizes and staples the DMG too. Both distribution paths include the stapled `.app`. Missing credentials, signing, architecture, notarization, stapling, or Gatekeeper-assessment failures stop publishing; there is **no unsigned fallback**.
+The setup command requires admin access **before making changes**, handles no secrets and is safe to rerun. It configures:
 
-The archive also embeds the standalone `taskmark` command in `Contents/Helpers/`. Packaging verifies its universal architecture and Developer ID signature before notarization. Users enable **Settings → General → Command-line interface** to register it automatically with native administrator authorization; see the [CLI installation guide](../README.md#cli). The directly distributed app uses Hardened Runtime without App Sandbox to support this registration flow.
+- Environment **`release`**, required reviewer **`domness`**, self-review allowed for solo releases, administrator bypass disabled.
+- Selected deployment refs: branch **`main`** and tag pattern **`*.*.*`** (supports both `0.9.0` and `v0.9.0`, including suffixes). The script enforces the stricter numeric version syntax.
+- Main ruleset: PR required, both **`swift`** and **`commits`** checks required against an up-to-date branch, discussions resolved, no force-push/deletion and no bypass. Peer approval count is zero so the solo owner can merge; signing has its separate owner gate.
+- Tag ruleset: only repository administrators can create, update or delete tags. A write-only agent must ask the owner to create release tags. Do not move a published tag even though the owner technically has bypass permission.
+- Read-only default workflow token permissions, with workflow PR approval disabled.
+- Fork PR workflow approval for all external contributors, and only GitHub-owned actions pinned to full commit SHAs.
+
+The command manages only its two named rulesets, the `release` environment's protection/ref rules and the Actions policies listed above. It preserves existing environment secrets and unrelated rulesets. A later API failure may leave earlier settings applied; inspect the error and rerun after fixing access.
+
+Review these settings in **Settings → Actions → General** after setup. Approving PR validation does not approve signing. Keep write access limited to trusted collaborators; public readers cannot dispatch the release workflow or publish releases in this repository. The SHA policy intentionally prevents historical workflows using floating action tags from running unchanged.
+
+### Resolving HTTP 403
+
+A token's `repo` scope does not grant repository administration. Check `.permissions.admin` above. For this personal repository, signing into the owner account is the straightforward option:
+
+```sh
+# If both accounts are already authenticated:
+gh auth switch --user domness
+# Otherwise, authenticate the owner interactively:
+gh auth login --hostname github.com
+```
+
+Never paste a token into an issue, chat or workflow file. An administrative fine-grained token also needs the corresponding repository Administration, Environments and Actions permissions. Use the authenticated owner's CLI or GitHub settings UI for setup.
+
+## One-Time Apple Credentials
+
+Create the protected environment **before adding secrets**. Store all three secrets below in **Settings → Environments → release**, not repository-wide Actions secrets.
+
+| Type | Name | Value |
+| --- | --- | --- |
+| Secret | `MACOS_CERTIFICATE_P12_BASE64` | Base64-encoded `.p12` containing the Developer ID Application certificate **and private key** |
+| Secret | `MACOS_CERTIFICATE_PASSWORD` | Nonempty password used to export that `.p12` |
+| Secret | `APP_STORE_CONNECT_PRIVATE_KEY` | Complete PEM contents of the downloaded Apple `.p8` API private key, including header/footer |
+| Variable | `APP_STORE_CONNECT_KEY_ID` | Apple API key ID |
+| Variable | `APP_STORE_CONNECT_ISSUER_ID` | Issuer ID for the App Store Connect **team** API key |
+
+### 1. Export The Signing Identity
+
+On the Mac currently used for releases, open **Keychain Access → login → My Certificates**. Locate and expand:
+
+```text
+Developer ID Application: Dominic Wroblewski (4K4TD4WZ4C)
+```
+
+Confirm the private key is present underneath it. Export the identity as `.p12` with a strong, nonempty password, to a private directory outside this repository. A downloaded `.cer` alone is insufficient. Do not substitute Apple Development, Apple Distribution or Developer ID Installer.
+
+Upload the file directly from your terminal without displaying its contents:
+
+```sh
+base64 -i '/private/path/Taskmark-Developer-ID.p12' | \
+  gh secret set MACOS_CERTIFICATE_P12_BASE64 --env release --repo domness/taskmark
+gh secret set MACOS_CERTIFICATE_PASSWORD --env release --repo domness/taskmark
+```
+
+The second command prompts for the password. Base64 is transport encoding, not encryption; treat the `.p12` and its encoded form as private-key material. Keep any backup in secure storage and remove temporary exports after setup.
+
+The workflow pins team **`4K4TD4WZ4C`** and the identity above. A dedicated CI Developer ID Application certificate under the same team is optional if the account's certificate allowance permits; it enables independent revocation but is still a team signing credential, not scoped just to this repository. There is no unsigned fallback.
+
+### 2. Create A Notarization API Key
+
+In **App Store Connect → Users and Access → Integrations → App Store Connect API → Team Keys**, create a dedicated Taskmark CI key for the same Apple team. Use the least role that supports Apple's notarization service (Developer is sufficient for notarization). The account holder may first need to request API access. This workflow expects a **team key with an issuer ID**, not an individual key.
+
+Download the `.p8` once and retain a secure backup. Upload it and its identifiers:
+
+```sh
+gh secret set APP_STORE_CONNECT_PRIVATE_KEY --env release --repo domness/taskmark \
+  < '/private/path/AuthKey_KEYID.p8'
+gh variable set APP_STORE_CONNECT_KEY_ID --env release --repo domness/taskmark --body 'YOUR_KEY_ID'
+gh variable set APP_STORE_CONNECT_ISSUER_ID --env release --repo domness/taskmark --body 'YOUR_ISSUER_ID'
+```
+
+No Apple account password, interactive Xcode login, personal GitHub token or manually supplied Keychain password is used by the workflow. The Keychain password is generated per job; notary credentials use the fixed `taskmark-ci` profile in `$RUNNER_TEMP/taskmark-signing/signing.keychain-db`.
+
+Existing repository variables `NOTARYTOOL_PROFILE` and `NOTARYTOOL_KEYCHAIN` are no longer read by CI and can be removed. They may still be used as shell environment variables for local packaging.
+
+### 3. Verify Names And Protections
+
+```sh
+gh secret list --env release --repo domness/taskmark
+gh variable list --env release --repo domness/taskmark
+gh api repos/domness/taskmark/environments/release
+gh api repos/domness/taskmark/rulesets
+```
+
+These list names/settings, not secret values. They cannot prove that the certificate password or Apple credentials are valid; the first approved release verifies import, signing and Apple authentication.
+
+## Migration And First Hosted Release
+
+1. Apply the GitHub protections and upload credentials above.
+2. Merge the migration branch through a PR after Quality succeeds on hosted macOS. Do not bypass required checks.
+3. Remove **this repository's** personal runner registration/access in **Settings → Actions → Runners**. Older tags still contain the former self-hosted workflow; removing access also prevents those historical workflows reaching your Mac. Do not remove another repository's runner service or certificates.
+4. Create a **new version tag** on the merged migration commit or later, then publish its GitHub release as the owner. Historical tags lack the new bootstrap scripts; do not use them to validate the migration or move them to new commits.
+5. Wait for validation, review its tag/SHA summary, then approve **Sign and notarize macOS app** through the pending `release` deployment. Approval is also required when an agent initiates the release on your behalf.
+6. Verify the workflow and all three assets below. Download the DMG, copy Taskmark to Applications and launch/test it normally. Packaging validation is distinct from downloaded-app interaction.
+
+## Creating Or Retrying A Release
+
+Use the normal release skill, with a new numeric version tag at a full, merged main SHA. Supported examples: `0.9.0`, `v1.0.0`, `v1.0.0-rc.1`. The marketing version strips suffixes; the archive build number is `<workflow run number>.<attempt>`.
 
 The release receives:
 
 | Asset | Purpose |
 | --- | --- |
-| `Taskmark-<tag>-universal.dmg` | Open the disk image and drag **Taskmark.app** to **Applications**. |
-| `Taskmark-<tag>-universal.zip` | An alternative archive containing the complete stapled **Taskmark.app** bundle. Extract it, then move the app to Applications. |
-| `Taskmark-<tag>-SHA256SUMS.txt` | SHA-256 checksums of the final ZIP and DMG. |
+| `Taskmark-<tag>-universal.dmg` | Drag the signed/stapled app into Applications |
+| `Taskmark-<tag>-universal.zip` | Complete signed/stapled app bundle, archived with `ditto` |
+| `Taskmark-<tag>-SHA256SUMS.txt` | Hashes of the final installers |
 
-GitHub release assets are files, so the `.app` directory is shipped inside the ZIP/DMG rather than uploaded as a loose folder. ZIP creation uses `ditto` to preserve bundle metadata. Version `v1.2.3-rc.1` produces `CFBundleShortVersionString=1.2.3`; the full tag remains in artifact filenames. Build version is the workflow run number plus attempt, e.g. `42.1`. The supported build-number range is 1–9999 with optional two-digit minor/patch components.
+Both installers contain a universal macOS 15+ app and the signed universal CLI in `Contents/Helpers/taskmark`. Users register the CLI through **Settings → General → Command-line interface**.
 
-Failed runs retain packaging logs/notary JSON and test results as Actions artifacts for 14 days. Apple submission details can be inspected with `xcrun notarytool log <submission-id> --keychain-profile local-todo-dominic --keychain "$HOME/Library/Keychains/login.keychain-db"` on the runner (substitute your configured Keychain path if different). Release jobs have a 90-minute timeout; each notarization submission waits at most 30 minutes. A notarization timeout may require checking Apple's final status and rerunning the workflow.
-
-## One-Time Mac Mini Setup
-
-Run setup as the **same macOS user running the GitHub runner**, signed into Dominic's Apple account in Xcode. Existing Xcode account sign-in alone does not provide a Developer ID Application private key or `notarytool` credentials.
-
-### 1. Runner And Tools
-
-1. As a GitHub repository admin, open `domness/taskmark` → **Settings → Actions → Runners**. Register a macOS runner on the Mini using GitHub's displayed commands, or grant this repo access to an existing organization runner. Use a separate runner installation directory if adding another repo-specific service; a runner registered only to another repository cannot receive this repo's jobs.
-2. Keep labels `self-hosted` and `macOS`. If more than one machine has those labels and only the Mini should run these jobs, add a Mini-specific label and include it in both workflows.
-3. Run in the logged-in user session so hosted macOS app tests and keychain access work. Keep the runner awake and online. Avoid concurrent runner services running Lumelo cleanup that kills all Xcode processes; these workflows themselves clean only their own temporary paths.
-4. Select the full Xcode installation and complete its first-launch/license setup. Use Swift 6 and a macOS 15+ SDK. CI prints selected tool versions for diagnosis.
-5. Install the command-line prerequisites once:
+Retry an existing published, post-migration release through **Actions → macOS Release → Run workflow**, selecting **main**, or:
 
 ```sh
-brew install xcodegen swiftformat swiftlint gh python
-bash scripts/check-macos-runner
+gh workflow run release.yml --repo domness/taskmark --ref main -f tag=0.9.0
 ```
 
-Self-hosted jobs verify installed tools; they do not upgrade Homebrew or change global Xcode selection. Hosted PR jobs install quality tools automatically. Use the same formatter/linter versions as local development when investigating formatting drift (implementation validation used SwiftFormat 0.63.0, SwiftLint 0.65.1, XcodeGen 2.46.0, Xcode 27.0).
+Retrying replaces matching filenames (`--clobber`) and changes the build attempt. Use a new tag when downloads must remain immutable. GitHub's workflow `GITHUB_TOKEN` does not trigger downstream release workflows when creating a release; dispatch packaging explicitly in that case.
 
-### 2. Dominic's Developer ID Certificate
-
-In **Xcode → Settings → Accounts → Dominic Wroblewski → Manage Certificates**, create/download **Developer ID Application** for team **4K4TD4WZ4C**, or import the existing certificate **and private key** into the runner user's login keychain. Do not substitute Apple Development, Apple Distribution, or Developer ID Installer. The latter is for `.pkg` installers, which this workflow does not produce.
-
-Confirm the exact identity is available:
-
-```sh
-security find-identity -v -p codesigning
-```
-
-Ensure the runner can use this private key non-interactively: unlock the login keychain for its session and authorize the standard Apple signing tools when prompted. The workflow intentionally does not delete/reset keychains, install certificates, or alter global signing access.
-
-### 3. Notarization Credentials For The Same Account/Team
-
-Create an app-specific password for Dominic's Apple account and store it in the runner's keychain (the tool prompts securely for the password):
-
-```sh
-xcrun notarytool store-credentials local-todo-dominic \
-  --apple-id '<Dominic Apple account email>' \
-  --team-id 4K4TD4WZ4C \
-  --keychain "$HOME/Library/Keychains/login.keychain-db"
-```
-
-Use Dominic's actual Apple account email; it is not inferred from the certificate display name. An App Store Connect API key for the same team can alternatively be stored with `notarytool store-credentials` in the selected Keychain; the workflow reads the stored profile rather than receiving raw credentials.
-
-The default profile name is `local-todo-dominic`. If an existing same-team profile has a different name, set repository **Actions variable** `NOTARYTOOL_PROFILE` to that name. Certificate/team values are explicitly pinned in workflow source and also checked by the preflight script. No Apple password or private key is stored in the repository or workflow logs, and no GitHub signing secrets are required with this keychain-based setup.
-
-Preflight and submissions both use `scripts/notarytool-with-keychain`, which explicitly selects the runner user's persistent login Keychain. A custom persistent Keychain can be selected with the `NOTARYTOOL_KEYCHAIN` Actions variable (an absolute path). Store the profile in that same file. Neither the wrapper nor the workflow changes the user's default Keychain/search list or unlocks other apps' temporary Keychains. Missing files fail rather than falling back to implicit lookup.
-
-Verify authentication before building:
-
-```sh
-NOTARYTOOL_PROFILE=local-todo-dominic bash scripts/notarytool-with-keychain history --output-format json
-```
-
-Release preflight runs this check automatically and suppresses submission-history output. If it fails, resolve credentials/access for the specified file before retrying. On 2026-09-18, explicit login-Keychain authentication succeeded while implicit lookup returned HTTP 401; specifying only the profile name was not reliable in this environment. The exact cause of the earlier missing profile was not established.
-
-GitHub's job-scoped `GITHUB_TOKEN` supplies release upload permission. The `gh` upload step uses it through `GH_TOKEN`; a personal token does not need to be installed on the runner.
-
-## Creating Or Retrying A Release
-
-The workflows are in `main`. After completing the runner/signing setup above:
-
-1. Create a tag containing the release workflow/scripts, e.g. `v1.0.0`, at the intended commit.
-2. Publish a GitHub release for that tag. Wait for **macOS Release** to finish; assets appear only after packaging/verification succeeds.
-3. Download the DMG, copy the app to Applications, and open it normally.
-
-Use **Actions → macOS Release → Run workflow**, entering an existing published release tag, to retry packaging without republishing the release. Reruns replace matching asset filenames (`--clobber`), and increment the build attempt. Use a new version tag rather than rerunning if you need immutable public downloads.
-
-If release creation is later automated by another workflow, GitHub's default `GITHUB_TOKEN` does not trigger downstream release workflows. In that case dispatch **macOS Release** explicitly or use an appropriately scoped GitHub App token for release creation.
-
-## Local Commands And Verification Boundaries
+## Local Validation And Packaging
 
 ```sh
 make check
 make test-release-scripts
 bash scripts/package-macos-release --validate-inputs v1.2.3-rc.1 42.1
+```
 
+Script tests cover source ancestry/ref checks, input validation and mocked credential setup/failure cleanup. They never use a real signing key or make Apple submissions. `scripts/setup-ci-signing` refuses personal/self-hosted runners, including cleanup; it is not a local setup command.
+
+Local packaging remains available with the pinned identity, a preconfigured notarization profile and an explicit Keychain:
+
+```sh
 export APPLE_DEVELOPER_TEAM_ID=4K4TD4WZ4C
 export MACOS_SIGNING_IDENTITY='Developer ID Application: Dominic Wroblewski (4K4TD4WZ4C)'
 export NOTARYTOOL_PROFILE=local-todo-dominic
+export NOTARYTOOL_KEYCHAIN="$HOME/Library/Keychains/login.keychain-db"
 bash scripts/package-macos-release v1.2.3 42.1 dist
 ```
 
-`--validate-inputs` only validates/maps version strings; it does not build, sign, or publish. The normal packaging command always requires the pinned identity and notarization profile. `dist/` is ignored by Git.
-
-Initial local validation on 2026-09-17 used Xcode 27.0 (`27A266a`): actionlint 1.7.7, Bash syntax/input-contract checks, and an unsigned universal Release archive with both architecture slices and correct `1.2.3`/`42.1` plist versions. The full `make check` also passed with the workflow's isolated DerivedData and `.xcresult` arguments. This was build evidence only, not signing or notarization evidence.
-
-The configured release workflow has since successfully signed, notarized, stapled, and published releases through Taskmark 0.8.1, including nonempty DMG, ZIP, and checksum assets. Use current Actions and release results rather than fixed test counts or this historical toolchain snapshot. A successful packaging job does not establish a manual launch or interaction check of the downloaded app; record that separately for each release.
+`dist/` is ignored by Git. Successful local tests/builds do not establish hosted signing or downloaded-app acceptance. The earlier personal-runner pipeline published releases through 0.8.1; the new hosted credential path must be validated with its own approved release.

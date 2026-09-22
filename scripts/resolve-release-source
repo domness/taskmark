@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Resolve once before approval; downstream jobs must use this SHA, never a moving tag.
+set -euo pipefail
+
+[[ $# == 1 ]] || { echo 'Usage: resolve-release-source TAG' >&2; exit 2; }
+: "${GITHUB_REPOSITORY:?Set GITHUB_REPOSITORY}"
+root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+bash "$root/scripts/package-macos-release" --validate-inputs "$1" 1 >/dev/null
+draft=$(gh release view "$1" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)
+[[ "$draft" == false ]] || { echo 'Release must be published.' >&2; exit 1; }
+# Use explicit ref namespaces so a branch with the same name cannot masquerade as a tag.
+sha=$(git rev-parse --verify "refs/tags/$1^{commit}")
+git merge-base --is-ancestor "$sha" refs/remotes/origin/main || {
+  echo 'Release tag must point to a commit in origin/main history.' >&2
+  exit 1
+}
+printf '%s\n' "$sha"

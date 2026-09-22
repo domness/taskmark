@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+# Only for disposable GitHub-hosted runners. Never change a developer's login Keychain.
+set -euo pipefail
+set +x
+
+[[ "${RUNNER_ENVIRONMENT:-}" == github-hosted && -n "${RUNNER_TEMP:-}" ]] || {
+  echo 'Signing bootstrap requires a disposable GitHub-hosted runner.' >&2; exit 1;
+}
+directory="$RUNNER_TEMP/taskmark-signing"
+keychain="$directory/signing.keychain-db"
+cleanup() {
+  local status=0
+  if [[ -f "$keychain" ]]; then
+    security delete-keychain "$keychain" || status=$?
+  fi
+  rm -rf -- "$directory" || status=$?
+  return "$status"
+}
+if [[ "${1:-}" == --cleanup && $# == 1 ]]; then
+  cleanup
+  exit
+fi
+[[ $# == 0 ]] || { echo 'Usage: setup-ci-signing [--cleanup]' >&2; exit 2; }
+for name in MACOS_CERTIFICATE_P12_BASE64 MACOS_CERTIFICATE_PASSWORD APP_STORE_CONNECT_PRIVATE_KEY \
+  APP_STORE_CONNECT_KEY_ID APP_STORE_CONNECT_ISSUER_ID NOTARYTOOL_PROFILE NOTARYTOOL_KEYCHAIN; do
+  [[ -n "${!name:-}" ]] || { echo "Missing release environment value: $name" >&2; exit 1; }
+done
+[[ "$NOTARYTOOL_KEYCHAIN" == "$keychain" ]] || { echo 'Unexpected CI Keychain path.' >&2; exit 1; }
+umask 077
+# Refuse leftovers rather than overwriting credential material.
+mkdir "$directory"
+trap 'status=$?; trap - EXIT; if [[ $status != 0 ]]; then cleanup; fi; exit "$status"' EXIT
+password=$(openssl rand -hex 32)
+printf '::add-mask::%s\n' "$password"
+printf '%s' "$MACOS_CERTIFICATE_P12_BASE64" | base64 --decode > "$directory/certificate.p12"
+printf '%s' "$APP_STORE_CONNECT_PRIVATE_KEY" > "$directory/notary.p8"
+security create-keychain -p "$password" "$keychain"
+security set-keychain-settings -lut 21600 "$keychain"
+security unlock-keychain -p "$password" "$keychain"
+security import "$directory/certificate.p12" -P "$MACOS_CERTIFICATE_PASSWORD" \
+  -k "$keychain" -T /usr/bin/codesign -T /usr/bin/security >/dev/null
+security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$password" "$keychain" >/dev/null
+# The fresh runner owns this search list; codesign/Xcode can now discover the identity.
+security list-keychains -d user -s "$keychain"
+xcrun notarytool store-credentials "$NOTARYTOOL_PROFILE" --key "$directory/notary.p8" \
+  --key-id "$APP_STORE_CONNECT_KEY_ID" --issuer "$APP_STORE_CONNECT_ISSUER_ID" --keychain "$keychain" >/dev/null
+rm -- "$directory/certificate.p12" "$directory/notary.p8"

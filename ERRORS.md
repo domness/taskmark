@@ -47,7 +47,7 @@ Read this file before repeating an approach that previously required several att
 ## Packaging And Tooling
 
 - **Failure pattern:** Products differing only by case collide on common macOS filesystems; implicit notarization credential lookup and assumed command forms can vary by toolchain; successful builds do not prove bundled resources or signatures.
-- **Reliable approach:** Keep the CLI in `Contents/Helpers`, select the persistent notarization Keychain explicitly, inspect real archive architectures/resources/signatures, and validate downloaded artifacts separately.
+- **Reliable approach:** Keep the CLI in `Contents/Helpers`, select the notarization Keychain explicitly, inspect real archive architectures/resources/signatures, and validate downloaded artifacts separately.
 - **Next-time rule:** Test packaging commands against an actual universal archive and verify runtime resource resolution, signing, notarization, stapling, and checksums as distinct stages.
 
 ## Formatting And Validation Tools

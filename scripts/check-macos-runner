@@ -32,7 +32,7 @@ if [[ "${1:-}" == release ]]; then
   }
   identities=$(security find-identity -v -p codesigning)
   [[ "$identities" == *"\"$MACOS_SIGNING_IDENTITY\""* ]] || {
-    echo "The runner cannot access the requested signing identity and private key. Check its login keychain." >&2
+    echo "The runner cannot access the requested signing identity and private key. Check its signing keychain." >&2
     exit 1
   }
   xcrun --find notarytool
