@@ -4,7 +4,7 @@ import Foundation
 import SwiftUI
 import Testing
 
-/// Opt-in visual evidence: TEST_RUNNER_LOCALTODO_SETTINGS_CAPTURES=/existing/directory xcodebuild ... test.
+/// Opt-in visual evidence: LOCALTODO_SETTINGS_CAPTURES=/existing/directory xcodebuild ... test.
 /// Captures isolated native views; it does not alter the user's preferences or vault.
 @MainActor
 @Test(.enabled(if: ProcessInfo.processInfo.environment["LOCALTODO_SETTINGS_CAPTURES"] != nil))

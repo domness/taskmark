@@ -1,6 +1,6 @@
 # Roadmap
 
-Status reviewed against the repository on 2026-09-18. Implemented features below are backed by source and automated checks; they do not imply completed manual acceptance.
+Status reviewed against the repository on 2026-09-22. Implemented features below are backed by source and automated checks; they do not imply completed manual acceptance.
 
 ## Implemented: macOS And CLI
 
@@ -12,7 +12,7 @@ Status reviewed against the repository on 2026-09-18. Implemented features below
 - Revision-checked atomic updates, preservation of unknown frontmatter and Markdown bodies, visible malformed-file and missing-reference diagnostics.
 - Workspace-owned task/project autosave, non-overlapping rebases, explicit conflict resolution, task-file recovery and native Undo/Redo.
 - Independent vault windows through File → New Vault Window, focused-window commands and per-window Undo/Redo. Closing flushes the affected workspace; quitting checks all open workspaces. Full multi-vault session restoration remains outside the implemented behavior.
-- `taskmark` CLI entity/query/lifecycle commands, task moves, JSON output, mutation dry runs and `doctor`; a portable `taskmark` agent skill. Settings → General → Command-line interface automatically registers the bundled CLI at `/usr/local/bin/taskmark` with native administrator authorization. Registration follows updates at the same app location and can be disabled from Settings.
+- `taskmark` CLI entity/query/lifecycle commands, task moves, JSON output, mutation dry runs and `doctor`; portable CLI-first and direct-file agent skills. Settings → General → Command-line interface automatically registers the bundled CLI at `/usr/local/bin/taskmark` with native administrator authorization. Registration follows updates at the same app location and can be disabled from Settings.
 
 ### Daily Workflows
 
@@ -54,7 +54,7 @@ See [settings](SETTINGS.md) and [themes](THEMES.md).
 
 - `make check` regenerates the project, checks formatting/lint and release scripts, runs package/macOS app tests, and builds the unsigned Debug app.
 - PR quality runs on hosted runners; main/manual quality runs target the Mac Mini.
-- Release workflow and scripts build a universal macOS app, select the pinned Developer ID identity and explicit notarization Keychain, notarize/staple, and upload DMG/ZIP/checksum assets to an existing published release. This pipeline successfully published 0.0.2, including independently checked download checksums and Gatekeeper acceptance.
+- Release workflow and scripts build a universal macOS app, select the pinned Developer ID identity and explicit notarization Keychain, notarize/staple, and upload DMG/ZIP/checksum assets to an existing published release. The pipeline has successfully published releases through 0.8.1 with all three expected assets; downloaded-app interaction remains a separate manual acceptance step.
 
 See [CI and release setup](CI_RELEASES.md).
 

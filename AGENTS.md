@@ -18,27 +18,17 @@ When asked to create or publish a Taskmark release, read and follow `skills/task
 
 ## Session Memory And Error Logs
 
-Maintain `MEMORY.md` as the project decision log. After any significant decision, add an entry with:
+Keep `MEMORY.md` as a concise summary of current, durable project decisions. Update the relevant summary when a decision changes instead of appending a chronology. Canonical product, architecture, file-format, and design details belong in their dedicated documents; do not duplicate implementation history, personal data, release credentials, or conversation details in memory.
 
-- What was decided
-- Why
-- What was rejected and why
+Never contradict a current decision in `MEMORY.md` without flagging the conflict first and explaining why it may no longer apply.
 
-Never contradict a logged decision without flagging the conflict first and explaining why the prior decision may no longer apply.
+When the user says "session end", "wrapping up", or "let's stop here", replace the short **Current Work** section in `MEMORY.md` with only active unfinished work and next priorities. Remove it when no handoff is needed.
 
-When the user says "session end", "wrapping up", or "let's stop here", write a session summary to `MEMORY.md` before stopping. Include:
+Keep `ERRORS.md` as a compact set of reusable lessons for approaches that took more than 2 attempts. Merge related incidents into an existing lesson, omit one-off chronology and identifying environment details, and record only:
 
-- Worked on
-- Completed
-- In progress
-- Decisions made
-- Next session priorities
-
-Maintain `ERRORS.md` as the repeated-attempts log. When an approach takes more than 2 attempts to work, add an entry with:
-
-- What did not work
-- What worked instead
-- Note for next time
+- Failure pattern
+- Reliable approach
+- Next-time rule
 
 Check `ERRORS.md` before suggesting approaches to similar tasks.
 

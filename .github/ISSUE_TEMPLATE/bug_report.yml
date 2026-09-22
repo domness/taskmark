@@ -1,0 +1,54 @@
+name: Bug report
+description: Report reproducible incorrect behavior in Taskmark
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting a bug. Do not include private vault contents or security vulnerabilities.
+  - type: input
+    id: version
+    attributes:
+      label: Taskmark version
+      description: Find this in the release name or app version.
+      placeholder: 0.8.1
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: macOS version and Mac
+      placeholder: macOS 15.6, Apple Silicon
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+      description: Describe the result and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      placeholder: |
+        1. Open...
+        2. Select...
+        3. Observe...
+    validations:
+      required: true
+  - type: textarea
+    id: diagnostics
+    attributes:
+      label: Diagnostics
+      description: Include relevant error text or redacted `taskmark doctor --json` output. Remove personal paths and vault content.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues for this problem.
+          required: true
+        - label: This is not a security vulnerability.
+          required: true

@@ -1,4 +1,4 @@
-# Third-Party Theme Notices
+# Third-Party Notices
 
 Taskmark's native theme tokens use colors from the following MIT-licensed palettes.
 

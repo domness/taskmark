@@ -1,0 +1,31 @@
+name: Feature request
+description: Propose a focused improvement to Taskmark
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What workflow or limitation should Taskmark improve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe the smallest useful outcome rather than only a UI implementation.
+    validations:
+      required: true
+  - type: textarea
+    id: contract
+    attributes:
+      label: File-format or compatibility impact
+      description: Note any expected Markdown, CLI, automation, or migration implications.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched existing issues and the roadmap for this request.
+          required: true

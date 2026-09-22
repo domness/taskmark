@@ -11,10 +11,10 @@ Read the root `AGENTS.md` and its startup guidance, then [the release guide](../
 
 ## 1. Establish the release inputs
 
-- Inspect `git status -sb`, `git remote -v`, recent history and `gh auth status`. Fetch the remote and tags. Confirm the GitHub repository from the remote; this project currently publishes to `domness/local-todo`.
+- Inspect `git status -sb`, `git remote -v`, recent history and `gh auth status`. Fetch the remote and tags. Confirm the GitHub repository from the remote; this project currently publishes to `domness/taskmark`.
 - Inspect `gh release list`, the latest release's notes/assets, and commits/diff since its tag. Check recent Quality and macOS Release runs with `gh run list`.
 - Unless the user specifies another target, release the latest merged `origin/main`. Require a clean checkout synchronized with that target before versioning. Preserve uncommitted work; do not stash it, include it, reset it or publish an unmerged branch implicitly. Ask when the target is ambiguous.
-- Use the user's requested version when supplied. Otherwise infer from the actual unreleased changes and announce the choice: follow the existing three-part tag style (currently `0.x.0`, without `v`), increment minor for new features and patch for fixes only. Ask about incompatible changes rather than silently selecting a compatibility policy. If nothing has changed since the latest release, report that instead of making an empty release.
+- Use the user's requested version when supplied. Otherwise infer from the actual unreleased changes and announce the choice: follow the existing three-part `0.x.y` tag style without `v`, increment minor for new features and patch for fixes only. Ask about incompatible changes rather than silently selecting a compatibility policy. If nothing has changed since the latest release, report that instead of making an empty release.
 - Verify the proposed tag and release do not already exist, locally or remotely. Existing versions belong to the retry path below, never a force-updated tag.
 
 ## 2. Prepare and validate

@@ -36,7 +36,7 @@ preferences:
 | Key | Values; default |
 | --- | --- |
 | `appearance` | `system`, `light`, `dark`; `system` |
-| `theme` | `standard`, `slate`, `forest`, `sand`; `standard` (Taskmark palette) |
+| `theme` | `standard`, `slate`, `forest`, `sand`, `catppuccin`, `dracula`; `standard` (Taskmark palette) |
 | `week_start` | integer 1–7, Sunday–Saturday; 2 |
 | `date_format` | `system`, `iso`, `dayFirst`, `monthFirst`; `system` |
 | `time_format` | `system`, `twelveHour`, `twentyFourHour`; `system` |

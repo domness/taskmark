@@ -74,7 +74,7 @@ Preference edits autosave and are flushed before closing/switching vaults or qui
 The exact, case-sensitive, vault-relative path is entity identity. There are no generated IDs.
 
 ```yaml
-project: Projects/Local Todo.md
+project: Projects/Taskmark.md
 area: Areas/Personal Systems.md
 ```
 
@@ -98,7 +98,7 @@ status: next
 priority: p2
 scheduled: 2026-07-27
 deadline: 2026-07-31
-project: Projects/Local Todo.md
+project: Projects/Taskmark.md
 area: Areas/Personal Systems.md
 tags:
   - design
@@ -142,7 +142,7 @@ Projects and areas are first-class Markdown files with optional body notes.
 ```yaml
 ---
 type: project
-title: Local Todo
+title: Taskmark
 status: active
 area: Areas/Personal Systems.md
 tags:
@@ -234,7 +234,7 @@ schema: 1
 filters:
   - name: Waiting work
     view: waiting
-    project: Projects/Local Todo.md
+    project: Projects/Taskmark.md
     statuses: [waiting]
     priorities: [p1, p2]
     includes_no_priority: false

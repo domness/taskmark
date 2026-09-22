@@ -1,7 +1,7 @@
 import Foundation
 
 public extension VaultStore {
-    /// `.config` remains available for entities; only this CSS entry point has appearance meaning.
+    /// Reads the optional appearance entry point from the reserved metadata directory.
     func stylesheet() throws -> String? {
         var url = root
         for component in [".config", "style.css"] {

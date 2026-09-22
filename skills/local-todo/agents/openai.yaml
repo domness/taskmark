@@ -1,4 +1,0 @@
-interface:
-  display_name: "Taskmark"
-  short_description: "Manage a Taskmark Markdown vault safely"
-  default_prompt: "Use $local-todo and the localtodo CLI to inspect and manage tasks in my Taskmark vault."

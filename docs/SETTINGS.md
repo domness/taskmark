@@ -47,16 +47,16 @@ See [THEMES.md](THEMES.md) for every built-in token, custom-theme examples, over
 
 Behavior coverage lives in `AppPreferencesTests`, `WorkspaceSettingsTests`, `CalendarDateFieldTests` and `ConfigurationMutationTests`. The full quality gate is `make check`; it includes the unsigned Debug app build. Settings behavior/build checks do not establish full-window visual correctness.
 
-`SettingsRenderingTests` is an opt-in visual capture utility. It renders isolated native windows with temporary preferences/vaults for both sections and every light/dark palette. On a Mac with window capture permission, set `TEST_RUNNER_LOCALTODO_SETTINGS_CAPTURES` to an existing writable directory and run the app test target:
+`SettingsRenderingTests` is an opt-in visual capture utility. It renders isolated native windows with temporary preferences/vaults for both sections and every light/dark palette. On a Mac where the test host can use Screen Recording, set `LOCALTODO_SETTINGS_CAPTURES` to an existing writable directory and run the app test target:
 
 ```sh
-TEST_RUNNER_LOCALTODO_SETTINGS_CAPTURES=/absolute/existing/directory \
+LOCALTODO_SETTINGS_CAPTURES=/absolute/existing/directory \
   xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoApp \
   -configuration Debug -destination 'platform=macOS' test \
   -only-testing:LocalTodoAppTests CODE_SIGNING_ALLOWED=NO
 ```
 
-Full-window capture was unavailable in the implementation environment. NSHostingView bitmap capture omitted native vibrancy layers and was rejected as full UI evidence; `screencapture` reported “could not create image from window.” Live Settings-menu navigation, keyboard/VoiceOver use, native sidebar selection contrast and System appearance switching remain manual acceptance checks.
+An offscreen `NSHostingView` bitmap is not full UI evidence because it omits native titlebar and vibrancy layers. Some test-host processes cannot capture their own windows even when the invoking terminal is authorized; the production-workspace capture flow therefore runs `screencapture` from the authorized parent process as documented in [the native screenshot guide](design-exploration/native/README.md). Settings-menu navigation, keyboard/VoiceOver use, active-window sidebar contrast and System appearance switching remain manual acceptance checks.
 
 ## Related Guides
 

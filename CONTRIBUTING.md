@@ -1,5 +1,15 @@
 # Contributing
 
+Thanks for helping improve Taskmark. Focused bug fixes, tests, documentation, accessibility improvements, and changes aligned with the current roadmap are welcome.
+
+## Before You Start
+
+- Search existing issues before opening a new report or proposal.
+- Open an issue before substantial feature or file-format work so scope and compatibility can be agreed first.
+- Keep changes focused; avoid combining behavior changes with unrelated refactors.
+- Follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+- Report vulnerabilities privately through [SECURITY.md](SECURITY.md), not a public issue.
+
 ## Setup
 
 Requirements:
@@ -36,7 +46,17 @@ Record the Xcode version, commands/results and any skipped checks at handoff. Di
 - Include tests for behavior changes and regressions.
 - Add app behavior tests under `Apps/LocalTodoApp/Tests`; keep domain, storage, and CLI tests under `Tests/`.
 - Run `make format` before `make check`.
-- Keep current behavior in the user guides and implementation status in [ROADMAP.md](docs/ROADMAP.md). Preserve historical decisions in `MEMORY.md`; avoid duplicating test counts in multiple guides.
+- Keep current behavior in the user guides and implementation status in [ROADMAP.md](docs/ROADMAP.md). Keep `MEMORY.md` to current durable decisions; use Git history for chronology and avoid duplicating test counts in multiple guides.
+
+## Pull Requests
+
+1. Fork the repository and create a focused branch from `main`.
+2. Add tests for behavior changes and regression fixes.
+3. Update affected user, contract, architecture, or design documentation.
+4. Run `make format` and `make check`.
+5. Open a pull request that explains the problem, solution, validation, and any remaining manual checks.
+
+Pull requests must keep Markdown canonical, preserve unknown frontmatter and bodies, and respect the target boundaries in [ARCHITECTURE.md](docs/ARCHITECTURE.md). A maintainer may ask to split unrelated work or revise a persisted-format change before review.
 
 ## Commits
 
@@ -49,3 +69,7 @@ feat(cli): add JSON output for task queries
 fix(markdown): preserve unknown frontmatter keys
 docs(skill): explain dry-run behavior
 ```
+
+## License
+
+By contributing, you agree that your contributions are licensed under the repository's [MIT License](LICENSE).

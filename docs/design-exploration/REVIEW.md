@@ -2,7 +2,7 @@
 
 **Original discussion proposal · 21 September 2026**
 
-Concept B was selected and implemented in native SwiftUI. This document preserves the original comparison; `DESIGN.md` describes the implemented behavior. See [native screenshots](native/README.md) for implementation evidence. The HTML remains an exploratory study, including its intentionally different double-click gesture.
+Concept B was selected and implemented in native SwiftUI, then refined so a single task-row click opens the inspector without entering edit mode. This document preserves the original comparison and is not a current interaction specification; `DESIGN.md` describes implemented behavior. See [native screenshots](native/README.md) for implementation evidence. The HTML remains an exploratory study with intentionally different gestures.
 
 ## Open the mockups
 
@@ -17,7 +17,7 @@ Switch concepts, all six palettes, light/dark and reduced transparency. Try Toda
 
 ## Review basis
 
-Reviewed current SwiftUI composition and appearance sources, `DESIGN.md`, theme documentation and the decision log, against the supplied Things image. There are no committed full-window screenshot baselines in this checkout. This is a **source-informed design review**, not a claim to have visually inspected the running native app. Browser renders verify the proposals only; their blur is not Apple's Liquid Glass renderer.
+This review originally compared the SwiftUI composition, `DESIGN.md`, theme documentation and decision log against a supplied Things reference before native implementation captures existed. The repository now includes [full WindowServer captures](native/README.md). Browser renders still verify only the proposals; their blur is not Apple's Liquid Glass renderer.
 
 The reference succeeds through a quiet sidebar, a prominent page title, flat task rows, selective metadata, clear section rhythm and a wide opaque content plane. Its clarity does not depend on translucent task cards. Taskmark already shares several foundations: native navigation, separator-free rows, rendered Markdown, contextual metadata preferences and a collapsible inspector.
 
@@ -42,9 +42,9 @@ Preserve the current selection-to-inspector interaction. Recompose the inspector
 
 **Strength:** lowest behavioral risk; suited to processing many tasks and changing metadata repeatedly. **Cost:** three columns still constrain title width. The mockup uses a roughly 306-point inspector to demonstrate the tradeoff, not to replace the app's resizable 280–480-point range.
 
-### B — Focused canvas — recommended
+### B — Focused canvas — selected, then refined
 
-Use sidebar + task canvas as the normal reading state. Single-click selects without opening another column; the trailing inspector button explicitly opens details. A readable canvas width and a substantial heading carry the interface. Project notes live immediately under the project heading.
+The original proposal used sidebar + task canvas as the normal reading state and required an explicit action to open details. The shipped refinement keeps the focused two-column default but opens the inspector on a task-row click; the toolbar still toggles it. A readable canvas width and a substantial heading carry the interface. Project notes live immediately under the project heading.
 
 **Strength:** greatest clarity gain with relatively little new UI machinery. A's inspector remains available for detailed editing. **Cost:** opening details becomes a deliberate action. The mockup's double-click opens details, but this conflicts with Taskmark's existing double-click inline title editing: **for implementation, retain double-click title editing and use the inspector toggle / existing Command-E action to open details.** This prototype gesture is exploratory, not an approved replacement.
 
@@ -83,13 +83,13 @@ The mockup uses the current exact palette surface/accent values and local fonts;
 
 Reference: Apple's [Adopting Liquid Glass](https://developer.apple.com/documentation/technologyoverviews/adopting-liquid-glass) and [Materials](https://developer.apple.com/design/human-interface-guidelines/materials). API selection and final native behavior require a SwiftUI proof on the supported OS versions.
 
-## Decisions that need agreement
+## Resolution Of The Original Open Decisions
 
-1. **Material policy:** the current design guide bans glass effects. The requested exploration intentionally challenges that rule. Proposed replacement: “Use system-provided glass for navigation and controls on supported macOS; keep persistent task content opaque.” This has not been adopted into `DESIGN.md`.
-2. **Selection:** B changes the current auto-opening inspector behavior. C changes it further. Keep title double-click editing, Command-E and native Custom-order gestures unless explicitly redesigned.
-3. **Inspector order:** notes move above properties, while Project, Area, Tags and Repeat stay visible as previously requested. This is a layout proposal, not a reversal to hidden organization controls.
-4. **Header:** compact search changes the July list-header decision's visible presentation. Keep search/capture/view options associated with the task column; the inspector toggle stays at the trailing window edge.
-5. **Metadata:** grouping can already reduce project/area repetition. Suppressing redundant scheduled dates is additional presentation logic and must retain access to both scheduled date and deadline. Overdue red titles and the explicit warning are retained here, honoring the recorded request.
+1. **Material policy:** adopted. System-provided glass is limited to navigation/control surfaces on supported macOS versions; persistent task content stays opaque with accessibility and older-system fallbacks.
+2. **Selection:** refined after implementation. A row click opens details in reading mode; double-click still edits the title inline, Command-E focuses the inspector title, and Custom-order gestures remain native.
+3. **Inspector order:** adopted. Notes and checklists precede properties while Project, Area, Tags and Repeat stay directly available.
+4. **Header:** adopted. Search, capture and view options remain associated with the task column; the inspector toggle stays at the trailing window edge.
+5. **Metadata:** adopted with route-specific defaults. Grouping suppresses redundant labels while both planning dates remain available in details and overdue warnings remain explicit.
 
 No Evening field, project subsections, calendar integration, progress tracking or new entity hierarchy is implied by these studies. The section headings use existing project grouping. Synthetic counts describe only the example tasks.
 

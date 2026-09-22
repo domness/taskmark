@@ -5,7 +5,7 @@ These are full WindowServer captures of the production SwiftUI workspace with an
 | State | Screenshot |
 | --- | --- |
 | Today, light, grouped by project | [Focused canvas](focused-canvas.png) |
-| Explicitly opened notes-first inspector | [Inspector](notes-inspector.png) |
+| Notes-first inspector open | [Inspector](notes-inspector.png) |
 | Today, dark | [Dark canvas](focused-canvas-dark.png) |
 | Project title and notes | [Project canvas](project-canvas.png) |
 
