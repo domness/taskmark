@@ -36,7 +36,7 @@ make generate
 xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoApp -configuration Debug -destination 'platform=macOS' clean build
 ```
 
-Record the Xcode version, commands/results and any skipped checks at handoff. Distinguish hosted view tests and build success from physical gestures, VoiceOver and full-window visual acceptance. [CI_RELEASES.md](docs/CI_RELEASES.md) describes hosted/self-hosted validation and signing setup.
+Record the Xcode version, commands/results and any skipped checks at handoff. Distinguish hosted view tests and build success from physical gestures, VoiceOver and full-window visual acceptance. [CI_RELEASES.md](docs/CI_RELEASES.md) describes GitHub-hosted validation and protected release signing setup.
 
 ## Changes
 

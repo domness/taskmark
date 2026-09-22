@@ -35,11 +35,11 @@ gh release create "$TAG" --repo "$REPO" --target "$RELEASE_SHA" \
   --title "Taskmark $TAG" --latest --notes-file "$NOTES_FILE"
 ```
 
-This creates the new remote tag at the exact SHA and publishes the release. A prerelease uses `--prerelease` instead of `--latest`. Respect a draft-only request: drafts do **not** trigger packaging, so do not describe them as downloadable releases.
+This creates the new remote tag at the exact SHA and publishes the release. Tag rules restrict creation to repository administrators; if authenticated as a write-only collaborator, ask the owner to create it rather than bypassing protection. A prerelease uses `--prerelease` instead of `--latest`. Respect a draft-only request: drafts do **not** trigger packaging, so do not describe them as downloadable releases.
 
 Find the new `macOS Release` run with `gh run list --workflow release.yml --repo "$REPO"`; match its tag/event and `headSha` to the release. Watch its ID using `gh run watch "$RUN_ID" --repo "$REPO" --exit-status`. A tool timeout only stops the watcher; inspect/watch the same run again, not a new dispatch.
 
-The published-release event packages the exact tag on the self-hosted Mac. The workflow runs `make check`, builds a universal macOS 15+ app and bundled CLI, verifies Dominic Wroblewski's pinned Developer ID signature, notarizes/staples, and uploads the downloads. An empty release page or a green unrelated Quality run is not completion.
+The published-release event resolves the tag to an exact commit in main history and runs `make check` on hosted macOS. Signing then waits for the owner's `release` environment approval; report the pending run URL and ask the owner to review its source summary. Never approve the signing gate on the owner's behalf. The approved job uses a disposable Keychain, builds a universal macOS 15+ app and bundled CLI, verifies Dominic Wroblewski's pinned Developer ID signature and notarizes/staples. A separate upload-only job publishes the downloads. An empty release page, pending approval or green unrelated Quality run is not completion.
 
 If no run appears, inspect Actions events/permissions and the token used for publication. GitHub's default workflow `GITHUB_TOKEN` does not trigger downstream release workflows. After confirming there is no matching queued/running run, use the documented manual dispatch for the existing published tag:
 
@@ -60,7 +60,7 @@ Check final Git status. Return the release URL, direct DMG link, a brief change 
 ## Failed or existing releases
 
 - Inspect the failed job/logs before deciding what to retry. A blocked/offline runner or missing signing credentials is a blocker, not permission to change signing identity, produce unsigned downloads or reset shared Keychains.
-- Notarization uses the explicit persistent Keychain path from the release guide. Do not retry implicit credential lookup or expose secrets.
+- Hosted notarization uses the explicit temporary Keychain from the release guide. Missing credentials require environment setup by the owner. Do not retry implicit credential lookup or expose secrets. Only post-migration tags contain the hosted signing bootstrap; do not retry historical self-hosted workflows or move old tags to migrate them.
 - For an authorized packaging retry of unchanged sources, dispatch `release.yml` with the existing published tag after inspecting any prior/active runs and assets. Retries replace matching asset filenames and change the build attempt; use a new version when published downloads must remain immutable.
 - Source fixes require a newly validated commit and a new version. Never move/delete a published tag or release without explicit user authorization.
 - Do not blindly rerun failures. If progress requires credentials, permissions, a product fix or an unavailable runner, preserve the release/run URL and report the precise blocker. Never report the release as complete until the workflow and assets are verified.

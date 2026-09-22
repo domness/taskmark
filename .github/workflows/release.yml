@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: Existing published release tag to package (e.g. v1.0.0)
+        description: Existing published release tag to package (e.g. 1.0.0)
         required: true
         type: string
 
@@ -17,75 +17,155 @@ concurrency:
   group: macos-release-${{ github.event.release.tag_name || inputs.tag }}
   cancel-in-progress: false
 
+env:
+  RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
+  DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+
 jobs:
+  validate:
+    name: Validate release sources
+    if: >-
+      github.repository == 'domness/taskmark' &&
+      (github.event_name == 'release' || github.ref == 'refs/heads/main')
+    runs-on: macos-15
+    timeout-minutes: 45
+    outputs:
+      sha: ${{ steps.source.outputs.sha }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Resolve a published tag on main
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash scripts/package-macos-release --validate-inputs "$RELEASE_TAG" "$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT"
+          sha=$(bash scripts/resolve-release-source "$RELEASE_TAG")
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          printf '## Release source\nTag: `%s`\n\nCommit: `%s`\n' "$RELEASE_TAG" "$sha" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ steps.source.outputs.sha }}
+          persist-credentials: false
+      - name: Install quality tools
+        run: brew install swiftformat swiftlint xcodegen
+      - name: Check Mac toolchain
+        run: bash scripts/check-macos-runner
+      - name: Run full quality gate
+        run: |
+          output="$RUNNER_TEMP/release-check"
+          mkdir -p "$output"
+          make check \
+            XCODEBUILD_ARGS="-destination 'platform=macOS' -derivedDataPath '$output/DerivedData'" \
+            XCODE_TEST_ARGS="-resultBundlePath '$output/LocalTodoApp.xcresult'" \
+            2>&1 | tee "$output/check.log"
+      - name: Upload validation results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-check-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/release-check/check.log
+            ${{ runner.temp }}/release-check/LocalTodoApp.xcresult
+          if-no-files-found: ignore
+          retention-days: 14
+
   package:
-    name: Sign, notarize and publish macOS app
-    runs-on: [self-hosted, macOS]
+    name: Sign and notarize macOS app
+    needs: validate
+    runs-on: macos-15
+    environment: release
     timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    env:
+      APPLE_DEVELOPER_TEAM_ID: 4K4TD4WZ4C
+      MACOS_SIGNING_IDENTITY: 'Developer ID Application: Dominic Wroblewski (4K4TD4WZ4C)'
+      NOTARYTOOL_PROFILE: taskmark-ci
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ needs.validate.outputs.sha }}
+          persist-credentials: false
+      - name: Install build tools
+        run: brew install swiftformat swiftlint xcodegen
+      - name: Import temporary signing credentials
+        env:
+          MACOS_CERTIFICATE_P12_BASE64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          APP_STORE_CONNECT_PRIVATE_KEY: ${{ secrets.APP_STORE_CONNECT_PRIVATE_KEY }}
+          APP_STORE_CONNECT_KEY_ID: ${{ vars.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ vars.APP_STORE_CONNECT_ISSUER_ID }}
+        run: |
+          export NOTARYTOOL_KEYCHAIN="$RUNNER_TEMP/taskmark-signing/signing.keychain-db"
+          bash scripts/setup-ci-signing
+          echo "NOTARYTOOL_KEYCHAIN=$NOTARYTOOL_KEYCHAIN" >> "$GITHUB_ENV"
+      - name: Build signed and notarized universal app
+        run: bash scripts/package-macos-release "$RELEASE_TAG" "$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT" dist
+      - name: Remove signing credentials
+        if: always()
+        run: bash scripts/setup-ci-signing --cleanup
+      - name: Upload verified installers
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-installers-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            dist/Taskmark-${{ env.RELEASE_TAG }}-universal.zip
+            dist/Taskmark-${{ env.RELEASE_TAG }}-universal.dmg
+            dist/Taskmark-${{ env.RELEASE_TAG }}-SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 3
+      - name: Upload packaging logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: release-logs-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            dist/*.log
+            dist/notary-*.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  publish:
+    name: Attach installers to release
+    needs: [validate, package]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       contents: write
     defaults:
       run:
         shell: bash
-    env:
-      RELEASE_TAG: ${{ github.event.release.tag_name || inputs.tag }}
-      # Dominic's personal team, also used by Lumelo. Never use automatic identity selection.
-      APPLE_DEVELOPER_TEAM_ID: 4K4TD4WZ4C
-      MACOS_SIGNING_IDENTITY: 'Developer ID Application: Dominic Wroblewski (4K4TD4WZ4C)'
-      NOTARYTOOL_PROFILE: ${{ vars.NOTARYTOOL_PROFILE || 'local-todo-dominic' }}
-      # Empty uses the runner user's persistent login Keychain, never implicit lookup.
-      NOTARYTOOL_KEYCHAIN: ${{ vars.NOTARYTOOL_KEYCHAIN }}
     steps:
-      - name: Check out the release tag
-        uses: actions/checkout@v4
+      # This job never checks out or executes repository code.
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
         with:
-          ref: ${{ github.event.release.tag_name || inputs.tag }}
-          persist-credentials: false
-      - name: Add Homebrew tools to PATH
-        run: |
-          echo /opt/homebrew/bin >> "$GITHUB_PATH"
-          echo /usr/local/bin >> "$GITHUB_PATH"
-      - name: Validate release and signing configuration
+          name: release-installers-${{ github.run_id }}-${{ github.run_attempt }}
+          path: dist
+      - name: Verify checksums and attach installers
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_SHA: ${{ needs.validate.outputs.sha }}
         run: |
-          bash scripts/check-macos-runner release
-          bash scripts/package-macos-release --validate-inputs "$RELEASE_TAG" "$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT"
+          # Refuse a tag moved while validation/signing was running, including annotated tags.
+          object=$(gh api "repos/$GITHUB_REPOSITORY/git/ref/tags/$RELEASE_TAG" --jq .object)
+          while [[ $(jq -r .type <<< "$object") == tag ]]; do
+            object=$(gh api "repos/$GITHUB_REPOSITORY/git/tags/$(jq -r .sha <<< "$object")" --jq .object)
+          done
+          [[ $(jq -r .type <<< "$object") == commit ]] || { echo "Tag does not identify a commit." >&2; exit 1; }
+          current_sha=$(jq -r .sha <<< "$object")
+          [[ "$current_sha" == "$RELEASE_SHA" ]] || { echo "Release tag moved." >&2; exit 1; }
           draft=$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json isDraft --jq .isDraft)
-          if [[ "$draft" != false ]]; then
-            echo "Publish the release before packaging it." >&2
-            exit 1
-          fi
-      - name: Validate release sources
-        run: |
-          output="$RUNNER_TEMP/local-todo-release-check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
-          mkdir -p "$output" dist
-          make check \
-            XCODEBUILD_ARGS="-destination 'platform=macOS' -derivedDataPath '$output/DerivedData'" \
-            XCODE_TEST_ARGS="-resultBundlePath '$output/LocalTodoApp.xcresult'" \
-            2>&1 | tee dist/release-check.log
-      - name: Build signed and notarized universal app
-        run: bash scripts/package-macos-release "$RELEASE_TAG" "$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT" dist
-      - name: Attach installers to the GitHub release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
+          [[ "$draft" == false ]] || { echo "Release must remain published." >&2; exit 1; }
+          (cd dist && shasum -a 256 -c "Taskmark-$RELEASE_TAG-SHA256SUMS.txt")
           gh release upload "$RELEASE_TAG" \
             "dist/Taskmark-$RELEASE_TAG-universal.zip" \
             "dist/Taskmark-$RELEASE_TAG-universal.dmg" \
             "dist/Taskmark-$RELEASE_TAG-SHA256SUMS.txt" \
             --repo "$GITHUB_REPOSITORY" --clobber
-      - name: Upload packaging logs and test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: local-todo-release-logs-${{ github.run_id }}-${{ github.run_attempt }}
-          path: |
-            dist/*.log
-            dist/notary-*.json
-            ${{ runner.temp }}/local-todo-release-check-${{ github.run_id }}-${{ github.run_attempt }}/LocalTodoApp.xcresult
-          if-no-files-found: ignore
-          retention-days: 14
-      - name: Clean this run's test build products
-        if: always()
-        run: rm -rf -- "$RUNNER_TEMP/local-todo-release-check-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"

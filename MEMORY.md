@@ -51,5 +51,5 @@ This file summarizes current, durable decisions that are not better expressed in
 
 - Taskmark supports macOS 15+ and ships as a universal Developer ID-signed, notarized app with a bundled signed CLI.
 - Settings can register `/usr/local/bin/taskmark` through native administrator authorization. Registration is machine-local, refuses unrelated files, and does not edit shell profiles.
-- Pull requests run the complete quality gate on hosted macOS. Main/manual quality and signed release packaging use the configured self-hosted macOS runner.
+- All quality and release jobs use GitHub-hosted runners. Release validation pins a merged main commit; signing uses owner-approved environment secrets in a disposable Keychain, and only a separate upload job receives repository write permission. GitHub protections and credential setup are documented in `docs/CI_RELEASES.md`.
 - GitHub Releases are the public download and changelog surface. Packaging success, Gatekeeper/signature checks, and manual downloaded-app interaction are distinct evidence.

@@ -53,8 +53,8 @@ See [settings](SETTINGS.md) and [themes](THEMES.md).
 ### Build And Distribution Tooling
 
 - `make check` regenerates the project, checks formatting/lint and release scripts, runs package/macOS app tests, and builds the unsigned Debug app.
-- PR quality runs on hosted runners; main/manual quality runs target the Mac Mini.
-- Release workflow and scripts build a universal macOS app, select the pinned Developer ID identity and explicit notarization Keychain, notarize/staple, and upload DMG/ZIP/checksum assets to an existing published release. The pipeline has successfully published releases through 0.8.1 with all three expected assets; downloaded-app interaction remains a separate manual acceptance step.
+- All quality and release jobs target GitHub-hosted runners. The release workflow validates a merged commit without credentials, gates signing through the owner-approved `release` environment and grants release-write permission only to the upload job.
+- Release scripts build a universal macOS app, select the pinned Developer ID identity and explicit temporary notarization Keychain, notarize/staple, and upload DMG/ZIP/checksum assets to an existing published release. The former personal-runner pipeline published through 0.8.1; the hosted credential path still requires an approved release validation. Downloaded-app interaction remains a separate manual acceptance step.
 
 See [CI and release setup](CI_RELEASES.md).
 

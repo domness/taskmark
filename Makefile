@@ -27,9 +27,14 @@ build: generate
 
 test-release-scripts:
 	python3 scripts/test-release-scripts.py
+	python3 scripts/test-release-source.py
+	python3 scripts/test-ci-signing.py
+	python3 -B scripts/test-github-actions-config.py
 	bash -n scripts/check-macos-runner
 	bash -n scripts/package-macos-release
 	bash -n scripts/notarytool-with-keychain
+	bash -n scripts/resolve-release-source
+	bash -n scripts/setup-ci-signing
 
 check: lint test-release-scripts test build
 
