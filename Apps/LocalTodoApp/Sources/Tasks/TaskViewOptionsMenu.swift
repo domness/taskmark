@@ -28,6 +28,8 @@ struct TaskViewOptionsMenu: View {
             .contentShape(Rectangle())
         }
         .labelStyle(.iconOnly)
+        .menuStyle(.borderlessButton)
+        .frame(minWidth: 36, minHeight: 36)
         .help("Choose row details and grouping for this view")
     }
 

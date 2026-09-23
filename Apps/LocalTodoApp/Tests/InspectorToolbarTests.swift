@@ -59,6 +59,6 @@ private func expectToolbarLayout(_ toolbar: NSToolbar, window: NSWindow) throws 
         let frame = view.convert(view.bounds, to: nil)
         #expect(frame.midX > leading.maxX && frame.midX < trailing.minX)
         #expect(abs(frame.midY - trailing.midY) < 2)
-        #expect(frame.width >= 36 && frame.height >= 36)
+        #expect(frame.width >= 36 && frame.height >= 36, "\(item.label): \(frame)")
     }
 }
