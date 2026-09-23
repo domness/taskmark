@@ -2,6 +2,7 @@ import SwiftUI
 
 struct WorkspaceView: View {
     @Bindable var model: WorkspaceModel
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.undoManager) private var undoManager
 
@@ -22,7 +23,7 @@ struct WorkspaceView: View {
                     }
                 }
             } else {
-                NavigationSplitView {
+                NavigationSplitView(columnVisibility: $columnVisibility) {
                     SidebarView(model: model)
                         .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 320)
                 } detail: {
@@ -37,14 +38,37 @@ struct WorkspaceView: View {
                     .inspector(isPresented: $model.isInspectorPresented) {
                         InspectorContentView(model: model)
                             .inspectorColumnWidth(min: 280, ideal: 340, max: 480)
-                            .toolbar {
-                                ToolbarItem(id: "taskmark.inspector-toggle", placement: .primaryAction) {
-                                    inspectorToggle
-                                }
-                            }
                     }
                 }
                 .navigationSplitViewStyle(.balanced)
+                .toolbar(removing: .sidebarToggle)
+                .toolbar {
+                    ToolbarItem(id: "taskmark.sidebar-toggle", placement: .navigation) {
+                        WorkspaceToolbarButton(title: "Toggle Sidebar", systemImage: "sidebar.leading") {
+                            columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
+                        }
+                        .help("Toggle Sidebar")
+                    }
+                    ToolbarItem(placement: .automatic) {
+                        Spacer()
+                    }
+                    ToolbarItemGroup(placement: .primaryAction) {
+                        if model.route != .issues {
+                            WorkspaceToolbarButton(title: "Search", systemImage: "magnifyingglass") {
+                                model.beginSearch()
+                            }
+                            .help("Search Tasks (Command-F)")
+                            WorkspaceToolbarButton(title: "New Task", systemImage: "plus") {
+                                model.beginQuickCapture()
+                            }
+                            .help("New Task (Command-N)")
+                            TaskViewOptionsMenu(model: model)
+                        }
+                    }
+                    ToolbarItem(id: "taskmark.inspector-toggle", placement: .primaryAction) {
+                        inspectorToggle
+                    }
+                }
                 .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
             }
         }
@@ -85,10 +109,12 @@ struct WorkspaceView: View {
     }
 
     private var inspectorToggle: some View {
-        Button(model.isInspectorPresented ? "Hide Inspector" : "Show Inspector", systemImage: "sidebar.trailing") {
+        WorkspaceToolbarButton(
+            title: model.isInspectorPresented ? "Hide Inspector" : "Show Inspector",
+            systemImage: "sidebar.trailing"
+        ) {
             model.isInspectorPresented.toggle()
         }
-        .labelStyle(.iconOnly)
         .help(model.isInspectorPresented ? "Hide Inspector" : "Show Inspector")
     }
 }

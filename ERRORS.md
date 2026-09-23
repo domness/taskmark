@@ -26,6 +26,12 @@ Read this file before repeating an approach that previously required several att
 - **Reliable approach:** Host through the real view-controller/scene boundary, locate current native controls after transitions, post keyboard events through the application queue, and use bounded predicates for responders, selection, editor lifetime, toolbar labels, mutation results, and window constraints.
 - **Next-time rule:** Test readiness rather than elapsed time, run focused tests inside the complete app suite, and keep physical gesture/VoiceOver acceptance distinct from hosted integration evidence. Exercise native buttons in focused hosts rather than relying on an inactive accessibility tree to locate SwiftUI actions.
 
+## Native Toolbar Sizing
+
+- **Failure pattern:** Native toolbar bridging can ignore a SwiftUI label's minimum height; buttons and menus differ across supported macOS versions.
+- **Reliable approach:** Size the interactive label and outer control, use explicit native borderless styles, and verify rendered toolbar item bounds on both the local OS and the minimum supported hosted OS.
+- **Next-time rule:** Assert control geometry rather than inferring hit-target size from frame modifiers, and inspect the complete test result before reporting success.
+
 ## Test Resource Lifetime
 
 - **Failure pattern:** A closed test window can retain a workspace whose refresh work continues against a deleted fixture, surfacing unrelated alerts and breaking later focus tests.
