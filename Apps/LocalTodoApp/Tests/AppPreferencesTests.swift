@@ -9,6 +9,7 @@ import Testing
     let preferences = AppPreferences()
     #expect(preferences.weekStart == .monday)
     #expect(preferences.appearance == .system)
+    #expect(!preferences.showsDockBadge)
     preferences.weekStart = .saturday
     preferences.dateFormat = .dayFirst
     preferences.timeFormat = .twentyFourHour
@@ -16,6 +17,7 @@ import Testing
     preferences.appearance = .dark
     preferences.theme = .forest
     preferences.usesVaultStylesheet = false
+    preferences.showsDockBadge = true
     let restored = AppPreferences(values: preferences.values)
     #expect(restored.weekStart == .saturday)
     #expect(restored.dateFormat == .dayFirst)
@@ -24,10 +26,12 @@ import Testing
     #expect(restored.appearance == .dark)
     #expect(restored.theme == .forest)
     #expect(!restored.usesVaultStylesheet)
+    #expect(restored.showsDockBadge)
     restored.apply([:])
     let recovered = restored
     #expect(recovered.theme == .standard)
     #expect(recovered.weekStart == .monday)
+    #expect(!recovered.showsDockBadge)
 }
 
 @Test func dateAndTimeFormatsRespectCalendarTimezoneWithoutChangingDates() throws {

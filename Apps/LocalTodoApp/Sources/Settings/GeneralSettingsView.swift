@@ -43,6 +43,15 @@ struct GeneralSettingsView: View {
                     .themeFont(.caption).foregroundStyle(.secondary)
             }
             .disabled(model.snapshot == nil)
+            Section("Dock") {
+                Toggle("Badge", isOn: $preferences.showsDockBadge)
+                    .toggleStyle(.switch)
+                Text("Show the number of incomplete tasks scheduled or due today or earlier on the Dock icon.")
+                    .themeFont(.caption).foregroundStyle(.secondary)
+                Text("Matches Today in the most recently active vault. Hidden when the count is zero.")
+                    .themeFont(.caption).foregroundStyle(.secondary)
+            }
+            .disabled(model.snapshot == nil)
             CLISettingsSection(registration: cliRegistration)
         }
         .formStyle(.grouped)

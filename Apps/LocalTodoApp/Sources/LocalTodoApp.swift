@@ -9,8 +9,13 @@ struct LocalTodoApp: App {
     var body: some Scene {
         WindowGroup("Taskmark", id: "vault") {
             WorkspaceWindowRoot(windows: windows)
-                .onAppear { appDelegate.windows = windows }
+                .onAppear {
+                    appDelegate.windows = windows
+                    windows.startDockBadgeUpdates { NSApplication.shared.dockTile.badgeLabel = $0 }
+                }
         }
+        .windowStyle(.hiddenTitleBar)
+        .windowToolbarStyle(.unifiedCompact)
         .windowResizability(.contentMinSize)
         .defaultSize(width: 1120, height: 720)
         .commands {

@@ -12,6 +12,7 @@ final class WorkspaceWindows {
     private(set) var isFlushingAll = false
     @ObservationIgnored private var didRestoreInitialVault = false
     @ObservationIgnored private var started = Set<ObjectIdentifier>()
+    @ObservationIgnored var dockBadgeUpdate: (@MainActor (String?) -> Void)?
 
     init(preferences: AppPreferences = AppPreferences()) {
         self.preferences = preferences

@@ -42,6 +42,8 @@ Each `WorkspaceWindowRoot` owns a distinct `WorkspaceModel` and `AppPreferences`
 
 ## Data Flow
 
+`WorkspaceWindows` observes the Settings vault context, its badge preference, and its snapshot to publish the single app Dock badge through an app-composed AppKit closure. The count reuses the Domain Today query with the workspace's injected clock and vault time zone; it is independent of the visible route. The existing periodic snapshot refresh reevaluates calendar-day changes. Observation survives individual window closure and clears the badge when no bound workspace remains.
+
 1. The user selects a vault containing `.config/config.yml`.
 2. The Markdown target discovers typed files and reports parse failures without dropping them.
 3. Domain queries drive Inbox, Today, Next, Upcoming, Waiting, Someday, All Tasks, collection/tag/priority views, search and saved filters. The app applies the vault's Custom ordering after shared query evaluation when enabled.

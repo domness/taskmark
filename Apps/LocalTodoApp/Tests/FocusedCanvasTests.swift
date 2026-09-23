@@ -50,6 +50,9 @@ struct FocusedCanvasTests {
             let window = NSWindow(contentViewController: controller)
             window.isReleasedWhenClosed = false
             window.title = "Taskmark"
+            window.titleVisibility = .hidden
+            window.titlebarAppearsTransparent = true
+            window.toolbarStyle = .unifiedCompact
             window.setContentSize(NSSize(width: 1120, height: 720))
             window.center()
             window.makeKeyAndOrderFront(nil)

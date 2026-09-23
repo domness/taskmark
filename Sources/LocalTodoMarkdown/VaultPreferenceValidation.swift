@@ -23,8 +23,10 @@ enum VaultPreferenceValidation {
         if let value = preferences["week_start"] {
             guard case let .integer(day) = value, (1 ... 7).contains(day) else { throw invalid("week_start") }
         }
-        if let value = preferences["vault_stylesheet"] {
-            guard case .bool = value else { throw invalid("vault_stylesheet") }
+        for key in ["vault_stylesheet", "dock_badge"] {
+            if let value = preferences[key] {
+                guard case .bool = value else { throw invalid(key) }
+            }
         }
     }
 

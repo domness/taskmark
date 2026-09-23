@@ -41,19 +41,22 @@ struct TaskListView: View {
 
     private var listHeader: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Spacer()
-                headerControls
-            }
-            if let draft = model.selectedProjectDraft {
-                ProjectListHeader(model: model, draft: draft, compact: true)
-                if !draft.notes.isEmpty {
-                    Text(TaskMarkdown.inline(draft.notes, links: true))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(3)
+            HStack(alignment: .top, spacing: 16) {
+                Group {
+                    if let draft = model.selectedProjectDraft {
+                        ProjectListHeader(model: model, draft: draft, compact: true)
+                    } else {
+                        routeHeading
+                    }
                 }
-            } else {
-                routeHeading
+                .frame(maxWidth: .infinity, alignment: .leading)
+                headerControls
+                    .fixedSize()
+            }
+            if let draft = model.selectedProjectDraft, !draft.notes.isEmpty {
+                Text(TaskMarkdown.inline(draft.notes, links: true))
+                    .foregroundStyle(.secondary)
+                    .lineLimit(3)
             }
             if model.route == .search {
                 TextField("Search tasks", text: $model.searchText)
@@ -168,8 +171,10 @@ struct TaskListView: View {
             model.insertDraggedTask(from: providers, at: destination, context: context)
         }
     }
+}
 
-    private var taskSections: [TaskListSection] {
+private extension TaskListView {
+    var taskSections: [TaskListSection] {
         switch model.currentTaskListDisplayOptions.grouping {
         case .none:
             [TaskListSection(id: "all", title: nil, tasks: model.visibleTasks)]
@@ -188,7 +193,7 @@ struct TaskListView: View {
         }
     }
 
-    private func groupedSections(
+    func groupedSections(
         by keyPath: KeyPath<TodoTask, VaultPath?>,
         emptyTitle: String,
         title: (VaultPath) -> String

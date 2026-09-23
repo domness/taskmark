@@ -45,6 +45,7 @@ struct WorkspaceView: View {
                     }
                 }
                 .navigationSplitViewStyle(.balanced)
+                .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
             }
         }
         .frame(minWidth: 840, maxWidth: .infinity, minHeight: 560, maxHeight: .infinity)

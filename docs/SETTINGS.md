@@ -19,6 +19,7 @@ Settings uses a fixed 170-point sidebar beneath a compact native titlebar. The t
 | Time format | System (default), 12-hour, 24-hour | Live Settings preview and Created/Updated file timestamps in the task inspector. Tasks still have date-only scheduled/deadline fields; this adds no task-time schema. |
 | Time zone | System when absent, or searchable IANA identifier | **Active vault**, saved to `.config/config.yml`, so app/CLI Today membership and recurrence calculations agree. No vault: control unavailable. |
 | Initial view | Today (default), Inbox, Next, Upcoming, Waiting, Someday, All Tasks, Search | Applied on vault opening, including app restoration and switching vaults. Changing it does not navigate away from current work. |
+| Badge | Off (default), On | Under **Dock**. Shows the unfiltered Today count for the most recently active vault: incomplete tasks scheduled or due today or earlier, using the vault time zone. Each task counts once; done/canceled tasks are excluded. Hidden at zero or without a vault. |
 | Command-line interface | Off until registered | **This Mac**. Automatically registers `/usr/local/bin/taskmark` to the bundled CLI with a native administrator prompt. Disabling removes the link. No vault setting or shell-profile edit. |
 
 `AppPreferences` is an observable projection of the vault's `preferences` mapping. Missing fields use documented defaults; invalid present values are surfaced without rewriting the file. Theme, light/dark mode, week start, date/time formats, startup view and stylesheet enablement are shared, as are sidebar/task ordering and per-view display options. See the [configuration schema](FILE_FORMAT.md#shared-preferences). System appearance/date/time choices still follow each machine's OS/locale; select explicit values for identical rendering.
@@ -34,6 +35,10 @@ Dirty or conflicting drafts must finish saving before changing the time zone. An
 ### CLI registration
 
 Enable **Command-line interface**, approve macOS authorization, then open a new terminal and run `taskmark --help`. The toggle reflects the actual executable symlink, not a saved Boolean. Canceling authorization keeps the previous state; failures are shown in an alert. App updates at the same location automatically update the command. After moving Taskmark, enable it from the new app location to repair the link. Existing unrelated files or links are preserved. App copies running from disk images or App Translocation must be moved to Applications first. See the [CLI guide](../README.md#cli) for custom-shell troubleshooting.
+
+### Dock badge
+
+The Badge preference travels with the vault as `preferences.dock_badge`. It applies immediately and updates when task snapshots, preferences, or the active vault change. The regular vault refresh also reevaluates the vault-local day while the app is running. Search, filters, and the currently selected list do not narrow the count. Closing the active window switches to another open workspace; closing every vault clears the badge.
 
 ## Theme
 
