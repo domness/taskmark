@@ -1,4 +1,3 @@
-import AppKit
 import LocalTodoDomain
 import SwiftUI
 
@@ -9,74 +8,17 @@ struct TaskInspectorView: View {
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                TaskMarkdownField(text: $draft.title, kind: .title, subject: "Task", isEditing: $isTitleEditing)
-                TaskNotesView(draft: draft)
-                TaskChecklistView(model: model, draft: draft)
-                Divider()
-                Picker("Status", selection: status) {
-                    ForEach(TaskStatus.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
+            VStack(alignment: .leading, spacing: 24) {
+                VStack(alignment: .leading, spacing: 18) {
+                    TaskInspectorHeader(model: model, draft: draft, isTitleEditing: $isTitleEditing)
+                    TaskNotesView(draft: draft)
+                        .padding(.leading, 26)
+                    TaskChecklistView(model: model, draft: draft)
+                        .padding(.leading, 26)
                 }
-                Picker("Priority", selection: priority) {
-                    Text("None").tag(TaskPriority?.none)
-                    ForEach(TaskPriority.allCases, id: \.self) { Text($0.rawValue.uppercased()).tag(Optional($0)) }
-                }
-                HStack {
-                    CalendarDateField(
-                        label: "Scheduled",
-                        systemImage: "calendar",
-                        text: draft.scheduled,
-                        calendar: model.planningCalendar,
-                        onCalendarChange: {
-                            model.changeDraft(
-                                draft,
-                                keyPath: \.scheduled,
-                                to: $0,
-                                actionName: "Change Scheduled Date"
-                            )
-                        }
-                    )
-                    CalendarDateField(
-                        label: "Deadline",
-                        systemImage: "flag",
-                        text: draft.deadline,
-                        calendar: model.planningCalendar,
-                        onCalendarChange: {
-                            model.changeDraft(draft, keyPath: \.deadline, to: $0, actionName: "Change Deadline")
-                        }
-                    )
-                    Spacer()
-                }
-                Section {
-                    Picker("Project", selection: project) {
-                        Text("None").tag("")
-                        ForEach(projects, id: \.path) { project in
-                            Text(model.projectDisplayTitle(project.path)).tag(project.path.value)
-                        }
-                        if !draft.project.isEmpty, !projects.contains(where: { $0.path.value == draft.project }) {
-                            Text("Missing: \(draft.project)").tag(draft.project)
-                        }
-                    }
-                    Picker("Area", selection: area) {
-                        Text("None").tag("")
-                        ForEach(areas, id: \.path) { area in
-                            Text(model.areaDisplayTitle(area.path)).tag(area.path.value)
-                        }
-                        if !draft.area.isEmpty, !areas.contains(where: { $0.path.value == draft.area }) {
-                            Text("Missing: \(draft.area)").tag(draft.area)
-                        }
-                    }
-                    TaskTagsView(model: model, draft: draft)
-                }
-                TaskRecurrenceView(model: model, draft: draft)
-                Section("File") {
-                    LabeledContent("Created", value: model.formattedTimestamp(draft.sourceTask.createdAt))
-                    LabeledContent("Updated", value: model.formattedTimestamp(draft.sourceTask.updatedAt))
-                    HStack {
-                        Button("Reveal in Finder") { reveal() }
-                        Button("Open Externally") { openExternally() }
-                    }
-                }
+                planning
+                organization
+                TaskInspectorFileDetails(model: model, draft: draft)
                 if let sourceUnavailableMessage = draft.sourceUnavailableMessage {
                     Section("Task File Unavailable") {
                         Text(sourceUnavailableMessage)
@@ -102,13 +44,77 @@ struct TaskInspectorView: View {
                 }
                 saveStatus
             }
-            .padding(20)
+            .padding(.horizontal, 22)
+            .padding(.vertical, 24)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
         .scrollContentBackground(.hidden)
         .disabled(model.deletingTaskPaths.contains(draft.path))
-        .padding(.vertical)
         .onAppear { focusTitleIfRequested() }
         .onChange(of: model.titleEditRequest) { _, _ in focusTitleIfRequested() }
+    }
+
+    private var planning: some View {
+        InspectorPropertySection("Planning") {
+            dateRow("Scheduled", image: "calendar", keyPath: \.scheduled, actionName: "Change Scheduled Date")
+            dateRow("Deadline", image: "flag", keyPath: \.deadline, actionName: "Change Deadline")
+            InspectorPropertyRow("Status") {
+                Picker("Status", selection: status) {
+                    ForEach(TaskStatus.allCases, id: \.self) { Text($0.rawValue.capitalized).tag($0) }
+                }
+            }
+            InspectorPropertyRow("Priority") {
+                Picker("Priority", selection: priority) {
+                    Text("None").tag(TaskPriority?.none)
+                    ForEach(TaskPriority.allCases, id: \.self) { Text($0.rawValue.uppercased()).tag(Optional($0)) }
+                }
+            }
+        }
+    }
+
+    private var organization: some View {
+        InspectorPropertySection("Organization") {
+            InspectorPropertyRow("Project") {
+                Picker("Project", selection: project) {
+                    Text("Add project").tag("")
+                    ForEach(projects, id: \.path) { project in
+                        Text(model.projectDisplayTitle(project.path)).tag(project.path.value)
+                    }
+                    if !draft.project.isEmpty, !projects.contains(where: { $0.path.value == draft.project }) {
+                        Text("Missing: \(draft.project)").tag(draft.project)
+                    }
+                }
+            }
+            InspectorPropertyRow("Area") {
+                Picker("Area", selection: area) {
+                    Text("Add area").tag("")
+                    ForEach(areas, id: \.path) { area in
+                        Text(model.areaDisplayTitle(area.path)).tag(area.path.value)
+                    }
+                    if !draft.area.isEmpty, !areas.contains(where: { $0.path.value == draft.area }) {
+                        Text("Missing: \(draft.area)").tag(draft.area)
+                    }
+                }
+            }
+            TaskTagsView(model: model, draft: draft)
+            TaskRecurrenceView(model: model, draft: draft)
+        }
+    }
+
+    private func dateRow(
+        _ title: String, image: String, keyPath: ReferenceWritableKeyPath<TaskDraft, String>, actionName: String
+    ) -> some View {
+        InspectorPropertyRow(title) {
+            CalendarDateField(
+                label: title,
+                systemImage: image,
+                text: draft[keyPath: keyPath],
+                calendar: model.planningCalendar,
+                now: model.clock,
+                presentation: .inspector,
+                onCalendarChange: { model.changeDraft(draft, keyPath: keyPath, to: $0, actionName: actionName) }
+            )
+        }
     }
 
     @ViewBuilder
@@ -127,9 +133,6 @@ struct TaskInspectorView: View {
                 .foregroundStyle(.secondary)
         } else if draft.isDirty {
             Label("Waiting to save", systemImage: "clock")
-                .foregroundStyle(.secondary)
-        } else {
-            Label("Saved", systemImage: "checkmark")
                 .foregroundStyle(.secondary)
         }
     }
@@ -183,19 +186,5 @@ struct TaskInspectorView: View {
             isTitleEditing = true
             model.consumeTitleEditRequest(at: draft.path)
         }
-    }
-
-    private func fileURL() -> URL? {
-        model.rootURL?.appendingPathComponent(draft.path.value)
-    }
-
-    private func reveal() {
-        guard let url = fileURL() else { return }
-        NSWorkspace.shared.activateFileViewerSelecting([url])
-    }
-
-    private func openExternally() {
-        guard let url = fileURL() else { return }
-        NSWorkspace.shared.open(url)
     }
 }

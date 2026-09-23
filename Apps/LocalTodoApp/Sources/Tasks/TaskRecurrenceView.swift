@@ -10,18 +10,22 @@ struct TaskRecurrenceView: View {
     }
 
     var body: some View {
-        Section {
-            Picker("Repeat", selection: binding(\.mode)) {
-                ForEach(RecurrenceEditorValue.Mode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+        VStack(alignment: .leading, spacing: 8) {
+            InspectorPropertyRow("Repeat") {
+                Picker("Repeat", selection: binding(\.mode)) {
+                    ForEach(RecurrenceEditorValue.Mode.allCases, id: \.self) { Text($0.rawValue).tag($0) }
+                }
             }
             if value.mode != .none {
                 Stepper("Every \(value.interval)", value: binding(\.interval), in: 1 ... 999)
                     .accessibilityLabel("Repeat interval")
                     .accessibilityValue(String(value.interval))
                 if value.mode == .fixed {
-                    Picker("Frequency", selection: binding(\.frequency)) {
-                        ForEach(FixedRecurrenceRule.Frequency.allCases, id: \.self) {
-                            Text($0.rawValue.capitalized).tag($0)
+                    InspectorPropertyRow("Frequency") {
+                        Picker("Frequency", selection: binding(\.frequency)) {
+                            ForEach(FixedRecurrenceRule.Frequency.allCases, id: \.self) {
+                                Text($0.rawValue.capitalized).tag($0)
+                            }
                         }
                     }
                     if value.frequency == .weekly {
@@ -35,11 +39,13 @@ struct TaskRecurrenceView: View {
                     Text("Missed occurrences are skipped when you complete the task.")
                         .themeFont(.caption).foregroundStyle(.secondary)
                 } else {
-                    Picker("Unit", selection: binding(\.unit)) {
-                        Text("Days").tag(RecurrenceInterval.Unit.day)
-                        Text("Weeks").tag(RecurrenceInterval.Unit.week)
-                        Text("Months").tag(RecurrenceInterval.Unit.month)
-                        Text("Years").tag(RecurrenceInterval.Unit.year)
+                    InspectorPropertyRow("Unit") {
+                        Picker("Unit", selection: binding(\.unit)) {
+                            Text("Days").tag(RecurrenceInterval.Unit.day)
+                            Text("Weeks").tag(RecurrenceInterval.Unit.week)
+                            Text("Months").tag(RecurrenceInterval.Unit.month)
+                            Text("Years").tag(RecurrenceInterval.Unit.year)
+                        }
                     }
                     Text("The next date is calculated from the day you complete the task.")
                         .themeFont(.caption).foregroundStyle(.secondary)

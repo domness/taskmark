@@ -30,6 +30,7 @@ See [daily workflows and shortcuts](DAILY_WORK.md).
 - The focused canvas opens with two columns. A row click selects and opens the optional notes-first inspector without entering edit mode; the toolbar toggles it and Command-E focuses the title. Backspace deletes from the list, while inspector text editing retains normal Backspace behavior.
 - Incomplete tasks past their scheduled date or deadline are highlighted with semantic red and an Overdue label, using the vault-local day.
 - Placeholder-only, multiline title entry; always-visible project, area, tag and repeat controls. Tags are removable tokens with an add button and existing-tag suggestions.
+- Composed task inspector with a title-side completion control, Planning/Organization property groups, borderless aligned values and collapsed file details. Save problems and recovery remain visible independently of file details.
 - Rendered-first Markdown task and project titles and notes, with click-to-edit source and return to rendering on focus loss; includes inspector links, headings, lists, quotes and code. Source text remains canonical.
 - Task rows resize as planning metadata appears or disappears. Search/list headers stay top-aligned; Switch Vault has its own footer; the inspector toggle is at the trailing window toolbar.
 - Task Duplicate/Delete/Copy actions; project/area context-menu deletion with reference protection. Successful deletions support exact-byte Undo/Redo during the vault session.
