@@ -22,9 +22,9 @@ Read this file before repeating an approach that previously required several att
 
 ## Native SwiftUI Tests
 
-- **Failure pattern:** Fixed sleeps, cached AppKit controls, assumed key-window activation, bare hosting views, and direct low-level event calls produce toolchain-dependent focus, toolbar, keyboard, and resize failures.
+- **Failure pattern:** Fixed sleeps, cached AppKit controls, assumed key-window activation, bare hosting views, and direct low-level event calls produce toolchain-dependent focus, toolbar, keyboard, and resize failures. In-process SwiftUI accessibility trees may omit rendered elements and identifiers when no accessibility client is attached.
 - **Reliable approach:** Host through the real view-controller/scene boundary, locate current native controls after transitions, post keyboard events through the application queue, and use bounded predicates for responders, selection, editor lifetime, toolbar labels, mutation results, and window constraints.
-- **Next-time rule:** Test readiness rather than elapsed time, run focused tests inside the complete app suite, and keep physical gesture/VoiceOver acceptance distinct from hosted integration evidence.
+- **Next-time rule:** Test readiness rather than elapsed time, run focused tests inside the complete app suite, and keep physical gesture/VoiceOver acceptance distinct from hosted integration evidence. Exercise native buttons in focused hosts rather than relying on an inactive accessibility tree to locate SwiftUI actions.
 
 ## Test Resource Lifetime
 
@@ -34,9 +34,9 @@ Read this file before repeating an approach that previously required several att
 
 ## Native Window Capture
 
-- **Failure pattern:** Offscreen bitmaps omit titlebar/vibrancy layers, while a test-host child may lack capture permission even when the invoking development tool is authorized.
+- **Failure pattern:** Offscreen bitmaps omit titlebar/vibrancy layers, while a test-host child may lack capture permission even when the invoking development tool is authorized. A locked desktop can reject window capture despite granted Screen Recording access.
 - **Reliable approach:** Keep the production native test window visible, emit its WindowServer ID, and run `screencapture` from the authorized parent process. Treat inactive-window styling and physical interaction as separate evidence.
-- **Next-time rule:** Check Screen Recording permission in the process performing capture and never present partial/offscreen images as full-window visual acceptance.
+- **Next-time rule:** Check Screen Recording permission and desktop availability before capture. If the session is locked, label any offscreen fallback as content-only layout evidence, never full-window visual acceptance.
 
 ## Native Dragging And Inline Editing
 

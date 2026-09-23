@@ -3,13 +3,20 @@ import LocalTodoDomain
 import SwiftUI
 
 struct CalendarDateField: View {
+    enum Presentation {
+        case button, inspector
+    }
+
     let label: String
     let systemImage: String
     let text: String
     let calendar: Calendar
     let now: () -> Date
+    let presentation: Presentation
     let onCalendarChange: (String) -> Void
     @Environment(\.displayDateFormat) private var displayDateFormat
+    @Environment(\.vaultAppearance) private var appearance
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var isCalendarPresented = false
     @State private var pickerDate: Date
@@ -21,6 +28,7 @@ struct CalendarDateField: View {
         text: String,
         calendar: Calendar,
         now: @escaping () -> Date = Date.init,
+        presentation: Presentation = .button,
         onCalendarChange: @escaping (String) -> Void
     ) {
         self.label = label
@@ -28,6 +36,7 @@ struct CalendarDateField: View {
         self.text = text
         self.calendar = calendar
         self.now = now
+        self.presentation = presentation
         self.onCalendarChange = onCalendarChange
         _pickerDate = State(initialValue: now())
     }
@@ -36,14 +45,29 @@ struct CalendarDateField: View {
         Button {
             prepareCalendar()
         } label: {
-            Label(buttonTitle, systemImage: systemImage)
-                .lineLimit(1)
+            if presentation == .inspector {
+                HStack(spacing: 8) {
+                    Text(inspectorTitle)
+                    Image(systemName: "chevron.right")
+                        .themeFont(.caption2)
+                        .foregroundStyle(.secondary)
+                }
+                .foregroundStyle(selectedDate == nil ? Color.secondary : accentColor)
+            } else {
+                Label(buttonTitle, systemImage: systemImage)
+                    .lineLimit(1)
+            }
         }
-        .buttonStyle(.bordered)
+        .modifier(CalendarDateButtonStyle(presentation: presentation))
+        .tint(accentColor)
         .accessibilityLabel(accessibilityTitle)
         .popover(isPresented: $isCalendarPresented, arrowEdge: .top) {
             calendarPopover
         }
+    }
+
+    private var accentColor: Color {
+        appearance.color("--accent", scheme: colorScheme, fallback: .accentColor)
     }
 
     private var calendarPopover: some View {
@@ -111,6 +135,14 @@ struct CalendarDateField: View {
     private var buttonTitle: String {
         guard let value = selectedDate else { return label }
         return "\(label): \(shortDate(value))"
+    }
+
+    var inspectorTitle: String {
+        guard let value = selectedDate else { return label == "Scheduled" ? "Add date" : "Add \(label.lowercased())" }
+        if let today = try? CalendarDate(date: now(), calendar: calendar), value == today {
+            return "Today"
+        }
+        return shortDate(value)
     }
 
     private var accessibilityTitle: String {
@@ -193,5 +225,16 @@ struct CalendarDateField: View {
     private func suggestionAccessibilityTitle(_ suggestion: CalendarDateSuggestion) -> String {
         guard let date = suggestion.date else { return suggestion.title }
         return "\(suggestion.title), \(longDate(date))"
+    }
+}
+
+private struct CalendarDateButtonStyle: ViewModifier {
+    let presentation: CalendarDateField.Presentation
+
+    func body(content: Content) -> some View {
+        switch presentation {
+        case .button: content.buttonStyle(.bordered)
+        case .inspector: content.buttonStyle(.borderless)
+        }
     }
 }

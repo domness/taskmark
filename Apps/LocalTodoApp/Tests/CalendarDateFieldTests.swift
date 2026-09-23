@@ -3,6 +3,23 @@ import Foundation
 import LocalTodoDomain
 import Testing
 
+@MainActor
+@Test func inspectorDateTitlesUseThePlanningTimezone() throws {
+    var calendar = Calendar(identifier: .gregorian)
+    calendar.timeZone = try #require(TimeZone(identifier: "America/Los_Angeles"))
+    let now = try #require(ISO8601DateFormatter().date(from: "2026-09-23T01:00:00Z"))
+    let today = CalendarDateField(
+        label: "Scheduled", systemImage: "calendar", text: "2026-09-22", calendar: calendar,
+        now: { now }, presentation: .inspector, onCalendarChange: { _ in }
+    )
+    #expect(today.inspectorTitle == "Today")
+    let empty = CalendarDateField(
+        label: "Deadline", systemImage: "flag", text: "", calendar: calendar,
+        now: { now }, presentation: .inspector, onCalendarChange: { _ in }
+    )
+    #expect(empty.inspectorTitle == "Add deadline")
+}
+
 @Test func calendarDateSuggestionsMatchTheReferenceWeek() throws {
     var calendar = Calendar(identifier: .gregorian)
     calendar.firstWeekday = 2

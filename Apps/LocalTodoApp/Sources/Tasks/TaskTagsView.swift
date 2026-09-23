@@ -8,19 +8,8 @@ struct TaskTagsView: View {
     @FocusState private var isEntryFocused: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text("Tags")
-                Spacer()
-                Button("Add Tag", systemImage: "plus") {
-                    entry = ""
-                    isAdding = true
-                }
-                .labelStyle(.iconOnly)
-                .buttonStyle(.borderless)
-                .popover(isPresented: $isAdding) { tagEntry }
-            }
-            TagFlowLayout {
+        InspectorPropertyRow("Tags") {
+            TagFlowLayout(alignment: .trailing) {
                 ForEach(draft.tags, id: \.self) { tag in
                     HStack(spacing: 4) {
                         Text(tag).lineLimit(1).help(tag)
@@ -35,11 +24,19 @@ struct TaskTagsView: View {
                         .labelStyle(.iconOnly)
                         .buttonStyle(.plain)
                     }
-                    .themeFont(.callout)
+                    .themeFont(.caption)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(.quaternary, in: RoundedRectangle(cornerRadius: 5))
                 }
+                Button("Add Tag", systemImage: "plus") {
+                    entry = ""
+                    isAdding = true
+                }
+                .labelStyle(.iconOnly)
+                .buttonStyle(.borderless)
+                .help("Add tag")
+                .popover(isPresented: $isAdding) { tagEntry }
             }
         }
     }
