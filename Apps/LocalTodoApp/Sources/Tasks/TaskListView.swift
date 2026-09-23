@@ -41,18 +41,14 @@ struct TaskListView: View {
 
     private var listHeader: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .top, spacing: 16) {
-                Group {
-                    if let draft = model.selectedProjectDraft {
-                        ProjectListHeader(model: model, draft: draft, compact: true)
-                    } else {
-                        routeHeading
-                    }
+            Group {
+                if let draft = model.selectedProjectDraft {
+                    ProjectListHeader(model: model, draft: draft, compact: true)
+                } else {
+                    routeHeading
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                headerControls
-                    .fixedSize()
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
             if let draft = model.selectedProjectDraft, !draft.notes.isEmpty {
                 Text(TaskMarkdown.inline(draft.notes, links: true))
                     .foregroundStyle(.secondary)
@@ -67,48 +63,6 @@ struct TaskListView: View {
         .padding(.horizontal, 28)
         .padding(.top, 12)
         .padding(.bottom, 20)
-    }
-
-    private var headerControls: some View {
-        HStack(spacing: 12) {
-            Button("Search", systemImage: "magnifyingglass") {
-                model.route = .search
-                isSearchFocused = true
-            }
-            .labelStyle(.iconOnly)
-            .help("Search Tasks (Command-F)")
-            Button("New Task", systemImage: "plus") { model.beginQuickCapture() }
-                .labelStyle(.iconOnly)
-                .help("New Task (Command-N)")
-            displayOptionsMenu
-        }
-        .buttonStyle(.borderless)
-        .padding(8)
-        .modifier(CanvasControlMaterial())
-    }
-
-    private var displayOptionsMenu: some View {
-        Menu {
-            TaskSortPicker(model: model)
-            Section("Show in Rows") {
-                Toggle("Project", isOn: metadataBinding(.project))
-                Toggle("Area", isOn: metadataBinding(.area))
-                Toggle("Tags", isOn: metadataBinding(.tags))
-            }
-            AppearanceMenu(model: model)
-            Picker("Group By", selection: groupingBinding) {
-                ForEach(TaskListGrouping.allCases) { grouping in
-                    Text(grouping.title).tag(grouping)
-                }
-            }
-        } label: {
-            Image(systemName: model
-                .stylesheetDiagnostic == nil ? "line.3.horizontal.decrease" : "exclamationmark.triangle")
-                .accessibilityLabel("View Options")
-        }
-        .menuStyle(.borderlessButton)
-        .fixedSize()
-        .help("Choose row details and grouping for this view")
     }
 
     @ViewBuilder
@@ -224,27 +178,6 @@ private extension TaskListView {
         model.selectTask(path)
         model.isInspectorPresented = true
         isListFocused = true
-    }
-
-    func metadataBinding(_ field: TaskListMetadataField) -> Binding<Bool> {
-        Binding(
-            get: {
-                let options = model.currentTaskListDisplayOptions
-                return switch field {
-                case .project: options.showsProject
-                case .area: options.showsArea
-                case .tags: options.showsTags
-                }
-            },
-            set: { model.setTaskListMetadata(field, isVisible: $0) }
-        )
-    }
-
-    private var groupingBinding: Binding<TaskListGrouping> {
-        Binding(
-            get: { model.currentTaskListDisplayOptions.grouping },
-            set: { model.setTaskListGrouping($0) }
-        )
     }
 }
 

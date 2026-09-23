@@ -4,15 +4,17 @@ import SwiftUI
 import Testing
 
 @MainActor
-@Test(arguments: [false, true])
-func inspectorToggleRemainsSingleAcrossPresentationChanges(initiallyPresented: Bool) async throws {
+@Test(arguments: [false, true], [840.0, 1120.0, 1600.0])
+func inspectorToggleRemainsSingleAcrossPresentationChanges(initiallyPresented: Bool, width: Double) async throws {
     try await withWorkspace { model, _ in
         await model.createTask(title: "Inspect", vaultSession: model.vaultSession)
         model.isInspectorPresented = initiallyPresented
         let host = NSHostingController(rootView: WorkspaceView(model: model))
         let window = NSWindow(contentViewController: host)
         window.isReleasedWhenClosed = false
-        window.setContentSize(NSSize(width: 1200, height: 700))
+        window.titleVisibility = .hidden
+        window.toolbarStyle = .unifiedCompact
+        window.setContentSize(NSSize(width: width, height: 700))
         window.makeKeyAndOrderFront(nil)
         defer { window.close() }
         for presented in [initiallyPresented, !initiallyPresented, initiallyPresented, !initiallyPresented] {
@@ -32,6 +34,31 @@ func inspectorToggleRemainsSingleAcrossPresentationChanges(initiallyPresented: B
             let labels = toolbar.items.map { "\($0.itemIdentifier.rawValue): \($0.label)" }.joined(separator: ", ")
             #expect(toggles.count == 1, Comment(rawValue: labels))
             #expect(toggles.first?.label == (presented ? "Hide Inspector" : "Show Inspector"))
+            try expectToolbarLayout(toolbar, window: window)
         }
+    }
+}
+
+@MainActor
+private func expectToolbarLayout(_ toolbar: NSToolbar, window: NSWindow) throws {
+    let sidebar = try #require(toolbar.items.first { $0.label == "Toggle Sidebar" })
+    let inspector = try #require(toolbar.items.first { $0.label.contains("Inspector") })
+    let sidebarView = try #require(sidebar.view)
+    let inspectorView = try #require(inspector.view)
+    let leading = sidebarView.convert(sidebarView.bounds, to: nil)
+    let trailing = inspectorView.convert(inspectorView.bounds, to: nil)
+    #expect(leading.midX < window.frame.width / 2)
+    #expect(trailing.midX > window.frame.width - 80)
+    #expect(abs(leading.midY - trailing.midY) < 2)
+    #expect(leading.width >= 36 && leading.height >= 36)
+    #expect(trailing.width >= 36 && trailing.height >= 36)
+    let commandItems = toolbar.items.filter { ["Search", "New Task", "View Options"].contains($0.label) }
+    #expect(commandItems.count == 3)
+    for item in commandItems {
+        let view = try #require(item.view)
+        let frame = view.convert(view.bounds, to: nil)
+        #expect(frame.midX > leading.maxX && frame.midX < trailing.minX)
+        #expect(abs(frame.midY - trailing.midY) < 2)
+        #expect(frame.width >= 36 && frame.height >= 36)
     }
 }
