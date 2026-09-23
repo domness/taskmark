@@ -79,6 +79,8 @@ The system is flat by default. Tonal surface changes and native dividers establi
 
 Native controls own interaction feedback. Any future custom motion should remain functional, respect Reduce Motion and avoid decorative transitions; no custom animation-duration token system is implemented.
 
+The workspace hides the separate Taskmark window-title bar and uses a compact native toolbar with an unobtrusive background. The list heading and compact glass command group share a top-aligned row: heading on the left, search/add/view options on the right. Long headings wrap while the controls retain their width. Project notes and the search field remain below this row. Settings → General → Dock includes an opt-in Badge switch showing the unfiltered Today count for the most recently active vault, hidden at zero.
+
 ## 6. Do's and Don'ts
 
 ### Do:

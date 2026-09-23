@@ -20,6 +20,7 @@ import Testing
         model.preferences.timeFormat = .twentyFourHour
         model.preferences.initialView = .waiting
         model.preferences.usesVaultStylesheet = false
+        model.preferences.showsDockBadge = true
         try model.moveCollection(#require(model.activeProjects.last?.path), in: .project, offset: -1)
         model.route = .inbox
         model.setTaskListSort(.custom)

@@ -42,6 +42,8 @@ See [personalization](PERSONALIZATION.md).
 
 ### Settings And Themes
 
+- Opt-in Settings → General → Dock → Badge matches the unfiltered Today count in the most recently active vault, with zero hidden and the preference shared through the vault.
+
 - Resizable native Settings with a fixed General/Theme sidebar and compact titlebar.
 - Persistent week start, date/time display, startup view, appearance, palette and stylesheet preferences.
 - All vault preferences, including sidebar/custom order and per-view display options, travel with `.config/config.yml`. External changes reload; same-field conflicts require explicit resolution. Bookmarks and window geometry remain machine-local.

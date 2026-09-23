@@ -33,6 +33,10 @@ final class AppPreferences {
         didSet { changed("vault_stylesheet", .bool(usesVaultStylesheet)) }
     }
 
+    var showsDockBadge = false {
+        didSet { changed("dock_badge", .bool(showsDockBadge)) }
+    }
+
     @ObservationIgnored var onChange: ((String, ConfigurationValue) -> Void)?
     @ObservationIgnored private var isApplying = false
 
@@ -49,6 +53,7 @@ final class AppPreferences {
             "appearance": .string(appearance.rawValue),
             "theme": .string(theme.rawValue),
             "vault_stylesheet": .bool(usesVaultStylesheet),
+            "dock_badge": .bool(showsDockBadge),
         ]
     }
 
@@ -62,6 +67,7 @@ final class AppPreferences {
         appearance = AppAppearance(rawValue: string("appearance", in: values)) ?? .system
         theme = AppTheme(rawValue: string("theme", in: values)) ?? .standard
         usesVaultStylesheet = (try? values["vault_stylesheet"]?.decode(Bool.self)) ?? true
+        showsDockBadge = (try? values["dock_badge"]?.decode(Bool.self)) ?? false
     }
 
     private func changed(_ key: String, _ value: ConfigurationValue) {

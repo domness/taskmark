@@ -40,6 +40,7 @@ Typed Markdown files may live anywhere below the vault except `.config/`. Folder
 | `time_format` | `system` (default), `twelveHour`, `twentyFourHour` |
 | `initial_view` | `today` (default), `inbox`, `next`, `upcoming`, `waiting`, `someday`, `all`, `search` |
 | `vault_stylesheet` | Boolean, default `true` |
+| `dock_badge` | Boolean, default `false`; macOS Dock count matching Today in the most recently active vault |
 | `sidebar_order` | Optional mapping of `project` / `area` to ordered unique vault-relative paths |
 | `custom_order` | Optional mapping of view keys to `{isEnabled: boolean, paths: [ordered unique paths]}` |
 | `views` | Optional mapping of view keys to row display and automatic sort/grouping options |
