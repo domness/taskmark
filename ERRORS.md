@@ -28,9 +28,9 @@ Read this file before repeating an approach that previously required several att
 
 ## Native Toolbar Sizing
 
-- **Failure pattern:** Native toolbar bridging can ignore a SwiftUI label's minimum height; buttons and menus differ across supported macOS versions.
-- **Reliable approach:** Size the interactive label and outer control, use explicit native borderless styles, and verify rendered toolbar item bounds on both the local OS and the minimum supported hosted OS.
-- **Next-time rule:** Assert control geometry rather than inferring hit-target size from frame modifiers, and inspect the complete test result before reporting success.
+- **Failure pattern:** Forcing SwiftUI label/outer frames and borderless styles into a native toolbar distorts symbol placement and material sizing. Replacing NavigationSplitView's sidebar toggle can leave a second system-owned control outside the toolbar on newer macOS.
+- **Reliable approach:** Use standard toolbar buttons and menus with system-owned sizing, and retain the automatic sidebar toggle. Verify command alignment across supported macOS versions; the system sidebar control need not appear in a hosted window's NSToolbar items.
+- **Next-time rule:** Test native geometry and duplicate controls, and inspect a complete window when capture is available. Minimum-size assertions alone do not establish correct visual presentation.
 
 ## Test Resource Lifetime
 

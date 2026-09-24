@@ -41,24 +41,17 @@ struct WorkspaceView: View {
                     }
                 }
                 .navigationSplitViewStyle(.balanced)
-                .toolbar(removing: .sidebarToggle)
                 .toolbar {
-                    ToolbarItem(id: "taskmark.sidebar-toggle", placement: .navigation) {
-                        WorkspaceToolbarButton(title: "Toggle Sidebar", systemImage: "sidebar.leading") {
-                            columnVisibility = columnVisibility == .detailOnly ? .all : .detailOnly
-                        }
-                        .help("Toggle Sidebar")
-                    }
                     ToolbarItem(placement: .automatic) {
                         Spacer()
                     }
                     ToolbarItemGroup(placement: .primaryAction) {
                         if model.route != .issues {
-                            WorkspaceToolbarButton(title: "Search", systemImage: "magnifyingglass") {
+                            Button("Search", systemImage: "magnifyingglass") {
                                 model.beginSearch()
                             }
                             .help("Search Tasks (Command-F)")
-                            WorkspaceToolbarButton(title: "New Task", systemImage: "plus") {
+                            Button("New Task", systemImage: "plus") {
                                 model.beginQuickCapture()
                             }
                             .help("New Task (Command-N)")
@@ -109,8 +102,8 @@ struct WorkspaceView: View {
     }
 
     private var inspectorToggle: some View {
-        WorkspaceToolbarButton(
-            title: model.isInspectorPresented ? "Hide Inspector" : "Show Inspector",
+        Button(
+            model.isInspectorPresented ? "Hide Inspector" : "Show Inspector",
             systemImage: "sidebar.trailing"
         ) {
             model.isInspectorPresented.toggle()
