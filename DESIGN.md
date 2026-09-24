@@ -81,6 +81,8 @@ Native controls own interaction feedback. Any future custom motion should remain
 
 The workspace hides the separate Taskmark window-title bar and uses the full-size unified native toolbar with an unobtrusive background (36-point-high controls on current macOS). NavigationSplitView owns the system sidebar toggle on the left; the app supplies the inspector toggle at the far right of the window. Search/add/view options align to the center panel's trailing edge: opening or resizing the inspector moves those actions with the panel boundary, leaving the inspector toggle on the right. Closing the inspector brings the actions back beside its toggle. An inert, accessibility-hidden native toolbar space follows the actual inspector width; it has no material background. Standard buttons and menus let macOS own symbol size, padding, hit targets and toolbar material; do not impose content frames or borderless styles on toolbar controls. The list heading sits below the toolbar and wraps independently; project notes and the search field remain below the heading. Settings → General → Dock includes an opt-in Badge switch showing the unfiltered Today count for the most recently active vault, hidden at zero.
 
+Sidebar task destinations show compact, right-aligned capsule counts, including zero, except All Tasks. Saved filters honor their completion criteria; other counts include incomplete tasks. Counts are independent of the active route/search. Search and action rows have no count, and unavailable counts are omitted. Selected badges use white text over a translucent fill. Accessibility exposes the count with each row.
+
 ## 6. Do's and Don'ts
 
 ### Do:
