@@ -20,7 +20,7 @@ This file summarizes current, durable decisions that are not better expressed in
 - Markdown files are canonical. Entity identity is the exact, case-sensitive, vault-relative path; there are no hidden UUIDs.
 - Known-field mutations preserve Markdown bodies and unknown frontmatter. Malformed files, unresolved references, stale revisions, and unavailable files are surfaced rather than silently repaired or discarded.
 - Task moves use coordinated exclusive atomic rename and preserve bytes. Project and area path moves remain disabled until multi-file reference updates have an honest recovery and external-visibility design.
-- Project and area deletion is non-cascading and blocked by known references. Successful app deletion uses session-local exact-byte Undo/Redo and never overwrites an occupied restoration path.
+- App project/area removal clears known assignments (including completed tasks and saved filters) before deleting the collection; tag removal clears that exact tag throughout the vault. Cleanup is an explicitly resumable sequence of per-file atomic changes, with session-local Undo/Redo for completed steps, not a multi-file transaction. Deleted collection restoration preserves exact bytes and refuses occupied paths. Low-level deletion still refuses remaining references.
 - Direct-file agent work must acknowledge that ordinary filesystem tools do not reproduce Taskmark's file coordination or concurrency guarantees.
 
 ## Editing, Conflicts, And History

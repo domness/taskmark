@@ -1,15 +1,16 @@
 import Foundation
 
 extension WorkspaceModel {
-    func refresh() async {
-        guard let store else { return }
+    func refresh(allowingOrganizationChange: Bool = false) async {
+        guard let store, !isRemovingOrganization || allowingOrganizationChange else { return }
         let session = vaultSession
         let epoch = modelEpoch
         let request = UUID()
         refreshRequest = request
         do {
             let nextSnapshot = try await store.snapshot()
-            guard session == vaultSession, epoch == modelEpoch, request == refreshRequest else { return }
+            guard session == vaultSession, epoch == modelEpoch, request == refreshRequest,
+                  !isRemovingOrganization || allowingOrganizationChange else { return }
             if let snapshot, containsExternalChanges(from: snapshot, to: nextSnapshot) {
                 clearHistory()
             }

@@ -35,6 +35,7 @@ final class WorkspaceModel {
     var isLoading = false
     var isClosingWindow = false
     var isHistoryBusy = false
+    var isRemovingOrganization = false
     var titleEditRequest = 0
     var titleEditingPath: VaultPath?
     var inlineTitleEditingPath: VaultPath?
