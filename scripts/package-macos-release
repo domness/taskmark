@@ -30,6 +30,16 @@ if [[ "$validate_only" == true ]]; then
 fi
 
 root=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+python3 - <<'PY'
+import base64
+import os
+key = os.environ.get("SPARKLE_PUBLIC_ED_KEY", "")
+try:
+    assert len(base64.b64decode(key, validate=True)) == 32
+    assert os.environ.get("SPARKLE_PRIVATE_ED_KEY", "")
+except (ValueError, AssertionError):
+    raise SystemExit("Configure SPARKLE_PUBLIC_ED_KEY and SPARKLE_PRIVATE_ED_KEY before packaging updates.")
+PY
 bash "$root/scripts/check-macos-runner" release
 if [[ ! "$APPLE_DEVELOPER_TEAM_ID" =~ ^[A-Z0-9]{10}$ ]]; then
   echo "APPLE_DEVELOPER_TEAM_ID must be the ten-character Apple team identifier." >&2
@@ -55,11 +65,24 @@ xcodebuild archive \
   -destination 'generic/platform=macOS' -archivePath "$archive" \
   -derivedDataPath "$work/DerivedData" -clonedSourcePackagesDirPath "$work/SourcePackages" \
   "MARKETING_VERSION=$version" "CURRENT_PROJECT_VERSION=$build" \
+  "SPARKLE_PUBLIC_ED_KEY=$SPARKLE_PUBLIC_ED_KEY" \
   'ARCHS=arm64 x86_64' ONLY_ACTIVE_ARCH=NO \
   CODE_SIGN_STYLE=Manual "CODE_SIGN_IDENTITY=$MACOS_SIGNING_IDENTITY" \
   "DEVELOPMENT_TEAM=$APPLE_DEVELOPER_TEAM_ID" ENABLE_HARDENED_RUNTIME=YES \
   CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO 'OTHER_CODE_SIGN_FLAGS=--timestamp' \
   2>&1 | tee "$output/archive.log"
+
+# Export re-signs Sparkle's nested installer and XPC services with our Developer ID.
+python3 - "$work/ExportOptions.plist" <<'PY'
+import os, plistlib, sys
+with open(sys.argv[1], "wb") as output:
+    plistlib.dump({"method": "developer-id", "signingStyle": "manual",
+                  "teamID": os.environ["APPLE_DEVELOPER_TEAM_ID"],
+                  "signingCertificate": os.environ["MACOS_SIGNING_IDENTITY"]}, output)
+PY
+xcodebuild -exportArchive -archivePath "$archive" -exportPath "$work/export" \
+  -exportOptionsPlist "$work/ExportOptions.plist" 2>&1 | tee "$output/export.log"
+app="$work/export/Taskmark.app"
 
 [[ -d "$app" ]] || { echo "Archive contains no Taskmark.app." >&2; exit 1; }
 architectures=" $(xcrun lipo -archs "$app/Contents/MacOS/Taskmark") "
@@ -113,8 +136,21 @@ xcrun stapler staple "$dmg"
 xcrun stapler validate "$dmg"
 spctl --assess --type open --context context:primary-signature --verbose=2 "$dmg"
 
+# Generate from only the final stapled ZIP, using the tools shipped with the pinned framework.
+sparkle_bin="$work/SourcePackages/artifacts/sparkle/Sparkle/bin"
+mkdir -p "$work/updates"
+cp "$zip" "$work/updates/"
+printf '%s\n' "$SPARKLE_PRIVATE_ED_KEY" | "$sparkle_bin/generate_appcast" \
+  --ed-key-file - --maximum-deltas 0 \
+  --download-url-prefix "https://github.com/domness/taskmark/releases/download/$tag/" \
+  --full-release-notes-url "https://github.com/domness/taskmark/releases/tag/$tag" \
+  --link 'https://github.com/domness/taskmark/releases' \
+  "$work/updates"
+cp "$work/updates/appcast.xml" "$output/appcast.xml"
+python3 "$root/scripts/validate-appcast.py" "$output/appcast.xml" "$zip" "$build" "$version"
+
 (
   cd "$output"
-  shasum -a 256 "Taskmark-$tag-universal.zip" "Taskmark-$tag-universal.dmg" > "Taskmark-$tag-SHA256SUMS.txt"
+  shasum -a 256 "Taskmark-$tag-universal.zip" "Taskmark-$tag-universal.dmg" appcast.xml > "Taskmark-$tag-SHA256SUMS.txt"
 )
 printf 'Packaged %s (%s):\n%s\n%s\n' "$version" "$build" "$zip" "$dmg"

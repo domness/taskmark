@@ -1,5 +1,9 @@
 # Third-Party Notices
 
+Taskmark includes Sparkle 2.10.0 (https://github.com/sparkle-project/Sparkle) for
+software updates. Its complete license and bundled third-party notices are
+included in `Taskmark.app/Contents/Resources/Sparkle-LICENSE.txt`.
+
 Taskmark's native theme tokens use colors from the following MIT-licensed palettes.
 
 The app also bundles **Inter** for Dracula and **Figtree** for Catppuccin under

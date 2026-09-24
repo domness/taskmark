@@ -42,6 +42,8 @@ See [personalization](PERSONALIZATION.md).
 
 ### Settings And Themes
 
+- Updates settings and Taskmark → Check for Updates use Sparkle for GitHub Releases-hosted signed downloads, installation and relaunch, with opt-in machine-local daily checking. First-release signing setup and real old-to-new installation acceptance remain required; see [CI releases](CI_RELEASES.md#sparkle-update-signing).
+
 - Opt-in Settings → General → Dock → Badge matches the unfiltered Today count in the most recently active vault, with zero hidden and the preference shared through the vault.
 
 - Resizable native Settings with a fixed General/Theme sidebar and compact titlebar.

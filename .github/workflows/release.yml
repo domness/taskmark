@@ -107,6 +107,9 @@ jobs:
           bash scripts/setup-ci-signing
           echo "NOTARYTOOL_KEYCHAIN=$NOTARYTOOL_KEYCHAIN" >> "$GITHUB_ENV"
       - name: Build signed and notarized universal app
+        env:
+          SPARKLE_PUBLIC_ED_KEY: ${{ vars.SPARKLE_PUBLIC_ED_KEY }}
+          SPARKLE_PRIVATE_ED_KEY: ${{ secrets.SPARKLE_PRIVATE_ED_KEY }}
         run: bash scripts/package-macos-release "$RELEASE_TAG" "$GITHUB_RUN_NUMBER.$GITHUB_RUN_ATTEMPT" dist
       - name: Remove signing credentials
         if: always()
@@ -119,6 +122,7 @@ jobs:
             dist/Taskmark-${{ env.RELEASE_TAG }}-universal.zip
             dist/Taskmark-${{ env.RELEASE_TAG }}-universal.dmg
             dist/Taskmark-${{ env.RELEASE_TAG }}-SHA256SUMS.txt
+            dist/appcast.xml
           if-no-files-found: error
           retention-days: 3
       - name: Upload packaging logs
@@ -169,3 +173,5 @@ jobs:
             "dist/Taskmark-$RELEASE_TAG-universal.dmg" \
             "dist/Taskmark-$RELEASE_TAG-SHA256SUMS.txt" \
             --repo "$GITHUB_REPOSITORY" --clobber
+          # Publish the feed last so it never advertises an asset that is still uploading.
+          gh release upload "$RELEASE_TAG" dist/appcast.xml --repo "$GITHUB_REPOSITORY" --clobber

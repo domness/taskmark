@@ -1,14 +1,14 @@
 # Settings
 
-Open **Taskmark → Settings…** or press **Command-comma**. The native Settings window has General and Theme sections. Changes apply immediately; there is no Apply button. Settings uses the same appearance as the main window.
+Open **Taskmark → Settings…** or press **Command-comma**. The native Settings window has General, Theme and Updates sections. Changes apply immediately; there is no Apply button. Settings uses the same appearance as the main window.
 
 Settings edits the most recently active vault window. Vault choices persist in `.config/config.yml`, so different vaults can have different themes. Windows/machines opening the same vault reload its settings from the shared file. Closing the active window selects another open workspace; without a vault, vault preference controls are disabled. CLI registration is a machine-level control and remains available without a vault.
 
-The window opens at 760 × 620 logical points and can be resized, with a 700 × 560 minimum. Both sections align short content to the top of the right-hand panel and scroll when content exceeds the available height.
+The window opens at 760 × 620 logical points and can be resized, with a 700 × 560 minimum. Sections align short content to the top of the right-hand panel and scroll when content exceeds the available height.
 
 `SettingsWindowResizing` enables the underlying NSWindow's native resizable style after scene setup. SwiftUI's `.contentMinSize` controls sizing constraints but did not, by itself, make this Settings scene user-resizable. `SettingsWindowTests` opens the actual scene and verifies its style, upper size bounds and expanded content size.
 
-Settings uses a fixed 170-point sidebar beneath a compact native titlebar. The two sections remain visible without a sidebar-collapse toolbar row or its extra top inset. Window-button positions remain system-managed.
+Settings uses a fixed 170-point sidebar beneath a compact native titlebar. Sections remain visible without a sidebar-collapse toolbar row or its extra top inset. Window-button positions remain system-managed.
 
 ## General
 
@@ -47,6 +47,14 @@ The Badge preference travels with the vault as `preferences.dock_badge`. It appl
 - **Apply vault stylesheet** enables `.config/style.css` overrides on top of the selected theme. This preference is saved with the vault. Missing/invalid styles fall back to the selected built-in theme. The Settings section shows parse diagnostics and provides Reveal Vault and Reload Stylesheet actions.
 
 See [THEMES.md](THEMES.md) for every built-in token, custom-theme examples, override precedence and implementation extension points.
+
+## Updates
+
+**Taskmark → Check for Updates…** and **Settings → Updates → Check for Updates…** use Sparkle's native update window to check the latest stable GitHub Release, download a signed update, install it and relaunch. Sparkle shows progress, up-to-date results and connection/verification failures. Checks work without an open vault. Install Taskmark in Applications before updating.
+
+Automatic checking is off by default. Enable **Automatically check for updates** for daily checks while Taskmark is running; downloads and installation remain user-initiated. Sparkle stores this preference and the last-check date locally, outside the vault. System profiling is disabled. GitHub receives the update and download requests.
+
+Development builds without an update verification key disable checking and explain why in Updates. Existing releases without Sparkle require one manual upgrade to the first updater-enabled release. See [release setup](CI_RELEASES.md#sparkle-update-signing) for signing and end-to-end validation.
 
 ## Verification
 
