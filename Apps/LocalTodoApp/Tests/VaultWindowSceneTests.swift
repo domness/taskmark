@@ -24,7 +24,7 @@ import Testing
 }
 
 @MainActor
-private func openVaultScene() async throws -> NSWindow {
+func openVaultScene() async throws -> NSWindow {
     let existing = Set(NSApp.windows.map(ObjectIdentifier.init))
     let trigger = NSWindow(contentViewController: NSHostingController(rootView: OpenVaultForTest()))
     trigger.isReleasedWhenClosed = false

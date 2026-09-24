@@ -15,7 +15,7 @@ struct LocalTodoApp: App {
                 }
         }
         .windowStyle(.hiddenTitleBar)
-        .windowToolbarStyle(.unifiedCompact)
+        .windowToolbarStyle(.unified)
         .windowResizability(.contentMinSize)
         .defaultSize(width: 1120, height: 720)
         .commands {

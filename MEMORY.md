@@ -46,7 +46,7 @@ This file summarizes current, durable decisions that are not better expressed in
 - Sidebar order, Custom task order, view options, appearance, theme, stylesheet enablement, calendar/display settings, startup view, and timezone travel with `.config/config.yml`. Bookmarks and window geometry remain machine-local.
 - Appearance and palette are independent. Taskmark, Slate, Forest, Sand, Catppuccin, and Dracula provide paired light/dark themes; a bounded `.config/style.css` token adapter may override native surfaces, accent, priority colors, base size, and row spacing.
 - Native glass is limited to appropriate navigation/control surfaces on supported systems. Persistent task content stays opaque, with older-system and accessibility fallbacks.
-- The compact native window toolbar uses system-sized buttons and menus, the system-owned sidebar toggle and an app-authored far-right inspector toggle. Do not add a duplicate sidebar control or force toolbar label/control frames. The list heading sits below, with no separate Taskmark title bar. An opt-in shared Dock Badge preference follows the most recently active vault's unfiltered Today count, hiding zero.
+- The workspace uses the full-size unified native toolbar. Search/add/view options track the center panel's trailing edge while the inspector toggle stays at the window's far right; an inert toolbar space follows the actual inspector width. Keep the system-owned sidebar toggle and native button/menu sizing, without forced control frames. The list heading sits below, with no separate Taskmark title bar. An opt-in shared Dock Badge preference follows the most recently active vault's unfiltered Today count, hiding zero.
 
 ## Distribution
 
