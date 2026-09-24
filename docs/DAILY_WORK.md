@@ -53,7 +53,7 @@ Complete/Reopen changes only the project, not its tasks. Someday, done and cance
 
 Routine project destinations in the command palette include active projects only; use the sidebar's Inactive Projects section for review or reopening.
 
-Right-click a project or area to delete it. Remove task, project and saved-filter references first; deletion never cascades. Native Undo restores the exact Markdown during the current vault session.
+Right-click a project, area or tag to delete it. Taskmark clears its assignments automatically, including on completed tasks and saved filters, while keeping the tasks themselves. Area removal also clears project assignments; tag removal covers tasks, projects and areas. Native Undo restores the collection and assignments during the current vault session. Interrupted cleanup reports partial progress and can be undone or retried.
 
 ## Combined And Saved Filters
 

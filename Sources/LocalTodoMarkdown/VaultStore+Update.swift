@@ -98,6 +98,9 @@ extension VaultStore {
             return
         }
         let snapshot = try snapshot()
+        guard !snapshot.diagnostics.contains(where: { $0.severity == .error }) else {
+            throw VaultStoreError.invalidVault("Resolve the vault’s file errors before deleting a collection.")
+        }
         let filters = try savedFilters().filters
         let isReferenced = switch entity {
         case .task:
