@@ -6,59 +6,159 @@ import Testing
 @MainActor
 @Test(arguments: [false, true], [840.0, 1120.0, 1600.0])
 func inspectorToggleRemainsSingleAcrossPresentationChanges(initiallyPresented: Bool, width: Double) async throws {
-    try await withWorkspace { model, _ in
-        await model.createTask(title: "Inspect", vaultSession: model.vaultSession)
-        model.isInspectorPresented = initiallyPresented
-        let host = NSHostingController(rootView: WorkspaceView(model: model))
-        let window = NSWindow(contentViewController: host)
-        window.isReleasedWhenClosed = false
-        window.titleVisibility = .hidden
-        window.toolbarStyle = .unifiedCompact
-        window.setContentSize(NSSize(width: width, height: 700))
-        window.makeKeyAndOrderFront(nil)
-        defer { window.close() }
+    try await withToolbarWindow(initiallyPresented: initiallyPresented, width: width) { model, window in
         for presented in [initiallyPresented, !initiallyPresented, initiallyPresented, !initiallyPresented] {
-            model.isInspectorPresented = presented
-            // Native inspector animation and toolbar propagation can outlast 300 ms.
-            // Wait for the observable result, retaining a bounded failure for stale/duplicate items.
-            let expectedLabel = presented ? "Hide Inspector" : "Show Inspector"
-            for _ in 0 ..< 40 {
-                try await Task.sleep(for: .milliseconds(50))
-                let items = window.toolbar?.items.filter { $0.label.contains("Inspector") } ?? []
-                if items.count == 1, items.first?.label == expectedLabel {
-                    break
-                }
-            }
+            // Inspector animations can stall in an occluded/locked test session. Test final
+            // native geometry without animation; physical transitions need visual acceptance.
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) { model.isInspectorPresented = presented }
+            try await waitForInspector(presented, in: window)
             let toolbar = try #require(window.toolbar)
-            let toggles = toolbar.items.filter { $0.label.contains("Inspector") }
-            let labels = toolbar.items.map { "\($0.itemIdentifier.rawValue): \($0.label)" }.joined(separator: ", ")
-            // The system sidebar control can live outside NSToolbar on newer macOS.
-            // Never add a second, app-authored toggle beside it.
-            #expect(!toolbar.items.contains { $0.itemIdentifier.rawValue == "taskmark.sidebar-toggle" })
-            #expect(toolbar.items.filter { $0.itemIdentifier == .toggleSidebar }.count <= 1)
-            #expect(toggles.count == 1, Comment(rawValue: labels))
-            #expect(toggles.first?.label == (presented ? "Hide Inspector" : "Show Inspector"))
-            try expectToolbarLayout(toolbar, window: window)
+            try await settleToolbar(toolbar)
+            try expectToolbarLayout(toolbar, window: window, inspectorPresented: presented)
         }
     }
 }
 
 @MainActor
-private func expectToolbarLayout(_ toolbar: NSToolbar, window: NSWindow) throws {
-    let inspector = try #require(toolbar.items.first { $0.label.contains("Inspector") })
-    let inspectorView = try #require(inspector.view)
+@Test func toolbarActionsFollowInspectorAndWindowResizing() async throws {
+    try await withToolbarWindow(initiallyPresented: true, width: 1600) { model, window in
+        try await waitForInspector(true, in: window)
+        let toolbar = try #require(window.toolbar)
+        let root = try #require(window.contentView)
+        let panel = try #require(inspectorPanel(in: root, window: window))
+        let split = try #require(splitViews(in: root).first { $0.arrangedSubviews.last === panel })
+        for width in [480.0, 280.0, 400.0, 340.0] {
+            split.setPosition(split.bounds.width - width - split.dividerThickness, ofDividerAt: 0)
+            try await settleToolbar(toolbar)
+            #expect(abs(panel.frame.width - width) < 2, "Inspector must actually resize")
+            try expectToolbarLayout(toolbar, window: window, inspectorPresented: true)
+        }
+        for width in [1120.0, 840.0, 1600.0] {
+            window.setContentSize(NSSize(width: width, height: 700))
+            try await settleToolbar(toolbar)
+            try expectToolbarLayout(toolbar, window: window, inspectorPresented: true)
+        }
+        model.route = .issues
+        try await settleToolbar(toolbar)
+        try expectToolbarLayout(toolbar, window: window, inspectorPresented: true, showsCommands: false)
+        model.route = .inbox
+        try await settleToolbar(toolbar)
+        try expectToolbarLayout(toolbar, window: window, inspectorPresented: true)
+    }
+}
+
+@MainActor
+private func withToolbarWindow(
+    initiallyPresented: Bool, width: Double,
+    _ operation: @MainActor (WorkspaceModel, NSWindow) async throws -> Void
+) async throws {
+    try await withWorkspace { fixture, root in
+        await fixture.createTask(title: "Inspect", vaultSession: fixture.vaultSession)
+        // Use the production scene so toolbar style and split layout cannot diverge from the app.
+        let window = try await openVaultScene()
+        defer { window.close() }
+        let model = try #require((window.delegate as? WorkspaceWindowDelegate)?.model)
+        defer { model.releaseWindowResources() }
+        model.isInspectorPresented = initiallyPresented
+        #expect(try await model.openVault(root))
+        window.setContentSize(NSSize(width: width, height: 700))
+        window.makeKeyAndOrderFront(nil)
+        try await operation(model, window)
+    }
+}
+
+@MainActor
+private func waitForInspector(_ presented: Bool, in window: NSWindow) async throws {
+    let content = try #require(window.contentView)
+    let expectedLabel = presented ? "Hide Inspector" : "Show Inspector"
+    for _ in 0 ..< 60 {
+        try await Task.sleep(for: .milliseconds(50))
+        window.display()
+        let toggles = window.toolbar?.items.filter { $0.label.contains("Inspector") } ?? []
+        let panelMatches = (inspectorPanel(in: content, window: window) != nil) == presented
+        if toggles.count == 1, toggles.first?.label == expectedLabel, panelMatches {
+            return
+        }
+    }
+    let panels = splitViews(in: content).flatMap(\.arrangedSubviews).map {
+        $0.convert($0.bounds, to: nil)
+    }
+    Issue.record("Inspector presentation did not settle: open=\(presented), panels=\(panels)")
+}
+
+@MainActor
+private func settleToolbar(_ toolbar: NSToolbar) async throws {
+    var previous: [CGRect] = []
+    var confirmations = 0
+    for _ in 0 ..< 60 {
+        try await Task.sleep(for: .milliseconds(50))
+        let frames = toolbar.items.compactMap { item in
+            item.view.map { $0.convert($0.bounds, to: nil) }
+        }
+        confirmations = frames == previous ? confirmations + 1 : 0
+        if confirmations == 5 {
+            return
+        }
+        previous = frames
+    }
+    #expect(confirmations == 5, "Toolbar geometry did not settle")
+}
+
+@MainActor
+private func expectToolbarLayout(
+    _ toolbar: NSToolbar, window: NSWindow, inspectorPresented: Bool, showsCommands: Bool = true
+) throws {
+    let toggles = toolbar.items.filter { $0.label.contains("Inspector") }
+    #expect(toggles.count == 1)
+    #expect(toggles.first?.label == (inspectorPresented ? "Hide Inspector" : "Show Inspector"))
+    // The system sidebar control can live outside NSToolbar on newer macOS.
+    #expect(!toolbar.items.contains { $0.itemIdentifier.rawValue == "taskmark.sidebar-toggle" })
+    #expect(toolbar.items.filter { $0.itemIdentifier == .toggleSidebar }.count <= 1)
+    let inspectorView = try #require(toggles.first?.view)
     let trailing = inspectorView.convert(inspectorView.bounds, to: nil)
     #expect(trailing.midX > window.frame.width - 80)
-    #expect(trailing.width >= 20 && trailing.height >= 20)
-    #expect(trailing.height < 36, "Use the compact native toolbar size: \(trailing)")
+    #expect(trailing.width >= 32 && trailing.height >= 32, "Use full-sized toolbar controls: \(trailing)")
+    let commandBoundary = inspectorPresented ? try inspectorLeadingEdge(in: window) : trailing.minX
     let commandItems = toolbar.items.filter { ["Search", "New Task", "View Options"].contains($0.label) }
-    #expect(commandItems.count == 3)
+    #expect(commandItems.count == (showsCommands ? 3 : 0))
     for item in commandItems {
         let view = try #require(item.view)
         let frame = view.convert(view.bounds, to: nil)
-        #expect(frame.midX > window.frame.width / 2 && frame.midX < trailing.minX)
+        #expect(frame.maxX <= commandBoundary, "\(item.label) must stay above the center panel: \(frame)")
         #expect(abs(frame.midY - trailing.midY) < 2)
-        #expect(frame.width >= 20, "\(item.label): \(frame)")
+        #expect(frame.width >= 32, "\(item.label): \(frame)")
         #expect(abs(frame.height - trailing.height) < 2, "\(item.label): \(frame)")
     }
+    if showsCommands {
+        let options = try #require(commandItems.last?.view)
+        let frame = options.convert(options.bounds, to: nil)
+        #expect(commandBoundary - frame.maxX < 40, "Actions must hug the center panel's trailing edge: \(frame)")
+    }
+}
+
+@MainActor
+private func inspectorLeadingEdge(in window: NSWindow) throws -> CGFloat {
+    let root = try #require(window.contentView)
+    let panel = try #require(inspectorPanel(in: root, window: window))
+    return panel.convert(panel.bounds, to: nil).minX
+}
+
+@MainActor
+private func inspectorPanel(in root: NSView, window: NSWindow) -> NSView? {
+    splitViews(in: root).compactMap { split -> NSView? in
+        guard let last = split.arrangedSubviews.last,
+              !last.isHiddenOrHasHiddenAncestor, !split.isSubviewCollapsed(last),
+              (279 ... 481).contains(last.frame.width),
+              abs(last.convert(last.bounds, to: nil).maxX - window.frame.width) < 2
+        else { return nil }
+        return last
+    }.first
+}
+
+@MainActor
+private func splitViews(in view: NSView) -> [NSSplitView] {
+    let current = (view as? NSSplitView).map { [$0] } ?? []
+    return current + view.subviews.flatMap { splitViews(in: $0) }
 }

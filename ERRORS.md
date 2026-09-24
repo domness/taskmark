@@ -22,15 +22,15 @@ Read this file before repeating an approach that previously required several att
 
 ## Native SwiftUI Tests
 
-- **Failure pattern:** Fixed sleeps, cached AppKit controls, assumed key-window activation, bare hosting views, and direct low-level event calls produce toolchain-dependent focus, toolbar, keyboard, and resize failures. In-process SwiftUI accessibility trees may omit rendered elements and identifiers when no accessibility client is attached.
-- **Reliable approach:** Host through the real view-controller/scene boundary, locate current native controls after transitions, post keyboard events through the application queue, and use bounded predicates for responders, selection, editor lifetime, toolbar labels, mutation results, and window constraints.
+- **Failure pattern:** Fixed sleeps, cached AppKit controls, assumed key-window activation, bare hosting views, and direct low-level event calls produce toolchain-dependent focus, toolbar, keyboard, and resize failures. In-process SwiftUI accessibility trees may omit rendered elements and identifiers when no accessibility client is attached. Inspector animations can stall in occluded/locked sessions even after toolbar labels update.
+- **Reliable approach:** Host through the real view-controller/scene boundary, locate current native controls after transitions, post keyboard events through the application queue, and use bounded predicates for responders, selection, editor lifetime, toolbar labels, mutation results, and window constraints. Disable animations in final-geometry tests and wait for both panel presentation and stable toolbar frames.
 - **Next-time rule:** Test readiness rather than elapsed time, run focused tests inside the complete app suite, and keep physical gesture/VoiceOver acceptance distinct from hosted integration evidence. Exercise native buttons in focused hosts rather than relying on an inactive accessibility tree to locate SwiftUI actions.
 
 ## Native Toolbar Sizing
 
-- **Failure pattern:** Forcing SwiftUI label/outer frames and borderless styles into a native toolbar distorts symbol placement and material sizing. Replacing NavigationSplitView's sidebar toggle can leave a second system-owned control outside the toolbar on newer macOS.
-- **Reliable approach:** Use standard toolbar buttons and menus with system-owned sizing, and retain the automatic sidebar toggle. Verify command alignment across supported macOS versions; the system sidebar control need not appear in a hosted window's NSToolbar items.
-- **Next-time rule:** Test native geometry and duplicate controls, and inspect a complete window when capture is available. Minimum-size assertions alone do not establish correct visual presentation.
+- **Failure pattern:** Forcing SwiftUI label/outer frames and borderless styles into a native toolbar distorts symbol placement and material sizing. Replacing NavigationSplitView's sidebar toggle can leave a duplicate control. SwiftUI Spacer becomes a flexible native toolbar item regardless of its frame; custom toolbar items can retain a stale minimum width after their contents shrink. Moving an inspector outside navigation can reintroduce small-window split overflow or constraint loops.
+- **Reliable approach:** Use the full-size unified toolbar with standard buttons/menus and the automatic sidebar toggle. Keep the inspector in the detail column and reserve its measured width with an inert native space. Give that space width-dependent identity to refresh NSToolbar's cached minimum; keep interactive controls stable.
+- **Next-time rule:** Test real scene geometry against the actual panel boundary, including inspector shrink/grow, repeated open/close, narrow windows and duplicate controls. Inspect a complete window when capture is available; minimum-size assertions alone do not establish correct visual presentation.
 
 ## Test Resource Lifetime
 
