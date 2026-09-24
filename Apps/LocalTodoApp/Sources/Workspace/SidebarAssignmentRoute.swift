@@ -12,22 +12,25 @@ struct SidebarAssignmentRoute: View {
     @State private var isTargeted = false
 
     var body: some View {
-        Label(title, systemImage: isTargeted ? "arrow.down.circle" : systemImage)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .contentShape(Rectangle())
-            .background {
-                if isTargeted {
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(Color.accentColor.opacity(0.14))
-                }
+        SidebarRouteLabel(
+            model: model, route: route, title: title,
+            systemImage: isTargeted ? "arrow.down.circle" : systemImage
+        )
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .contentShape(Rectangle())
+        .background {
+            if isTargeted {
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(Color.accentColor.opacity(0.14))
             }
-            .dropDestination(for: TaskDragItem.self) { values, _ in
-                assign(values)
-            } isTargeted: {
-                isTargeted = $0
-            }
-            .help(target.helpText)
-            .tag(route)
+        }
+        .dropDestination(for: TaskDragItem.self) { values, _ in
+            assign(values)
+        } isTargeted: {
+            isTargeted = $0
+        }
+        .help(target.helpText)
+        .tag(route)
     }
 
     private func assign(_ values: [TaskDragItem]) -> Bool {

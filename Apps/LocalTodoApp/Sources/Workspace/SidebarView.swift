@@ -91,6 +91,6 @@ struct SidebarView: View {
     }
 
     private func route(_ route: WorkspaceRoute, _ title: String, _ image: String) -> some View {
-        Label(title, systemImage: image).tag(route)
+        SidebarRouteLabel(model: model, route: route, title: title, systemImage: image).tag(route)
     }
 }
