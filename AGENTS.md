@@ -125,6 +125,7 @@ Allowed scopes: `app`, `cli`, `domain`, `markdown`, `skill`, `docs`, `build`, `c
 Common types: `feat`, `fix`, `docs`, `refactor`, `test`, `build`, `ci`, `chore`, `perf`, `style`.
 
 - Keep the first line at or below 72 characters.
+- Actual merge commits are exempt from subject format and length checks, so Git-generated merge messages are accepted. Ordinary commits introduced by a merge still require Conventional Commit subjects.
 - Use `!` and a `BREAKING CHANGE:` footer for incompatible file-format or CLI changes.
 - Keep commits small and cohesive. Do not mix refactors with unrelated behavior changes.
 - Install the optional repository hook with `make bootstrap`.

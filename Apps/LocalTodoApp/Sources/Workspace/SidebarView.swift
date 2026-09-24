@@ -71,6 +71,11 @@ struct SidebarView: View {
                                 model: model, route: .tag(tag), title: tag,
                                 systemImage: "tag", target: .tag(tag)
                             )
+                            .contextMenu {
+                                Button("Delete Tag", role: .destructive) {
+                                    Task { await model.deleteTag(tag) }
+                                }
+                            }
                         }
                     }
                 }

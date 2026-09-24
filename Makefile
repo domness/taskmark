@@ -27,6 +27,7 @@ build: generate
 
 test-release-scripts:
 	python3 -B scripts/test-appcast.py
+	python3 -B scripts/test-commit-validation.py
 	python3 scripts/test-release-scripts.py
 	python3 scripts/test-release-source.py
 	python3 scripts/test-ci-signing.py

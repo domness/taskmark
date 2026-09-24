@@ -33,7 +33,7 @@ See [daily workflows and shortcuts](DAILY_WORK.md).
 - Composed task inspector with a title-side completion control, Planning/Organization property groups, borderless aligned values and collapsed file details. Save problems and recovery remain visible independently of file details.
 - Rendered-first Markdown task and project titles and notes, with click-to-edit source and return to rendering on focus loss; includes inspector links, headings, lists, quotes and code. Source text remains canonical.
 - Task rows resize as planning metadata appears or disappears. Search/list headers stay top-aligned; Switch Vault has its own footer; the inspector toggle is at the trailing window toolbar.
-- Task Duplicate/Delete/Copy actions; project/area context-menu deletion with reference protection. Successful deletions support exact-byte Undo/Redo during the vault session.
+- Task Duplicate/Delete/Copy actions; project/area/tag context-menu removal with automatic assignment cleanup, including completed tasks and saved filters. Session-local Undo/Redo restores deleted collection bytes and affected assignments; interrupted cleanup reports reversible partial progress.
 - Independent native Projects/Areas sidebar ordering, with Move Up/Move Down/Restore Default Order actions.
 - Drag unselected tasks directly from the full row onto sidebar projects, areas or tags, with additive tag assignment and field-specific Undo/Redo. Custom order uses the same row drag for native list insertion.
 - P1 red/P2 orange/P3 blue indicators and labels, neutral task titles and optional native CSS-token overrides in `.config/style.css`.

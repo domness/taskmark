@@ -1,3 +1,8 @@
 #!/bin/sh
 
+# Git has not created the commit yet, so identify a real merge from its pending parent.
+if git rev-parse --quiet --verify MERGE_HEAD >/dev/null 2>&1; then
+    exit 0
+fi
+
 exec scripts/validate-commit-message "$1"

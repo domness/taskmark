@@ -73,7 +73,7 @@ Each `WorkspaceWindowRoot` owns a distinct `WorkspaceModel` and `AppPreferences`
 
 Use Swift 6 strict concurrency. The vault-scoped `VaultStore` actor serializes its scans and filesystem operations. The main-actor workspace owns observable UI state and drafts, reserves mutation paths, and checks vault sessions/model epochs before publishing asynchronous results. Draft generations preserve edits made while a save is in flight. Actor isolation does not serialize separate app/CLI processes or external editors; file coordination and optimistic revisions provide the filesystem boundary.
 
-Multi-file reference changes must satisfy the all-or-nothing contract. No enabled operation is represented as a general multi-file transaction; collection path moves remain disabled until that guarantee can be met.
+Path moves and their reference changes must satisfy the all-or-nothing contract; collection path moves remain disabled until that guarantee can be met. Organization removal is a separate, explicitly resumable cleanup workflow, not a general multi-file transaction. The Markdown actor plans the edits and returns both completed results and recovery steps when execution stops. The workspace flushes drafts, prevents overlapping app writes/refresh publication during execution, merges completed results, and registers one session-local history action. See the file contract for intermediate visibility and crash behavior.
 
 ## Storage Safety
 
@@ -83,4 +83,4 @@ Multi-file reference changes must satisfy the all-or-nothing contract. No enable
 - Coordinate reads and writes with platform file coordination where iCloud may be involved.
 - Report conflicts and invalid references through the app, CLI JSON, and non-zero exit codes.
 - Task moves coordinate both exact URLs and use an exclusive atomic rename. Project/area moves are currently disabled: sequential replacement with best-effort rollback does not meet the multi-file mutation contract. Re-enabling them requires an explicit recovery and visibility design for external Markdown readers and writers.
-- Project/area deletion rejects known task, project and saved-filter references rather than cascading. This scan is not a transaction against concurrent external reference changes. App deletion captures exact bytes for session-local Undo; restoration refuses occupied paths. See [the file contract](FILE_FORMAT.md#task-copies-and-reversible-deletion).
+- App project/area removal clears known task, project and saved-filter assignments before revision-checked deletion; tag removal clears the exact tag across entities and filter criteria. Per-file cleanup is conflict-checked and recoverable, with explicit partial-progress errors rather than rollback. Low-level deletion still rejects remaining references. App history captures exact deleted collection bytes and field-specific reference patches; restoration refuses occupied paths. See [the file contract](FILE_FORMAT.md#task-copies-and-reversible-deletion).

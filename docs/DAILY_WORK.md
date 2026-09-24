@@ -15,6 +15,7 @@ Appearance/calendar-display preferences belong to each vault's `.config/config.y
 - Incomplete tasks with a scheduled date or deadline **before today in the vault timezone** have a red title, red overdue date and an **Overdue** warning label. Dates today are not overdue; done/canceled tasks are not highlighted. Priority indicators retain their own colors.
 - **Upcoming** shows future scheduled dates or deadlines. A task with an overdue scheduled date and a future deadline can appear in both views.
 - **Waiting** and **Someday** follow the task's status, including undated tasks.
+- **All Tasks** shows incomplete tasks across the vault, excluding done and canceled tasks. Use **Search** or a filter with **Include completed and canceled tasks** enabled to review finished work.
 - Capture in Today schedules today; Upcoming schedules tomorrow; Next, Waiting and Someday use their respective status. Project/area capture assigns that collection. Capture from search or filters goes to Inbox. The destination shown when capture opens is retained if you navigate before submitting.
 - If a save is delayed, text typed after submission remains in capture when that save finishes. Canceling and reopening capture also starts a new input session, even when the title is identical.
 - Select a task and use **Task → Reschedule Selected Task…** for an exact date. Reschedule moves scheduled and deadline dates together, preserving their signed calendar-day separation. For a deadline-only task, it moves the deadline; an undated task gains a scheduled date. To edit just one date, use its inspector control.
@@ -52,7 +53,7 @@ Complete/Reopen changes only the project, not its tasks. Someday, done and cance
 
 Routine project destinations in the command palette include active projects only; use the sidebar's Inactive Projects section for review or reopening.
 
-Right-click a project or area to delete it. Remove task, project and saved-filter references first; deletion never cascades. Native Undo restores the exact Markdown during the current vault session.
+Right-click a project, area or tag to delete it. Taskmark clears its assignments automatically, including on completed tasks and saved filters, while keeping the tasks themselves. Area removal also clears project assignments; tag removal covers tasks, projects and areas. Native Undo restores the collection and assignments during the current vault session. Interrupted cleanup reports partial progress and can be undone or retried.
 
 ## Combined And Saved Filters
 

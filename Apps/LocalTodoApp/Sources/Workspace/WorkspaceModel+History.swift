@@ -5,6 +5,7 @@ import LocalTodoMarkdown
 extension WorkspaceModel {
     var canPerformHistory: Bool {
         !isHistoryBusy
+            && !isRemovingOrganization
             && pendingMutationPaths.isEmpty
             && !hasDirtyDrafts
             && !filterState.isSaving
@@ -146,7 +147,8 @@ extension WorkspaceModel {
     }
 
     func beginMutation(at path: VaultPath) -> Bool {
-        guard !isSavingConfiguration, !pendingMutationPaths.contains(path) else { return false }
+        guard !isRemovingOrganization, !isSavingConfiguration,
+              !pendingMutationPaths.contains(path) else { return false }
         pendingMutationPaths.insert(path)
         modelEpoch += 1
         return true
