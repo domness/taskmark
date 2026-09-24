@@ -100,6 +100,8 @@ Install a skill by copying its complete directory, including any `references/` f
 | [File Format](docs/FILE_FORMAT.md) | Canonical vault and entity contract |
 | [Architecture](docs/ARCHITECTURE.md) | Targets, dependency direction, and storage safety |
 | [Roadmap](docs/ROADMAP.md) | Implemented work, validation gaps, and planned platforms |
+| [iOS Specification](docs/IOS_SPEC.md) | Planned iPhone/iPad behavior, shared vaults, themes, and acceptance |
+| [iOS Agent Plan](docs/IOS_IMPLEMENTATION.md) | Dependency-ordered implementation packets and agent prompts |
 | [CI and Releases](docs/CI_RELEASES.md) | Validation, signing, notarization, and packaging |
 
 ## Build From Source
