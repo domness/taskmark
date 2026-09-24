@@ -5,6 +5,32 @@ import LocalTodoMarkdown
 import Testing
 
 @MainActor
+@Test func allTasksShowsOnlyIncompleteTasksWhileSearchAndFiltersCanShowFinishedTasks() async throws {
+    try await withWorkspace { model, root in
+        let store = VaultStore(root: root)
+        let statuses: [TaskStatus] = [.inbox, .next, .waiting, .someday, .done, .canceled]
+        for status in statuses {
+            let task = try TodoTask(
+                path: VaultPath("Tasks/\(status.rawValue).md"), title: "Task \(status.rawValue)", status: status,
+                createdAt: Date(), updatedAt: Date(), completedAt: status == .done ? Date() : nil
+            )
+            _ = try await store.create(.task(task))
+        }
+        await model.refresh()
+        model.route = .all
+        #expect(Set(model.visibleTasks.map(\.status)) == [.inbox, .next, .waiting, .someday])
+
+        model.route = .search
+        model.searchText = "Task"
+        #expect(Set(model.visibleTasks.map(\.status)) == Set(statuses))
+
+        model.beginFilterEditing()
+        model.filterState.editor.includeCompleted = true
+        #expect(Set(model.visibleTasks.map(\.status)) == Set(statuses))
+    }
+}
+
+@MainActor
 @Test func appCombinesSavesAndReloadsFiltersWithSorting() async throws {
     try await withWorkspace { model, root in
         let project = try await makeProjectDraft(model)
