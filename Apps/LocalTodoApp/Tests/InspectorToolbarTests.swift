@@ -50,6 +50,35 @@ func inspectorToggleRemainsSingleAcrossPresentationChanges(initiallyPresented: B
 }
 
 @MainActor
+@Test func workspaceToolbarControlsAreLargerThanCompactNativeControls() async throws {
+    try await withToolbarWindow(initiallyPresented: false, width: 1120) { _, window in
+        try await waitForInspector(false, in: window)
+        let toolbar = try #require(window.toolbar)
+        try await settleToolbar(toolbar)
+        #expect(window.toolbarStyle == .unified)
+        let fullSize = try toolbarControlSizes(toolbar)
+        window.toolbarStyle = .unifiedCompact
+        defer { window.toolbarStyle = .unified }
+        try await settleToolbar(toolbar)
+        let compactSize = try toolbarControlSizes(toolbar)
+        for (label, size) in fullSize {
+            let compact = try #require(compactSize[label])
+            #expect(size.height > compact.height, "\(label): full=\(size), compact=\(compact)")
+        }
+    }
+}
+
+@MainActor
+private func toolbarControlSizes(_ toolbar: NSToolbar) throws -> [String: CGSize] {
+    var sizes: [String: CGSize] = [:]
+    for label in ["Search", "New Task", "View Options", "Show Inspector"] {
+        let view = try #require(toolbar.items.first { $0.label == label }?.view)
+        sizes[label] = view.bounds.size
+    }
+    return sizes
+}
+
+@MainActor
 private func withToolbarWindow(
     initiallyPresented: Bool, width: Double,
     _ operation: @MainActor (WorkspaceModel, NSWindow) async throws -> Void
@@ -119,7 +148,10 @@ private func expectToolbarLayout(
     let inspectorView = try #require(toggles.first?.view)
     let trailing = inspectorView.convert(inspectorView.bounds, to: nil)
     #expect(trailing.midX > window.frame.width - 80)
-    #expect(trailing.width >= 32 && trailing.height >= 32, "Use full-sized toolbar controls: \(trailing)")
+    #expect(window.toolbarStyle == .unified)
+    // macOS 15 uses 28-point native controls; newer systems use larger dimensions.
+    // The separate compact comparison verifies enlargement on the running OS.
+    #expect(trailing.width >= 28 && trailing.height >= 28, "Use full-sized toolbar controls: \(trailing)")
     let commandBoundary = inspectorPresented ? try inspectorLeadingEdge(in: window) : trailing.minX
     let commandItems = toolbar.items.filter { ["Search", "New Task", "View Options"].contains($0.label) }
     #expect(commandItems.count == (showsCommands ? 3 : 0))
@@ -128,7 +160,7 @@ private func expectToolbarLayout(
         let frame = view.convert(view.bounds, to: nil)
         #expect(frame.maxX <= commandBoundary, "\(item.label) must stay above the center panel: \(frame)")
         #expect(abs(frame.midY - trailing.midY) < 2)
-        #expect(frame.width >= 32, "\(item.label): \(frame)")
+        #expect(frame.width >= 28, "\(item.label): \(frame)")
         #expect(abs(frame.height - trailing.height) < 2, "\(item.label): \(frame)")
     }
     if showsCommands {

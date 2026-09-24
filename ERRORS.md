@@ -30,7 +30,7 @@ Read this file before repeating an approach that previously required several att
 
 - **Failure pattern:** Forcing SwiftUI label/outer frames and borderless styles into a native toolbar distorts symbol placement and material sizing. Replacing NavigationSplitView's sidebar toggle can leave a duplicate control. SwiftUI Spacer becomes a flexible native toolbar item regardless of its frame; custom toolbar items can retain a stale minimum width after their contents shrink. Moving an inspector outside navigation can reintroduce small-window split overflow or constraint loops.
 - **Reliable approach:** Use the full-size unified toolbar with standard buttons/menus and the automatic sidebar toggle. Keep the inspector in the detail column and reserve its measured width with an inert native space. Give that space width-dependent identity to refresh NSToolbar's cached minimum; keep interactive controls stable.
-- **Next-time rule:** Test real scene geometry against the actual panel boundary, including inspector shrink/grow, repeated open/close, narrow windows and duplicate controls. Inspect a complete window when capture is available; minimum-size assertions alone do not establish correct visual presentation.
+- **Next-time rule:** Test real scene geometry against the actual panel boundary, including inspector shrink/grow, repeated open/close, narrow windows and duplicate controls. Compare full-size and compact controls on the running OS instead of assuming newer-system dimensions on older supported macOS versions. Inspect a complete window when capture is available; minimum-size assertions alone do not establish correct visual presentation.
 
 ## Test Resource Lifetime
 
