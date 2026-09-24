@@ -3,15 +3,18 @@ import SwiftUI
 struct SettingsView: View {
     let model: WorkspaceModel
     let cliRegistration: CLIRegistration
+    let updates: AppUpdates
     @State private var section: SettingsSection? = .general
 
     init(
         model: WorkspaceModel,
         initialSection: SettingsSection = .general,
-        cliRegistration: CLIRegistration = CLIRegistration()
+        cliRegistration: CLIRegistration = CLIRegistration(),
+        updates: AppUpdates = AppUpdates()
     ) {
         self.model = model
         self.cliRegistration = cliRegistration
+        self.updates = updates
         _section = State(initialValue: initialSection)
     }
 
@@ -32,6 +35,8 @@ struct SettingsView: View {
                 case .theme:
                     ThemeSettingsView(model: model, preferences: model.preferences)
                         .disabled(model.snapshot == nil)
+                case .updates:
+                    UpdatesSettingsView(updates: updates)
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -40,7 +45,7 @@ struct SettingsView: View {
         }
         .frame(minWidth: 700, maxWidth: .infinity, minHeight: 560, maxHeight: .infinity, alignment: .topLeading)
         .safeAreaInset(edge: .bottom) {
-            if model.snapshot == nil {
+            if model.snapshot == nil, section != .updates {
                 Text("Open a vault to edit its shared preferences.").padding()
             }
             ConfigurationSaveStatus(model: model)
@@ -55,7 +60,7 @@ struct SettingsView: View {
 }
 
 enum SettingsSection: String, CaseIterable, Identifiable {
-    case general, theme
+    case general, theme, updates
     var id: String {
         rawValue
     }
@@ -65,6 +70,10 @@ enum SettingsSection: String, CaseIterable, Identifiable {
     }
 
     var symbol: String {
-        self == .general ? "gearshape" : "paintpalette"
+        switch self {
+        case .general: "gearshape"
+        case .theme: "paintpalette"
+        case .updates: "arrow.down.circle"
+        }
     }
 }

@@ -6,6 +6,9 @@ options:
     macOS: "15.0"
 
 packages:
+  Sparkle:
+    url: https://github.com/sparkle-project/Sparkle
+    exactVersion: 2.10.0
   LocalTodoKit:
     path: .
   ArgumentParser:
@@ -44,6 +47,12 @@ targets:
       path: .build/Taskmark-Info.plist
       properties:
         ATSApplicationFontsPath: Fonts
+        SUFeedURL: https://github.com/domness/taskmark/releases/latest/download/appcast.xml
+        SUPublicEDKey: $(SPARKLE_PUBLIC_ED_KEY)
+        SUEnableAutomaticChecks: false
+        SUAutomaticallyUpdate: false
+        SUAllowsAutomaticUpdates: false
+        SUEnableSystemProfiling: false
         UTExportedTypeDeclarations:
           - UTTypeIdentifier: com.domness.localtodo.task-reference
             UTTypeDescription: Taskmark Task Reference
@@ -71,6 +80,7 @@ targets:
         product: LocalTodoDomain
       - package: LocalTodoKit
         product: LocalTodoMarkdown
+      - package: Sparkle
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.domness.localtodo

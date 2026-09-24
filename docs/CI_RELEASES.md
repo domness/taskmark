@@ -129,7 +129,7 @@ These list names/settings, not secret values. They cannot prove that the certifi
 3. Remove **this repository's** personal runner registration/access in **Settings → Actions → Runners**. Older tags still contain the former self-hosted workflow; removing access also prevents those historical workflows reaching your Mac. Do not remove another repository's runner service or certificates.
 4. Create a **new version tag** on the merged migration commit or later, then publish its GitHub release as the owner. Historical tags lack the new bootstrap scripts; do not use them to validate the migration or move them to new commits.
 5. Wait for validation, review its tag/SHA summary, then approve **Sign and notarize macOS app** through the pending `release` deployment. Approval is also required when an agent initiates the release on your behalf.
-6. Verify the workflow and all three assets below. Download the DMG, copy Taskmark to Applications and launch/test it normally. Packaging validation is distinct from downloaded-app interaction.
+6. Verify the workflow and all four assets below. Download the DMG, copy Taskmark to Applications and launch/test it normally. Packaging validation is distinct from downloaded-app interaction.
 
 ## Creating Or Retrying A Release
 
@@ -142,6 +142,7 @@ The release receives:
 | `Taskmark-<tag>-universal.dmg` | Drag the signed/stapled app into Applications |
 | `Taskmark-<tag>-universal.zip` | Complete signed/stapled app bundle, archived with `ditto` |
 | `Taskmark-<tag>-SHA256SUMS.txt` | Hashes of the final installers |
+| `appcast.xml` | Sparkle update feed with an EdDSA-signed ZIP enclosure; included in checksums and uploaded after installers |
 
 Both installers contain a universal macOS 15+ app and the signed universal CLI in `Contents/Helpers/taskmark`. Users register the CLI through **Settings → General → Command-line interface**.
 
@@ -152,6 +153,26 @@ gh workflow run release.yml --repo domness/taskmark --ref main -f tag=0.9.0
 ```
 
 Retrying replaces matching filenames (`--clobber`) and changes the build attempt. Use a new tag when downloads must remain immutable. GitHub's workflow `GITHUB_TOKEN` does not trigger downstream release workflows when creating a release; dispatch packaging explicitly in that case.
+
+## Sparkle Update Signing
+
+The app reads `https://github.com/domness/taskmark/releases/latest/download/appcast.xml`. GitHub's latest-release redirect excludes drafts and prereleases. Each release feed points to its exact tag's ZIP; the feed is uploaded last. Between publishing a new latest release and finishing packaging, checks can report a temporary unavailable-feed error. Retry after packaging completes. Do not mark an older version as latest: Sparkle compares the monotonically increasing workflow build numbers, including retry attempts.
+
+Before the first updater-enabled release, create a dedicated key pair using **Sparkle 2.10.0**'s `bin/generate_keys --account taskmark` (from its distribution or the resolved SwiftPM artifact). Retain the private key in secure backup. Follow [Sparkle's signing guide](https://sparkle-project.org/documentation/#3-segue-for-security-concerns), and configure the protected **release** environment:
+
+| Type | Name | Value |
+| --- | --- | --- |
+| Variable | `SPARKLE_PUBLIC_ED_KEY` | Public base64 Ed25519 key printed by `generate_keys`; embedded into the app |
+| Secret | `SPARKLE_PRIVATE_ED_KEY` | Contents of the private-key export made with `generate_keys --account taskmark -x /private/path/key` |
+
+```sh
+gh variable set SPARKLE_PUBLIC_ED_KEY --env release --repo domness/taskmark --body 'PUBLIC_KEY'
+gh secret set SPARKLE_PRIVATE_ED_KEY --env release --repo domness/taskmark < /private/path/key
+```
+
+Never commit the private key. Packaging passes it through standard input to `generate_appcast`, not a command argument or artifact. Missing configuration fails before building. The archive is exported with Developer ID signing so Sparkle's nested helpers receive the app team's signature. After notarization/stapling, the pinned Sparkle tool generates the feed from the final ZIP, checks signing-key compatibility, and the release script validates signature presence, version, URL, size and minimum OS. Local packaging requires both Sparkle environment variables too.
+
+The first updater-enabled build must be installed manually. For release acceptance, install an older updater-enabled signed build in Applications, publish a newer stable build, and check both the menu and Updates settings. Verify up-to-date and offline states, download cancellation, signature rejection for a tampered archive using a test feed, successful replacement/relaunch, pending edits across multiple vaults (including a save conflict that cancels termination), and the bundled CLI after updating. Confirm automatic checking survives relaunch and stays machine-local. Automated tests and unsigned builds do not establish this signed installation evidence.
 
 ## Local Validation And Packaging
 

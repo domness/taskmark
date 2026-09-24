@@ -49,11 +49,12 @@ gh workflow run release.yml --repo "$REPO" --ref main -f tag="$TAG"
 
 ## 4. Verify and hand off
 
-Require the matching release workflow to conclude successfully. Inspect `gh release view "$TAG" --repo "$REPO" --json url,isDraft,isPrerelease,assets` and confirm these three nonempty, uploaded assets:
+Require the matching release workflow to conclude successfully. Inspect `gh release view "$TAG" --repo "$REPO" --json url,isDraft,isPrerelease,assets` and confirm these four nonempty, uploaded assets:
 
 - `Taskmark-<tag>-universal.dmg`
 - `Taskmark-<tag>-universal.zip`
 - `Taskmark-<tag>-SHA256SUMS.txt`
+- `appcast.xml` (its signed enclosure must target this release's ZIP and build)
 
 Check final Git status. Return the release URL, direct DMG link, a brief change summary, and validation/packaging outcome. Distinguish signed/notarized packaging from a manual downloaded-app launch. Report any remaining local changes explicitly.
 

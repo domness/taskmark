@@ -26,6 +26,7 @@ build: generate
 	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoApp -configuration Debug build CODE_SIGNING_ALLOWED=NO $(XCODEBUILD_ARGS)
 
 test-release-scripts:
+	python3 -B scripts/test-appcast.py
 	python3 -B scripts/test-commit-validation.py
 	python3 scripts/test-release-scripts.py
 	python3 scripts/test-release-source.py
