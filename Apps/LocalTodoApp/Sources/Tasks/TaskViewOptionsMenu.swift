@@ -24,12 +24,8 @@ struct TaskViewOptionsMenu: View {
                 systemImage: model.stylesheetDiagnostic == nil
                     ? "line.3.horizontal.decrease" : "exclamationmark.triangle"
             )
-            .frame(minWidth: 36, minHeight: 36)
-            .contentShape(Rectangle())
         }
         .labelStyle(.iconOnly)
-        .menuStyle(.borderlessButton)
-        .frame(minWidth: 36, minHeight: 36)
         .help("Choose row details and grouping for this view")
     }
 

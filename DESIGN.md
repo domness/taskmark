@@ -79,7 +79,7 @@ The system is flat by default. Tonal surface changes and native dividers establi
 
 Native controls own interaction feedback. Any future custom motion should remain functional, respect Reduce Motion and avoid decorative transitions; no custom animation-duration token system is implemented.
 
-The workspace hides the separate Taskmark window-title bar and uses a compact native toolbar with an unobtrusive background. The sidebar toggle stays on the left and the inspector toggle at the far right, including while either pane is hidden. Search/add/view options share the same horizontal toolbar row, immediately before the inspector toggle. Toolbar controls have a 36-point minimum target. The list heading sits below the toolbar and wraps independently; project notes and the search field remain below the heading. Settings → General → Dock includes an opt-in Badge switch showing the unfiltered Today count for the most recently active vault, hidden at zero.
+The workspace hides the separate Taskmark window-title bar and uses a compact native toolbar with an unobtrusive background. NavigationSplitView owns the system sidebar toggle on the left; the app supplies only the far-right inspector toggle. Search/add/view options share the same horizontal toolbar row, immediately before the inspector toggle. Standard buttons and menus let macOS own symbol size, padding, hit targets and toolbar material; do not impose content frames or borderless styles on toolbar controls. The list heading sits below the toolbar and wraps independently; project notes and the search field remain below the heading. Settings → General → Dock includes an opt-in Badge switch showing the unfiltered Today count for the most recently active vault, hidden at zero.
 
 ## 6. Do's and Don'ts
 

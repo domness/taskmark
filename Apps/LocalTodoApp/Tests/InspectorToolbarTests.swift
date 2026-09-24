@@ -32,6 +32,10 @@ func inspectorToggleRemainsSingleAcrossPresentationChanges(initiallyPresented: B
             let toolbar = try #require(window.toolbar)
             let toggles = toolbar.items.filter { $0.label.contains("Inspector") }
             let labels = toolbar.items.map { "\($0.itemIdentifier.rawValue): \($0.label)" }.joined(separator: ", ")
+            // The system sidebar control can live outside NSToolbar on newer macOS.
+            // Never add a second, app-authored toggle beside it.
+            #expect(!toolbar.items.contains { $0.itemIdentifier.rawValue == "taskmark.sidebar-toggle" })
+            #expect(toolbar.items.filter { $0.itemIdentifier == .toggleSidebar }.count <= 1)
             #expect(toggles.count == 1, Comment(rawValue: labels))
             #expect(toggles.first?.label == (presented ? "Hide Inspector" : "Show Inspector"))
             try expectToolbarLayout(toolbar, window: window)
@@ -41,24 +45,20 @@ func inspectorToggleRemainsSingleAcrossPresentationChanges(initiallyPresented: B
 
 @MainActor
 private func expectToolbarLayout(_ toolbar: NSToolbar, window: NSWindow) throws {
-    let sidebar = try #require(toolbar.items.first { $0.label == "Toggle Sidebar" })
     let inspector = try #require(toolbar.items.first { $0.label.contains("Inspector") })
-    let sidebarView = try #require(sidebar.view)
     let inspectorView = try #require(inspector.view)
-    let leading = sidebarView.convert(sidebarView.bounds, to: nil)
     let trailing = inspectorView.convert(inspectorView.bounds, to: nil)
-    #expect(leading.midX < window.frame.width / 2)
     #expect(trailing.midX > window.frame.width - 80)
-    #expect(abs(leading.midY - trailing.midY) < 2)
-    #expect(leading.width >= 36 && leading.height >= 36)
-    #expect(trailing.width >= 36 && trailing.height >= 36)
+    #expect(trailing.width >= 20 && trailing.height >= 20)
+    #expect(trailing.height < 36, "Use the compact native toolbar size: \(trailing)")
     let commandItems = toolbar.items.filter { ["Search", "New Task", "View Options"].contains($0.label) }
     #expect(commandItems.count == 3)
     for item in commandItems {
         let view = try #require(item.view)
         let frame = view.convert(view.bounds, to: nil)
-        #expect(frame.midX > leading.maxX && frame.midX < trailing.minX)
+        #expect(frame.midX > window.frame.width / 2 && frame.midX < trailing.minX)
         #expect(abs(frame.midY - trailing.midY) < 2)
-        #expect(frame.width >= 36 && frame.height >= 36, "\(item.label): \(frame)")
+        #expect(frame.width >= 20, "\(item.label): \(frame)")
+        #expect(abs(frame.height - trailing.height) < 2, "\(item.label): \(frame)")
     }
 }
