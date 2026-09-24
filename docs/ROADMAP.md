@@ -72,9 +72,13 @@ The maintained test suites under `Tests/` and `Apps/LocalTodoApp/Tests/` are the
 
 ## Next Platform: iOS — Planned
 
-- Reuse Domain and Markdown targets after desktop reliability and storage validation.
-- Proposed Today/Inbox/Next/Search navigation, with collections under Browse; final mobile navigation remains to be designed.
-- Validate iCloud Drive coordination and conflict behavior across macOS and iOS.
+- Target iPhone and iPad on iOS/iPadOS 18+, with a native compact navigation shell and adaptive iPad sidebar/list/detail layout.
+- Open the same schema-2 local or iCloud Drive vault in place, including shared configuration, saved filters, ordering, all six themes and the bounded stylesheet contract.
+- Extract existing workspace and presentation behavior for reuse alongside Domain/Markdown; add provider availability/version handling and mobile lifecycle/draft recovery before broad UI work.
+- Proposed compact navigation is Today, Inbox, Browse and Search; Browse exposes the remaining built-in routes and collections while honoring all existing startup-view choices.
+- Complete physical-device iCloud interoperability, conflict and recovery validation before claiming mobile sync support.
+
+The [iOS specification](IOS_SPEC.md) defines behavior and acceptance; the [agent implementation plan](IOS_IMPLEMENTATION.md) provides dependency-ordered work packets and dispatch prompts. These documents describe planned work, not implemented mobile support.
 
 ## Later: Web — Planned
 

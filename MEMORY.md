@@ -7,7 +7,7 @@ This file summarizes current, durable decisions that are not better expressed in
 - Taskmark is a macOS-first, local-first task manager and CLI for a dedicated Markdown vault.
 - The app combines fast capture and daily planning with transparent, user-owned files. It does not require an account, canonical database, or Taskmark sync service.
 - Tasks are individual Markdown files. Lightweight subtasks remain Markdown checkboxes in the parent task body. Collaboration, first-class child-task entities, reminders, natural-language capture, and Todoist migration are outside current scope.
-- iOS is the next planned client after desktop and storage reliability are established; web is later and must honor the same file contract.
+- iOS is the next planned client: iPhone and iPad on iOS/iPadOS 18+, reusing the same local/iCloud Drive vault and shared personalizations. `docs/IOS_SPEC.md` and `docs/IOS_IMPLEMENTATION.md` define the planned behavior and agent work packets; storage/device validation gates implementation and release claims. Web is later and must honor the same file contract.
 
 ## Naming And Compatibility
 

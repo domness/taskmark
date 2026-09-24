@@ -40,6 +40,10 @@ Owns SwiftUI composition, macOS vault selection, security-scoped access, keyboar
 
 Each `WorkspaceWindowRoot` owns a distinct `WorkspaceModel` and `AppPreferences` projection of its vault configuration. The app-scoped `WorkspaceWindows` coordinates open-model lifetime, the last active Settings context and all-window termination flushing. Different vault windows can use different themes; windows on the same vault refresh shared values from disk. `WorkspaceCommands` uses SwiftUI focused scene values rather than a single app-wide model. A main-actor AppKit window-delegate bridge validates close requests, supplies a per-window UndoManager, forwards SwiftUI's scene callbacks and releases vault resources after closing. Only the initial window restores the last bookmark; newly requested windows start unbound.
 
+### Planned iOS Extension
+
+The [iOS specification](IOS_SPEC.md#3-proposed-architecture) proposes iPhone/iPad support on iOS 18+, with a separate `LocalTodoIOSApp` shell and staged extraction of `LocalTodoWorkspace` (Foundation/Observation session behavior) and `LocalTodoPresentation` (shared native presentation). These targets do not exist yet. Both app shells will continue to use the same Domain/Markdown contract; mobile adds no canonical database or synchronization transport. The [implementation plan](IOS_IMPLEMENTATION.md) defines target ownership, provider-safety validation and the extraction order. Update the implemented target diagram when those changes land.
+
 ## Data Flow
 
 `WorkspaceWindows` observes the Settings vault context, its badge preference, and its snapshot to publish the single app Dock badge through an app-composed AppKit closure. The count reuses the Domain Today query with the workspace's injected clock and vault time zone; it is independent of the visible route. The existing periodic snapshot refresh reevaluates calendar-day changes. Observation survives individual window closure and clears the badge when no bound workspace remains.
