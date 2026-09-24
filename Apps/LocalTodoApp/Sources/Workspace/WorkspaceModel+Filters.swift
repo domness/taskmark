@@ -14,7 +14,7 @@ extension WorkspaceModel {
         return TaskQuery(
             scope: route.scope,
             text: route == .search ? searchText.trimmingCharacters(in: .whitespacesAndNewlines) : "",
-            includeCompleted: route == .all || route == .search,
+            includeCompleted: route == .search,
             sort: currentTaskSort
         )
     }
