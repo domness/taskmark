@@ -1,4 +1,6 @@
-# Settings
+# macOS Settings
+
+This guide documents the macOS Settings window. The iPhone/iPad app exposes the shared General, Theme and Vault choices through native mobile navigation, but omits Mac-only CLI registration, Dock, window and Sparkle controls. Both apps persist shared choices through the same schema-2 configuration; see the [iOS specification](IOS_SPEC.md#6-shared-configuration-themes-and-accessibility) for the mobile projection.
 
 Open **Taskmark → Settings…** or press **Command-comma**. The native Settings window has General, Theme and Updates sections. Changes apply immediately; there is no Apply button. Settings uses the same appearance as the main window.
 

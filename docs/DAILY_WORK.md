@@ -1,6 +1,6 @@
 # Daily Workflows
 
-Open or create a **dedicated task vault** in the macOS app. Tasks stay in individual Markdown files; everyday editing does not require YAML.
+This guide documents the macOS workflows and keyboard shortcuts. Open or create a **dedicated task vault** in the macOS app. Tasks stay in individual Markdown files; everyday editing does not require YAML. The iPhone/iPad implementation uses the same task semantics through touch-first Today, Inbox, Browse and Search navigation; see the [iOS specification](IOS_SPEC.md) and current [acceptance evidence](IOS_ACCEPTANCE.md).
 
 ## Multiple Vault Windows
 

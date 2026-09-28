@@ -258,11 +258,11 @@ Optional notes about these views.
 
 ## Shared Presentation And Optional Appearance
 
-The macOS app stores display preferences and manual ordering in `.config/config.yml` as described above. A saved filter's canonical `sort` remains one of the shared query sorts even when the app displays it in Custom order. See [personalization](PERSONALIZATION.md).
+The macOS and iOS/iPadOS apps store shared display preferences and manual ordering in `.config/config.yml` as described above. A saved filter's canonical `sort` remains one of the shared query sorts even when an app displays it in Custom order. Platform-only state such as window geometry, bookmarks and mobile draft-recovery checkpoints remains outside the vault. See [personalization](PERSONALIZATION.md).
 
 ### Optional Native Appearance
 
-The macOS app optionally reads `.config/style.css`, a UTF-8 file up to 64 KiB, alongside the manifest and saved filters. Symlink components below the vault root are rejected. Missing or invalid styles use built-in appearance; diagnostics never cause stylesheet rewrites. The documented selectors, tokens, precedence and reload behavior are in [PERSONALIZATION.md](PERSONALIZATION.md). Styles do not change task semantics or Markdown mutations.
+Both native apps optionally read `.config/style.css`, a UTF-8 file up to 64 KiB, alongside the manifest and saved filters. Symlink components below the vault root are rejected. Missing or invalid styles use built-in appearance; diagnostics never cause stylesheet rewrites. The documented selectors, tokens, precedence and reload behavior are in [PERSONALIZATION.md](PERSONALIZATION.md). Styles do not change task semantics or Markdown mutations.
 
 ## Mutation Guarantees
 

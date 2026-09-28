@@ -1,11 +1,11 @@
 # iOS Agent Implementation Plan
 
-Status: implemented candidate with acceptance remaining. The product specified in [IOS_SPEC.md](IOS_SPEC.md) is present on `codex/ios-app`; this document remains the record of bounded work packets, dependencies and completion requirements. See [IOS_ACCEPTANCE.md](IOS_ACCEPTANCE.md) for verified evidence and outstanding release blockers.
+Status: implemented candidate merged by pull request #32, with acceptance remaining. This document remains the record of bounded work packets, dependencies and completion requirements. See [IOS_ACCEPTANCE.md](IOS_ACCEPTANCE.md) for verified evidence and outstanding release blockers.
 
 ## Working Rules
 
 - Start with `AGENTS.md` and its required reading. Then read the iOS spec and the assigned packet below.
-- Work from `docs/ios-app-spec` or a task branch based on its latest integrated commit. Do not start independent agents from unrelated `main` snapshots.
+- For remaining acceptance or follow-up work, branch from current `main` and verify the prerequisite targets are present. Do not revive the former implementation branches or start from unrelated snapshots.
 - Before dispatching work to separate checkouts, ensure the specification and completed prerequisite packets are included in the chosen base commit. Uncommitted files in this checkout do not accompany a new worktree automatically.
 - Run one packet at a time unless the dependency graph and file ownership allow parallel work. An integration owner handles shared target/public-API changes; agents must not independently edit the same extracted session files or `project.yml`.
 - Preserve Mac/CLI behavior throughout. Keep schema 2 and existing module/bundle names. Do not implement unavailable platform behavior with stubs that report success.

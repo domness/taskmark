@@ -8,19 +8,20 @@ Markdown is canonical. Any index or cache is derived, disposable, and rebuildabl
 
 ## Targets
 
-The macOS product is `Taskmark.app`, and the CLI executable is `taskmark`. Existing `LocalTodo*` modules and the app bundle identifier remain stable. Vault schema 2 stores metadata under `.config/`.
+The products are `Taskmark.app` for macOS, Taskmark for iOS/iPadOS, and the macOS `taskmark` CLI. Existing `LocalTodo*` modules and both app bundle identifiers remain stable. Vault schema 2 stores metadata under `.config/`.
 
 ```text
-LocalTodoApp ------+                  +------ LocalTodoIOSApp
-                   |                  |
-                   v                  v
-           LocalTodoWorkspace   LocalTodoPresentation
-                   |
-                   v
-           LocalTodoMarkdown <-------- LocalTodoCLI
-                   |
-                   v
-            LocalTodoDomain
+LocalTodoApp --------+                    +-------- LocalTodoIOSApp
+                     |                    |
+                     +--> LocalTodoWorkspace <---+
+                     |           |
+                     |           v
+                     +--> LocalTodoMarkdown <-------- LocalTodoCLI
+                     |           |
+                     |           v
+                     +----> LocalTodoDomain <---------+
+
+LocalTodoApp ------> LocalTodoPresentation <------ LocalTodoIOSApp
 ```
 
 Both app shells also import the narrow Domain and Markdown APIs they compose. `LocalTodoCLI` imports Domain and Markdown only. Dependency arrows continue to point inward; no shared target imports a platform shell.
@@ -35,11 +36,11 @@ Owns frontmatter translation, body preservation, vault discovery, path-reference
 
 ### LocalTodoWorkspace
 
-Owns the portable vault session, snapshots, routes, mutations, drafts, filters, recovery checkpoints and lifecycle-safe state transitions used by both app shells. It depends on Domain and Markdown, and imports no SwiftUI, UIKit or AppKit.
+Owns portable routes, recurrence editor values, vault-session snapshots and mutations, filters, view preferences, persisted-action history, and device-local recovery checkpoint values/stores. It depends on Domain and Markdown, and imports no SwiftUI, UIKit or AppKit. The macOS shell currently consumes shared route/recurrence types while retaining `WorkspaceModel` for desktop draft/autosave orchestration; the iOS shell composes `WorkspaceSession` and the checkpoint stores. Platform shells choose checkpoint locations and trigger persistence from their OS lifecycle.
 
 ### LocalTodoPresentation
 
-Owns shared palette, stylesheet parsing and presentation values without depending on either platform shell. Each app projects those values into its own native SwiftUI composition.
+Owns shared SwiftUI palette, stylesheet parsing and presentation values without depending on either platform shell, Workspace or Markdown. Each app projects those values into its own native composition.
 
 ### LocalTodoCLI
 
@@ -49,7 +50,7 @@ SwiftPM exposes the `taskmark` executable. Xcode's `TaskmarkCLI` tool target com
 
 Settings → General registers `/usr/local/bin/taskmark` as a symlink to the bundled executable using AppleScript's `do shell script … with administrator privileges` and the native macOS authorization dialog. Registration refuses unrelated files/links, can repair links to a moved Taskmark.app, and removes only a recognized link when disabled. App updates at the registered location are reflected automatically. Translocated or mounted-volume app copies must be moved to Applications first. The app-scoped observable registration state is derived from the actual link and refreshed on Settings activation, with serialized operations and explicit errors/cancellation handling. It is available without a vault and never stored in vault preferences.
 
-The directly distributed macOS app is no longer App Sandbox–restricted, allowing this Obsidian-style registration flow; Hardened Runtime, Developer ID signing and notarization remain enabled. The app retains security-scoped bookmark support for vault access. Both clients otherwise use normal process filesystem permissions. Installation and shell PATH are machine-local, outside the vault contract; shell profiles are not edited. The standalone CLI does not require the app process to be running.
+The directly distributed macOS app is no longer App Sandbox–restricted, allowing this Obsidian-style registration flow; Hardened Runtime, Developer ID signing and notarization remain enabled. The macOS app retains security-scoped bookmark support for vault access. The iOS app uses the document picker and iOS bookmark/access lifetime for a selected folder. Installation and shell PATH are machine-local, outside the vault contract; shell profiles are not edited. The standalone CLI does not require either app process to be running.
 
 ### LocalTodoApp
 
@@ -79,7 +80,7 @@ Mobile adds no canonical database or synchronization transport. The [iOS specifi
 ## Persistence And Presentation
 
 - Entity Markdown, `.config/config.yml` and optional `.config/filters.md` are canonical vault data. The optional `.config/style.css` is user-authored appearance configuration; the app only reads it. `.config/` is reserved and excluded from entity scans.
-- Settings, list display preferences, sidebar ordering and Custom task ordering are stored in the manifest's `preferences` mapping. Manual order uses exact paths and view keys, without machine-specific absolute paths. UserDefaults is used only for machine-local access/window information such as the recent-vault bookmark.
+- Settings, list display preferences, sidebar ordering and Custom task ordering are stored in the manifest's `preferences` mapping. Manual order uses exact paths and view keys, without machine-specific absolute paths. Device-local storage is limited to machine access/window information and recoverable uncommitted mobile checkpoints; it is never canonical vault state.
 - Workspace-owned preference drafts autosave through revision-checked Markdown APIs. Non-overlapping top-level fields rebase; overlapping external changes remain pending until the user chooses file or local preferences. Known-field patches preserve unknown nested YAML values. Pending preference changes participate in close/switch/quit checks.
 - Task rows use one full-row native `onDrag` source without a row-wide selection button. Own-process, vault-session-bound payloads assign sidebar projects/areas or append a tag. Custom ordering consumes the same payload through native List `onInsert` within the current group; source route/group/order snapshots and drop-time validation reject stale drags. Assignments use revision-checked, field-specific transitions and register Undo only after successful persistence.
 - The app's stylesheet adapter maps a bounded CSS-token syntax to native colors and spacing. It does not embed a browser or replace native control semantics. See [themes](THEMES.md) and [personalization](PERSONALIZATION.md).
@@ -90,11 +91,11 @@ Mobile adds no canonical database or synchronization transport. The [iOS specifi
 - UI and commands cannot construct frontmatter strings.
 - Concrete dependencies are composed at executable entry points.
 - Protocols represent volatile boundaries, not every type.
-- Cross-target models live in Domain only when they express domain meaning.
+- Cross-target business models live in Domain; portable app-session models live in Workspace; shared visual values live in Presentation.
 
 ## Concurrency
 
-Use Swift 6 strict concurrency. The vault-scoped `VaultStore` actor serializes its scans and filesystem operations. The main-actor workspace owns observable UI state and drafts, reserves mutation paths, and checks vault sessions/model epochs before publishing asynchronous results. Draft generations preserve edits made while a save is in flight. Actor isolation does not serialize separate app/CLI processes or external editors; file coordination and optimistic revisions provide the filesystem boundary.
+Use Swift 6 strict concurrency. The vault-scoped `VaultStore` actor serializes its scans and filesystem operations. Main-actor `WorkspaceSession` and platform workspace state own observable snapshots and drafts, reserve mutation paths, and check vault sessions/model epochs before publishing asynchronous results. Draft generations preserve edits made while a save is in flight. Actor isolation does not serialize separate apps, CLI processes or external editors; file coordination and optimistic revisions provide the filesystem boundary.
 
 Path moves and their reference changes must satisfy the all-or-nothing contract; collection path moves remain disabled until that guarantee can be met. Organization removal is a separate, explicitly resumable cleanup workflow, not a general multi-file transaction. The Markdown actor plans the edits and returns both completed results and recovery steps when execution stops. The workspace flushes drafts, prevents overlapping app writes/refresh publication during execution, merges completed results, and registers one session-local history action. See the file contract for intermediate visibility and crash behavior.
 
