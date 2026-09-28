@@ -1,7 +1,8 @@
-.PHONY: bootstrap generate format lint test test-release-scripts build check run-cli
+.PHONY: bootstrap generate format lint test test-ios test-release-scripts build build-ios check run-cli
 
 XCODEBUILD_ARGS ?= -destination 'platform=macOS'
 XCODE_TEST_ARGS ?=
+IOS_DESTINATION ?= platform=iOS Simulator,name=iPhone 16 Pro,OS=18.4
 
 bootstrap:
 	swift package resolve
@@ -25,6 +26,12 @@ test: generate
 build: generate
 	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoApp -configuration Debug build CODE_SIGNING_ALLOWED=NO $(XCODEBUILD_ARGS)
 
+test-ios: generate
+	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoIOSApp -configuration Debug test CODE_SIGNING_ALLOWED=NO -destination '$(IOS_DESTINATION)'
+
+build-ios: generate
+	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoIOSApp -configuration Debug build CODE_SIGNING_ALLOWED=NO -destination '$(IOS_DESTINATION)'
+
 test-release-scripts:
 	python3 -B scripts/test-appcast.py
 	python3 -B scripts/test-commit-validation.py
@@ -38,7 +45,7 @@ test-release-scripts:
 	bash -n scripts/resolve-release-source
 	bash -n scripts/setup-ci-signing
 
-check: lint test-release-scripts test build
+check: lint test-release-scripts test build test-ios build-ios
 
 run-cli:
 	swift run taskmark --help

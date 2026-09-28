@@ -30,6 +30,7 @@ extension VaultStore {
 
     public func delete(at path: VaultPath, expectedRevision: FileRevision) throws -> LocalTodoEntity {
         try validateEntityPath(path)
+        try preflightDeletion(at: path, expectedRevision: expectedRevision)
         var result: LocalTodoEntity?
         let url = fileURL(for: path)
         try performIO {
@@ -88,9 +89,17 @@ extension VaultStore {
         }
         let document = try parseDocument(data, at: path)
         let entity = try EntityDocumentCodec.decode(document, at: path)
-        try ensureNotReferenced(entity)
         try performIO { try fileSystem.removeFile(at: url) }
         return entity
+    }
+
+    private func preflightDeletion(at path: VaultPath, expectedRevision: FileRevision) throws {
+        let url = fileURL(for: path)
+        guard fileSystem.exists(at: url) else { throw VaultStoreError.notFound(path) }
+        let data = try performIO { try fileSystem.readCoordinated(at: url) }
+        guard FileRevision(data: data) == expectedRevision else { throw VaultStoreError.conflict(path) }
+        let entity = try EntityDocumentCodec.decode(parseDocument(data, at: path), at: path)
+        try ensureNotReferenced(entity)
     }
 
     private func ensureNotReferenced(_ entity: LocalTodoEntity) throws {
@@ -100,6 +109,11 @@ extension VaultStore {
         let snapshot = try snapshot()
         guard !snapshot.diagnostics.contains(where: { $0.severity == .error }) else {
             throw VaultStoreError.invalidVault("Resolve the vault’s file errors before deleting a collection.")
+        }
+        guard snapshot.scanCompleteness == .complete else {
+            throw VaultStoreError.invalidVault(
+                "Cannot delete a project or area while the provider has not supplied a complete reference scan."
+            )
         }
         let filters = try savedFilters().filters
         let isReferenced = switch entity {

@@ -70,6 +70,7 @@ enum CLIErrorRenderer {
         case .unsupportedSchema: "unsupported_schema"
         case .wrongEntityType: "wrong_entity_type"
         case .inputOutput: "io"
+        case .providerConflictChanged: "provider_conflict_changed"
         }
     }
 }

@@ -41,7 +41,12 @@ public extension VaultStore {
                     else {
                         throw VaultStoreError.conflict(source)
                     }
-                    try validateMove(from: source, to: destination)
+                    try validateCoordinatedMove(
+                        from: source,
+                        to: destination,
+                        sourceURL: coordinatedSource,
+                        destinationURL: coordinatedDestination
+                    )
                     try fileSystem.move(from: coordinatedSource, to: coordinatedDestination)
                     didMove = true
                 }
@@ -57,6 +62,23 @@ public extension VaultStore {
                     + "but refreshing the vault failed. Do not retry the move; fix the vault and reload. "
                     + error.localizedDescription
             )
+        }
+    }
+
+    private func validateCoordinatedMove(
+        from source: VaultPath,
+        to destination: VaultPath,
+        sourceURL: URL,
+        destinationURL: URL
+    ) throws {
+        try validateEntityPath(source)
+        try validateEntityPath(destination)
+        guard fileSystem.exists(at: sourceURL) else { throw VaultStoreError.notFound(source) }
+        guard !fileSystem.exists(at: destinationURL) else { throw VaultStoreError.destinationExists(destination) }
+        let data = try performIO { try fileSystem.read(at: sourceURL) }
+        let entity = try EntityDocumentCodec.decode(parseDocument(data, at: source), at: source)
+        guard case .task = entity else {
+            throw VaultStoreError.invalidVault("Only task files can move safely.")
         }
     }
 }
