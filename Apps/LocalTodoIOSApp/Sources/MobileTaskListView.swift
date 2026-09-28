@@ -26,6 +26,16 @@ struct MobileTaskListView: View {
 
     var body: some View {
         List(selection: selectedPath) {
+            if let vaultAvailabilityMessage {
+                Section {
+                    HStack {
+                        Label(vaultAvailabilityMessage, systemImage: "icloud.and.arrow.down")
+                        Spacer()
+                        Button("Retry") { Task { await workspace.refresh() } }
+                    }
+                    .font(.subheadline)
+                }
+            }
             if options.grouping == .none {
                 ForEach(displayedTasks, id: \.path) { task in
                     taskRow(task)
@@ -54,18 +64,6 @@ struct MobileTaskListView: View {
             }
         }
         .refreshable { await workspace.refresh() }
-        .safeAreaInset(edge: .top) {
-            if workspace.snapshot?.scanCompleteness != .complete {
-                HStack {
-                    Label("Vault data is incomplete", systemImage: "icloud.and.arrow.down")
-                    Spacer()
-                    Button("Retry") { Task { await workspace.refresh() } }
-                }
-                .font(.caption)
-                .padding(.horizontal).padding(.vertical, 8)
-                .background(.bar)
-            }
-        }
         .toolbar {
             ToolbarItemGroup(placement: .secondaryAction) {
                 Button("Undo", systemImage: "arrow.uturn.backward") {

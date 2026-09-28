@@ -34,6 +34,16 @@ final class TaskmarkIOSUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Captured on iPhone"].waitForExistence(timeout: 3))
     }
 
+    func testIncompleteVaultKeepsNavigationTitleVisible() {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-incomplete"]
+        app.launch()
+
+        XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Vault data is incomplete"].exists)
+        XCTAssertTrue(app.buttons["Retry"].exists)
+    }
+
     func testTaskDetailExposesPlanningRecurrenceAndFileActions() {
         let app = launchFixtureApp()
         app.staticTexts["Today fixture"].tap()

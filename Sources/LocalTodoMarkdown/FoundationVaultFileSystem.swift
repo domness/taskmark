@@ -40,6 +40,17 @@ public struct FoundationVaultFileSystem: VaultFileSystem {
         }
     }
 
+    public func requestMaterialization(at url: URL) throws {
+        let values = try url.resourceValues(forKeys: [.isUbiquitousItemKey, .ubiquitousItemDownloadingStatusKey])
+        guard values.isUbiquitousItem == true else { return }
+        switch values.ubiquitousItemDownloadingStatus {
+        case .current, .downloaded:
+            return
+        default:
+            try FileManager.default.startDownloadingUbiquitousItem(at: url)
+        }
+    }
+
     public func isSymbolicLink(at url: URL) throws -> Bool {
         var metadata = stat()
         let result = try url.withUnsafeFileSystemRepresentation { path in

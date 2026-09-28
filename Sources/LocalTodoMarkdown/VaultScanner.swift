@@ -13,6 +13,7 @@ public struct VaultScanner: Sendable {
     public func scan(generation: UInt64 = 0) throws -> VaultSnapshot {
         let configuration = try loadConfiguration()
         var results = ScanResults()
+        requestRootMaterialization(into: &results)
 
         do {
             for url in try fileSystem.markdownFiles(in: root) {
@@ -79,22 +80,6 @@ public struct VaultScanner: Sendable {
             results.diagnostics.append(diagnostic(.frontmatterMalformed, path: path, message: "Malformed frontmatter"))
         } catch {
             results.diagnostics.append(diagnostic(.inputOutput, path: path, message: error.localizedDescription))
-        }
-    }
-
-    private func recordAvailability(at url: URL, path: VaultPath, results: inout ScanResults) -> Bool {
-        switch fileSystem.availability(at: url) {
-        case .available:
-            return true
-        case .downloading:
-            results.markUnavailable(path, state: .downloading, message: "Waiting for file download")
-            return false
-        case let .unavailable(message):
-            results.markUnavailable(path, state: .unavailable(message), message: message)
-            return false
-        case .missing:
-            results.markUnavailable(path, state: .missing, message: "File disappeared during vault scan")
-            return false
         }
     }
 
@@ -237,7 +222,7 @@ struct ScanResults {
     }
 
     mutating func markUnavailable(_ path: VaultPath, state: VaultItemAvailability, message: String) {
-        scanCompleteness = .partial(message)
+        markScanIncomplete(message)
         availability[path] = state
         diagnostics.append(VaultDiagnostic(
             severity: .error,
@@ -245,5 +230,9 @@ struct ScanResults {
             message: message,
             path: path
         ))
+    }
+
+    mutating func markScanIncomplete(_ message: String) {
+        scanCompleteness = .partial(message)
     }
 }

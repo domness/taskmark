@@ -51,6 +51,27 @@ import Testing
     #expect(snapshot.tasks[task.path] == nil)
     #expect(snapshot.availability[task.path] == .downloading)
     #expect(snapshot.scanCompleteness != .complete)
+    #expect(fileSystem.materializationRequests.contains { $0.hasSuffix(task.path.value) })
+}
+
+@Test func failedMaterializationRequestIsReportedAsUnavailable() async throws {
+    let root = try makeTestVault()
+    defer { removeTestVault(root) }
+    let task = try testTask(path: "Tasks/Unavailable.md")
+    _ = try await VaultStore(root: root).create(.task(task))
+    let fileSystem = ProviderTestFileSystem()
+    fileSystem.pendingPath = task.path.value
+    fileSystem.materializationError = VaultStoreError.inputOutput("iCloud request failed")
+
+    let snapshot = try VaultScanner(root: root, fileSystem: fileSystem).scan()
+
+    #expect(snapshot.tasks[task.path] == nil)
+    guard case let .unavailable(message) = snapshot.availability[task.path] else {
+        Issue.record("Expected a failed download request to make the task unavailable")
+        return
+    }
+    #expect(message.contains("iCloud request failed"))
+    #expect(snapshot.diagnostics.contains { $0.path == task.path && $0.message.contains("iCloud request failed") })
 }
 
 @Test func providerConflictsIncludeEntitiesAndConfigurationMetadata() async throws {
@@ -135,6 +156,8 @@ private final class ProviderTestFileSystem: VaultFileSystem, @unchecked Sendable
     private var _coordinatedReadCount = 0
     private var _failEnumeration = false
     private var _pendingPath: String?
+    private var _materializationRequests = [String]()
+    private var _materializationError: Error?
     private var _versions = [String: [VaultProviderVersion]]()
     private var _resolvedIdentifiers = Set<String>()
 
@@ -154,6 +177,15 @@ private final class ProviderTestFileSystem: VaultFileSystem, @unchecked Sendable
     var pendingPath: String? {
         get { lock.withLock { _pendingPath } }
         set { lock.withLock { _pendingPath = newValue } }
+    }
+
+    var materializationRequests: [String] {
+        lock.withLock { _materializationRequests }
+    }
+
+    var materializationError: Error? {
+        get { lock.withLock { _materializationError } }
+        set { lock.withLock { _materializationError = newValue } }
     }
 
     var versions: [String: [VaultProviderVersion]] {
@@ -184,6 +216,16 @@ private final class ProviderTestFileSystem: VaultFileSystem, @unchecked Sendable
             return .downloading
         }
         return base.availability(at: url)
+    }
+
+    func requestMaterialization(at url: URL) throws {
+        let error = lock.withLock { () -> Error? in
+            _materializationRequests.append(url.path)
+            return _materializationError
+        }
+        if let error {
+            throw error
+        }
     }
 
     func contentsOfDirectory(at url: URL) throws -> [URL] {

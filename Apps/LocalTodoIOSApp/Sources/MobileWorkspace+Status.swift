@@ -66,10 +66,10 @@ extension MobileWorkspace {
         }
     }
 
-    func scheduleProviderRefresh() {
+    func scheduleProviderRefresh(after delay: Duration = .milliseconds(250)) {
         refreshTask?.cancel()
         refreshTask = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .milliseconds(250))
+            try? await Task.sleep(for: delay)
             guard !Task.isCancelled else { return }
             await self?.refresh()
         }

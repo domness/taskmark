@@ -165,8 +165,13 @@ final class MobileWorkspace {
             }
             try VaultInitializer.initialize(at: url, timezone: "Europe/London")
             try await session.open(root: url)
-            _ = try await session.capture(title: "Today fixture", route: .today)
+            let todayPath = try await session.capture(title: "Today fixture", route: .today)
             _ = try await session.capture(title: "Inbox fixture", route: .inbox)
+            if ProcessInfo.processInfo.arguments.contains("--ui-testing-incomplete") {
+                let taskURL = url.appendingPathComponent(todayPath.value)
+                try FileManager.default.setAttributes([.posixPermissions: 0], ofItemAtPath: taskURL.path)
+                try await session.refresh()
+            }
             vaultName = url.lastPathComponent
             await refreshAppearance()
             return true
@@ -187,84 +192,6 @@ final class MobileWorkspace {
 }
 
 extension MobileWorkspace {
-    func updateTitle(for path: VaultPath, title: String) async {
-        do {
-            var patch = TaskPatch()
-            patch.title = .set(title)
-            try await session.updateTask(at: path, patch: patch)
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    func complete(_ path: VaultPath) async {
-        do {
-            try await session.toggleCompletion(at: path)
-        } catch {
-            errorMessage = error.localizedDescription
-        }
-    }
-
-    func capture(title: String, route: WorkspaceRoute, patch: TaskPatch = TaskPatch()) async -> Bool {
-        do {
-            _ = try await session.capture(title: title, route: route, patch: patch)
-            return true
-        } catch {
-            errorMessage = error.localizedDescription
-            return false
-        }
-    }
-
-    func updateTask(at path: VaultPath, patch: TaskPatch) async -> Bool {
-        do {
-            try await session.updateTask(at: path, patch: patch)
-            return true
-        } catch {
-            errorMessage = error.localizedDescription
-            return false
-        }
-    }
-
-    func deleteTask(at path: VaultPath) async -> Bool {
-        do {
-            try await session.deleteTask(at: path)
-            return true
-        } catch {
-            errorMessage = error.localizedDescription
-            return false
-        }
-    }
-
-    func duplicateTask(at path: VaultPath) async -> VaultPath? {
-        do {
-            return try await session.duplicateTask(at: path)
-        } catch {
-            errorMessage = error.localizedDescription
-            return nil
-        }
-    }
-
-    func setPreferences(_ changes: [String: ConfigurationValue]) async -> Bool {
-        do {
-            try await session.setPreferences(changes)
-            await refreshAppearance()
-            return true
-        } catch {
-            errorMessage = error.localizedDescription
-            return false
-        }
-    }
-
-    func setTimezone(_ identifier: String?) async -> Bool {
-        do {
-            try await session.setTimezone(identifier)
-            return true
-        } catch {
-            errorMessage = error.localizedDescription
-            return false
-        }
-    }
-
     private func open(_ url: URL, mode: OpenMode) async throws {
         isLoading = true
         defer { isLoading = false }
@@ -278,6 +205,9 @@ extension MobileWorkspace {
         vaultName = candidateLease.url.lastPathComponent
         lastSuccessfulRefresh = Date()
         configureProviderObservation(for: candidateLease.url)
+        if session.snapshot?.scanCompleteness != .complete {
+            scheduleProviderRefresh(after: .seconds(1))
+        }
         await refreshAppearance()
         errorMessage = nil
     }

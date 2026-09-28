@@ -43,6 +43,9 @@ public protocol VaultFileSystem: Sendable {
     func createDirectory(at url: URL) throws
     func exists(at url: URL) -> Bool
     func availability(at url: URL) -> VaultItemAvailability
+    /// Requests provider-backed content to become locally readable. Implementations
+    /// must return immediately when the item is already local or has no download API.
+    func requestMaterialization(at url: URL) throws
     /// Inspects the entry without following its final component, including dangling links.
     /// Returns false for missing entries; other metadata failures must throw.
     func isSymbolicLink(at url: URL) throws -> Bool
@@ -67,6 +70,8 @@ public extension VaultFileSystem {
     func availability(at url: URL) -> VaultItemAvailability {
         exists(at: url) ? .available : .missing
     }
+
+    func requestMaterialization(at _: URL) throws {}
 
     func providerConflictFiles(in root: URL) throws -> [URL] {
         var files = try markdownFiles(in: root)
