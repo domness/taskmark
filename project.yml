@@ -179,8 +179,24 @@ targets:
     deploymentTarget: "18.0"
     sources:
       - path: Apps/LocalTodoIOSApp/Tests
+      - path: Tests/LocalTodoDomainTests
+      - path: Tests/LocalTodoMarkdownTests
+        excludes:
+          - Fixtures
+      - path: Tests/LocalTodoMarkdownTests/Fixtures
+        buildPhase: resources
+      - path: Tests/LocalTodoWorkspaceTests
+      - path: Tests/LocalTodoPresentationTests
     dependencies:
       - target: LocalTodoIOSApp
+      - package: LocalTodoKit
+        product: LocalTodoDomain
+      - package: LocalTodoKit
+        product: LocalTodoMarkdown
+      - package: LocalTodoKit
+        product: LocalTodoWorkspace
+      - package: LocalTodoKit
+        product: LocalTodoPresentation
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.domness.localtodo.ios.tests
