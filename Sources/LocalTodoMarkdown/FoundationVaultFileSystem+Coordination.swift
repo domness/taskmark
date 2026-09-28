@@ -1,6 +1,25 @@
 import Foundation
 
 public extension FoundationVaultFileSystem {
+    func coordinateReading(at url: URL, operation: (URL) throws -> Void) throws {
+        let coordinator = NSFileCoordinator(filePresenter: nil)
+        var coordinationError: NSError?
+        var operationError: Error?
+        coordinator.coordinate(readingItemAt: url, options: [], error: &coordinationError) { coordinatedURL in
+            do {
+                try operation(coordinatedURL)
+            } catch {
+                operationError = error
+            }
+        }
+        if let coordinationError {
+            throw coordinationError
+        }
+        if let operationError {
+            throw operationError
+        }
+    }
+
     func coordinateMoving(
         from source: URL,
         to destination: URL,
@@ -38,6 +57,7 @@ public extension FoundationVaultFileSystem {
         var coordinationError: NSError?
         var operationError: Error?
         let options: NSFileCoordinator.WritingOptions = switch intent {
+        case .creating: []
         case .replacing: .forReplacing
         case .deleting: .forDeleting
         }

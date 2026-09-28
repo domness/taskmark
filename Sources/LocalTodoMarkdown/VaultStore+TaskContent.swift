@@ -21,7 +21,7 @@ public extension VaultStore {
 
     func entityContent(at path: VaultPath, expectedRevision: FileRevision) throws -> Data {
         try validateEntityPath(path)
-        let data = try performIO { try fileSystem.read(at: fileURL(for: path)) }
+        let data = try performIO { try fileSystem.readCoordinated(at: fileURL(for: path)) }
         guard FileRevision(data: data) == expectedRevision else { throw VaultStoreError.conflict(path) }
         _ = try EntityDocumentCodec.decode(parseDocument(data, at: path), at: path)
         return data
@@ -35,12 +35,36 @@ public extension VaultStore {
         guard !fileSystem.exists(at: url) else { throw VaultStoreError.destinationExists(path) }
         try performIO { try fileSystem.createDirectory(at: url.deletingLastPathComponent()) }
         try performIO {
-            try fileSystem.coordinateWriting(at: url, intent: .replacing) { coordinatedURL in
+            try fileSystem.coordinateWriting(at: url, intent: .creating) { coordinatedURL in
                 guard coordinatedURL.standardizedFileURL == url.standardizedFileURL else {
                     throw VaultStoreError.conflict(path)
                 }
                 try validateEntityPath(path)
                 try fileSystem.writeExclusively(data, to: coordinatedURL)
+            }
+        }
+        return VaultRecord(value: entity, revision: FileRevision(data: data))
+    }
+
+    func replaceEntityContent(
+        _ data: Data,
+        at path: VaultPath,
+        expectedRevision: FileRevision
+    ) throws -> VaultRecord<LocalTodoEntity> {
+        try validateEntityPath(path)
+        let entity = try EntityDocumentCodec.decode(parseDocument(data, at: path), at: path)
+        guard entity.path == path else { throw VaultStoreError.pathMismatch }
+        let url = fileURL(for: path)
+        try performIO {
+            try fileSystem.coordinateWriting(at: url, intent: .replacing) { coordinatedURL in
+                guard coordinatedURL.standardizedFileURL == url.standardizedFileURL else {
+                    throw VaultStoreError.conflict(path)
+                }
+                let current = try fileSystem.read(at: coordinatedURL)
+                guard FileRevision(data: current) == expectedRevision else {
+                    throw VaultStoreError.conflict(path)
+                }
+                try fileSystem.writeAtomically(data, to: coordinatedURL)
             }
         }
         return VaultRecord(value: entity, revision: FileRevision(data: data))

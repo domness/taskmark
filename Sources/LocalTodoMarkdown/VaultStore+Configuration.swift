@@ -16,7 +16,7 @@ public enum VaultConfigurationError: LocalizedError, Equatable {
 extension VaultStore {
     public func configurationRecord() throws -> VaultConfigurationRecord {
         let url = try configurationURL()
-        let data = try performIO { try fileSystem.read(at: url) }
+        let data = try performIO { try fileSystem.readCoordinated(at: url) }
         return try decodeConfigurationRecord(data)
     }
 

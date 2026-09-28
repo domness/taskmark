@@ -26,6 +26,12 @@ Read this file before repeating an approach that previously required several att
 - **Reliable approach:** Host through the real view-controller/scene boundary, locate current native controls after transitions, post keyboard events through the application queue, and use bounded predicates for responders, selection, editor lifetime, toolbar labels, mutation results, and window constraints. Disable animations in final-geometry tests and wait for both panel presentation and stable toolbar frames.
 - **Next-time rule:** Test readiness rather than elapsed time, run focused tests inside the complete app suite, and keep physical gesture/VoiceOver acceptance distinct from hosted integration evidence. Exercise native buttons in focused hosts rather than relying on an inactive accessibility tree to locate SwiftUI actions.
 
+## Adaptive iPad Navigation
+
+- **Failure pattern:** Reusing a compact Browse route list inside a three-column `NavigationSplitView`, while leaving column visibility automatic, can invalidate the startup selection and present only an empty detail column on iPad.
+- **Reliable approach:** Give the tablet sidebar every selectable startup route, provide tablet-specific Search presentation, initialize all columns with a balanced split-view style, and exercise list-to-detail selection on a real iPad simulator destination.
+- **Next-time rule:** Run an explicit tablet UI test before claiming adaptive navigation; a phone build and phone UI suite do not prove the iPad split-view state.
+
 ## Native Toolbar Sizing
 
 - **Failure pattern:** Forcing SwiftUI label/outer frames and borderless styles into a native toolbar distorts symbol placement and material sizing. Replacing NavigationSplitView's sidebar toggle can leave a duplicate control. SwiftUI Spacer becomes a flexible native toolbar item regardless of its frame; custom toolbar items can retain a stale minimum width after their contents shrink. Moving an inspector outside navigation can reintroduce small-window split overflow or constraint loops.

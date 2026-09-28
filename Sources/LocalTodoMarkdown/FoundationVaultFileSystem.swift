@@ -20,6 +20,37 @@ public struct FoundationVaultFileSystem: VaultFileSystem {
         FileManager.default.fileExists(atPath: url.path)
     }
 
+    public func availability(at url: URL) -> VaultItemAvailability {
+        guard exists(at: url) else { return .missing }
+        do {
+            let values = try url.resourceValues(forKeys: [
+                .isUbiquitousItemKey,
+                .ubiquitousItemDownloadingStatusKey,
+                .isReadableKey,
+            ])
+            if values.isUbiquitousItem == true {
+                switch values.ubiquitousItemDownloadingStatus {
+                case .current, .downloaded: return .available
+                default: return .downloading
+                }
+            }
+            return values.isReadable == false ? .unavailable("File is not readable") : .available
+        } catch {
+            return .unavailable(error.localizedDescription)
+        }
+    }
+
+    public func requestMaterialization(at url: URL) throws {
+        let values = try url.resourceValues(forKeys: [.isUbiquitousItemKey, .ubiquitousItemDownloadingStatusKey])
+        guard values.isUbiquitousItem == true else { return }
+        switch values.ubiquitousItemDownloadingStatus {
+        case .current, .downloaded:
+            return
+        default:
+            try FileManager.default.startDownloadingUbiquitousItem(at: url)
+        }
+    }
+
     public func isSymbolicLink(at url: URL) throws -> Bool {
         var metadata = stat()
         let result = try url.withUnsafeFileSystemRepresentation { path in

@@ -57,11 +57,7 @@ enum ThemeFontDesign {
 
 extension AppTheme {
     var typography: ThemeTypography {
-        switch self {
-        case .catppuccin: ThemeTypography(family: "Figtree")
-        case .dracula: ThemeTypography(family: "Inter")
-        default: ThemeTypography(family: nil)
-        }
+        ThemeTypography(family: fontFamily)
     }
 }
 

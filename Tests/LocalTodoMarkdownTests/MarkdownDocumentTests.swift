@@ -92,11 +92,22 @@ import Testing
 }
 
 func fixture(named name: String) throws -> String {
-    guard let url = Bundle.module.url(forResource: name, withExtension: "md") else {
+    #if SWIFT_PACKAGE
+        let bundle = Bundle.module
+    #else
+        let bundle = Bundle(for: MarkdownFixtureBundleToken.self)
+    #endif
+    guard let url = bundle.url(forResource: name, withExtension: "md")
+        ?? bundle.url(forResource: name, withExtension: "md", subdirectory: "Fixtures")
+    else {
         throw FixtureError.missing(name)
     }
     return try String(contentsOf: url, encoding: .utf8)
 }
+
+#if !SWIFT_PACKAGE
+    private final class MarkdownFixtureBundleToken: NSObject {}
+#endif
 
 enum FixtureError: Error {
     case missing(String)

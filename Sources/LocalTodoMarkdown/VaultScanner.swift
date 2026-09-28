@@ -2,8 +2,8 @@ import Foundation
 import LocalTodoDomain
 
 public struct VaultScanner: Sendable {
-    private let root: URL
-    private let fileSystem: any VaultFileSystem
+    let root: URL
+    let fileSystem: any VaultFileSystem
 
     public init(root: URL, fileSystem: any VaultFileSystem = FoundationVaultFileSystem()) {
         self.root = root.standardizedFileURL
@@ -13,21 +13,38 @@ public struct VaultScanner: Sendable {
     public func scan(generation: UInt64 = 0) throws -> VaultSnapshot {
         let configuration = try loadConfiguration()
         var results = ScanResults()
+        requestRootMaterialization(into: &results)
 
-        for url in try fileSystem.markdownFiles(in: root) {
-            scan(url, into: &results)
+        do {
+            for url in try fileSystem.markdownFiles(in: root) {
+                scan(url, into: &results)
+            }
+        } catch {
+            results.scanCompleteness = .partial(error.localizedDescription)
+            results.diagnostics.append(VaultDiagnostic(
+                severity: .error,
+                kind: .inputOutput,
+                message: "Vault listing is incomplete: \(error.localizedDescription)"
+            ))
         }
 
-        results.diagnostics.append(
-            contentsOf: referenceDiagnostics(tasks: results.tasks, projects: results.projects, areas: results.areas)
-        )
+        scanProviderConflicts(into: &results)
+
+        if results.scanCompleteness == .complete {
+            results.diagnostics.append(
+                contentsOf: referenceDiagnostics(tasks: results.tasks, projects: results.projects, areas: results.areas)
+            )
+        }
         return VaultSnapshot(
             generation: generation,
             configuration: configuration,
             tasks: results.tasks,
             projects: results.projects,
             areas: results.areas,
-            diagnostics: results.diagnostics.sorted(by: diagnosticOrder)
+            diagnostics: results.diagnostics.sorted(by: diagnosticOrder),
+            scanCompleteness: results.scanCompleteness,
+            availability: results.availability,
+            providerConflicts: results.providerConflicts
         )
     }
 
@@ -35,8 +52,11 @@ public struct VaultScanner: Sendable {
         guard let path = try? vaultPath(for: url) else {
             return
         }
+        guard recordAvailability(at: url, path: path, results: &results) else {
+            return
+        }
         do {
-            let data = try fileSystem.read(at: url)
+            let data = try fileSystem.readCoordinated(at: url)
             guard let source = String(data: data, encoding: .utf8) else {
                 results.diagnostics.append(diagnostic(
                     .frontmatterMalformed,
@@ -73,7 +93,7 @@ public struct VaultScanner: Sendable {
             throw VaultStoreError.invalidVault("Missing \(LocalTodoSchema.manifestPath)")
         }
         do {
-            let data = try fileSystem.read(at: manifest)
+            let data = try fileSystem.readCoordinated(at: manifest)
             guard let yaml = String(data: data, encoding: .utf8) else {
                 throw VaultStoreError.invalidVault("Manifest is not valid UTF-8")
             }
@@ -183,17 +203,36 @@ public struct VaultScanner: Sendable {
     }
 }
 
-private struct ScanResults {
+struct ScanResults {
     var tasks = [VaultPath: VaultRecord<TodoTask>]()
     var projects = [VaultPath: VaultRecord<Project>]()
     var areas = [VaultPath: VaultRecord<Area>]()
     var diagnostics = [VaultDiagnostic]()
+    var scanCompleteness: VaultScanCompleteness = .complete
+    var availability = [VaultPath: VaultItemAvailability]()
+    var providerConflicts = [String: VaultProviderConflict]()
 
     mutating func insert(_ entity: LocalTodoEntity, revision: FileRevision) {
+        availability[entity.path] = .available
         switch entity {
         case let .task(task): tasks[task.path] = VaultRecord(value: task, revision: revision)
         case let .project(project): projects[project.path] = VaultRecord(value: project, revision: revision)
         case let .area(area): areas[area.path] = VaultRecord(value: area, revision: revision)
         }
+    }
+
+    mutating func markUnavailable(_ path: VaultPath, state: VaultItemAvailability, message: String) {
+        markScanIncomplete(message)
+        availability[path] = state
+        diagnostics.append(VaultDiagnostic(
+            severity: .error,
+            kind: .inputOutput,
+            message: message,
+            path: path
+        ))
+    }
+
+    mutating func markScanIncomplete(_ message: String) {
+        scanCompleteness = .partial(message)
     }
 }

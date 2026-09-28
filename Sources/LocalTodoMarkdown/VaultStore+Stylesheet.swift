@@ -11,7 +11,7 @@ public extension VaultStore {
             }
         }
         guard fileSystem.exists(at: url) else { return nil }
-        let data = try performIO { try fileSystem.read(at: url) }
+        let data = try performIO { try fileSystem.readCoordinated(at: url) }
         guard data.count <= 65536, let source = String(data: data, encoding: .utf8) else {
             throw VaultStoreError.invalidVault("The stylesheet must be UTF-8 and at most 64 KiB.")
         }

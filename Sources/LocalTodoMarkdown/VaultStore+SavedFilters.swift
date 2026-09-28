@@ -17,7 +17,7 @@ extension VaultStore {
     public func savedFilters() throws -> SavedFilterRecord {
         let url = try savedFilterURL()
         guard fileSystem.exists(at: url) else { return SavedFilterRecord() }
-        let data = try performIO { try fileSystem.read(at: url) }
+        let data = try performIO { try fileSystem.readCoordinated(at: url) }
         return try SavedFilterRecord(
             filters: SavedFilterDocumentCodec.decode(filterDocument(data)),
             revision: FileRevision(data: data)
@@ -27,7 +27,8 @@ extension VaultStore {
     public func saveFilters(_ filters: [SavedTaskFilter], expectedRevision: FileRevision?) throws -> SavedFilterRecord {
         let url = try savedFilterURL()
         var result: SavedFilterRecord?
-        try fileSystem.coordinateWriting(at: url, intent: .replacing) { coordinatedURL in
+        let intent: VaultWriteIntent = expectedRevision == nil ? .creating : .replacing
+        try fileSystem.coordinateWriting(at: url, intent: intent) { coordinatedURL in
             guard coordinatedURL.standardizedFileURL == url.standardizedFileURL else { throw SavedFilterError.conflict }
             _ = try savedFilterURL()
             result = try writeFilters(filters, at: coordinatedURL, expectedRevision: expectedRevision)
