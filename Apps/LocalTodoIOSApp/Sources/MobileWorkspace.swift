@@ -40,6 +40,8 @@ final class MobileWorkspace {
     @ObservationIgnored private var lease: MobileVaultLease?
     @ObservationIgnored var presenter: MobileVaultPresenter?
     @ObservationIgnored var refreshTask: Task<Void, Never>?
+    @ObservationIgnored var pollingTask: Task<Void, Never>?
+    @ObservationIgnored var isRefreshing = false
     @ObservationIgnored private let bookmarks: MobileVaultBookmarkStore
 
     init(

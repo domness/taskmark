@@ -22,4 +22,22 @@ struct MobileWorkspaceTests {
         try store.save(url)
         #expect(try store.restore()?.standardizedFileURL == url.standardizedFileURL)
     }
+
+    @Test func providerObservationPollsOnlyWhileTheVaultIsActive() async throws {
+        let suite = try #require(UserDefaults(suiteName: UUID().uuidString))
+        let store = MobileVaultBookmarkStore(defaults: suite)
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString, isDirectory: true)
+        try VaultInitializer.initialize(at: url)
+        defer { try? FileManager.default.removeItem(at: url) }
+        try store.save(url)
+
+        let workspace = MobileWorkspace(bookmarks: store)
+        await workspace.restoreVault()
+        #expect(workspace.presenter != nil)
+        #expect(workspace.pollingTask != nil)
+
+        workspace.suspendProviderObservation()
+        #expect(workspace.presenter == nil)
+        #expect(workspace.pollingTask == nil)
+    }
 }

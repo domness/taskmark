@@ -11,6 +11,9 @@ extension MobileWorkspace {
     }
 
     func refresh() async {
+        guard !isRefreshing else { return }
+        isRefreshing = true
+        defer { isRefreshing = false }
         do {
             try await session.refresh()
             lastSuccessfulRefresh = Date()
@@ -47,12 +50,15 @@ extension MobileWorkspace {
         }
         self.presenter = presenter
         NSFileCoordinator.addFilePresenter(presenter)
+        startProviderPolling()
     }
 
     func resumeProviderObservation() {
         guard let rootURL = session.rootURL else { return }
         if presenter == nil {
             configureProviderObservation(for: rootURL)
+        } else {
+            startProviderPolling()
         }
         scheduleProviderRefresh()
     }
@@ -60,6 +66,8 @@ extension MobileWorkspace {
     func suspendProviderObservation() {
         refreshTask?.cancel()
         refreshTask = nil
+        pollingTask?.cancel()
+        pollingTask = nil
         if let presenter {
             NSFileCoordinator.removeFilePresenter(presenter)
             self.presenter = nil
@@ -72,6 +80,17 @@ extension MobileWorkspace {
             try? await Task.sleep(for: delay)
             guard !Task.isCancelled else { return }
             await self?.refresh()
+        }
+    }
+
+    private func startProviderPolling() {
+        pollingTask?.cancel()
+        pollingTask = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(2))
+                guard !Task.isCancelled, let self else { return }
+                await refresh()
+            }
         }
     }
 }
