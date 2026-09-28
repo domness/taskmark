@@ -2,7 +2,9 @@
 
 XCODEBUILD_ARGS ?= -destination 'platform=macOS'
 XCODE_TEST_ARGS ?=
-IOS_DESTINATION ?= platform=iOS Simulator,name=iPhone 16 Pro,OS=18.4
+IOS_SIMULATOR_NAME ?= iPhone 16 Pro
+IOS_SIMULATOR_ID := $(shell xcrun simctl list devices available | sed -nE 's/^[[:space:]]+$(IOS_SIMULATOR_NAME) \(([0-9A-F-]+)\).*/\1/p' | head -n 1)
+IOS_DESTINATION ?= platform=iOS Simulator,id=$(IOS_SIMULATOR_ID)
 
 bootstrap:
 	swift package resolve
