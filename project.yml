@@ -4,6 +4,7 @@ options:
   bundleIdPrefix: com.domness
   deploymentTarget:
     macOS: "15.0"
+    iOS: "18.0"
 
 packages:
   LocalTodoKit:
@@ -71,6 +72,10 @@ targets:
         product: LocalTodoDomain
       - package: LocalTodoKit
         product: LocalTodoMarkdown
+      - package: LocalTodoKit
+        product: LocalTodoWorkspace
+      - package: LocalTodoKit
+        product: LocalTodoPresentation
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.domness.localtodo
@@ -99,6 +104,88 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.domness.localtodo.tests
         TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Taskmark.app/Contents/MacOS/Taskmark"
         BUNDLE_LOADER: "$(TEST_HOST)"
+  LocalTodoIOSApp:
+    type: application
+    platform: iOS
+    deploymentTarget: "18.0"
+    info:
+      path: .build/Taskmark-iOS-Info.plist
+      properties:
+        UIAppFonts:
+          - Fonts/Inter.ttf
+          - Fonts/Inter-Italic.ttf
+          - Fonts/Figtree.ttf
+          - Fonts/Figtree-Italic.ttf
+        LSSupportsOpeningDocumentsInPlace: true
+    sources:
+      - path: Apps/LocalTodoIOSApp/Sources
+      - path: Apps/LocalTodoApp/Resources/Assets.xcassets
+      - path: Apps/LocalTodoApp/Resources/Fonts
+        type: folder
+        buildPhase: resources
+      - path: THIRD_PARTY_NOTICES.md
+        buildPhase: resources
+    dependencies:
+      - package: LocalTodoKit
+        product: LocalTodoDomain
+      - package: LocalTodoKit
+        product: LocalTodoMarkdown
+      - package: LocalTodoKit
+        product: LocalTodoWorkspace
+      - package: LocalTodoKit
+        product: LocalTodoPresentation
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.domness.localtodo.ios
+        PRODUCT_NAME: Taskmark
+        MARKETING_VERSION: 0.10.3
+        CURRENT_PROJECT_VERSION: 16
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        PRODUCT_MODULE_NAME: LocalTodoIOSApp
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: Taskmark
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.productivity
+        INFOPLIST_KEY_LSSupportsOpeningDocumentsInPlace: YES
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIRequiresFullScreen: NO
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CODE_SIGN_STYLE: Automatic
+  LocalTodoIOSAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: Apps/LocalTodoIOSApp/Tests
+    dependencies:
+      - target: LocalTodoIOSApp
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.domness.localtodo.ios.tests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/Taskmark.app/Taskmark"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+  LocalTodoIOSAppUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    deploymentTarget: "18.0"
+    sources:
+      - path: Apps/LocalTodoIOSApp/UITests
+    dependencies:
+      - target: LocalTodoIOSApp
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.domness.localtodo.ios.uitests
+        GENERATE_INFOPLIST_FILE: YES
 
 schemes:
   LocalTodoApp:
@@ -111,5 +198,18 @@ schemes:
       config: Debug
       targets:
         - LocalTodoAppTests
+    archive:
+      config: Release
+  LocalTodoIOSApp:
+    build:
+      targets:
+        LocalTodoIOSApp: all
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets:
+        - LocalTodoIOSAppTests
+        - LocalTodoIOSAppUITests
     archive:
       config: Release

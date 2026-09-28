@@ -6,10 +6,13 @@ let package = Package(
     name: "LocalTodo",
     platforms: [
         .macOS(.v15),
+        .iOS(.v18),
     ],
     products: [
         .library(name: "LocalTodoDomain", targets: ["LocalTodoDomain"]),
         .library(name: "LocalTodoMarkdown", targets: ["LocalTodoMarkdown"]),
+        .library(name: "LocalTodoWorkspace", targets: ["LocalTodoWorkspace"]),
+        .library(name: "LocalTodoPresentation", targets: ["LocalTodoPresentation"]),
         .executable(name: "taskmark", targets: ["LocalTodoCLI"]),
     ],
     dependencies: [
@@ -25,6 +28,11 @@ let package = Package(
                 .product(name: "Yams", package: "Yams"),
             ]
         ),
+        .target(
+            name: "LocalTodoWorkspace",
+            dependencies: ["LocalTodoDomain", "LocalTodoMarkdown"]
+        ),
+        .target(name: "LocalTodoPresentation"),
         .executableTarget(
             name: "LocalTodoCLI",
             dependencies: [
@@ -41,6 +49,14 @@ let package = Package(
             name: "LocalTodoMarkdownTests",
             dependencies: ["LocalTodoMarkdown"],
             resources: [.process("Fixtures")]
+        ),
+        .testTarget(
+            name: "LocalTodoWorkspaceTests",
+            dependencies: ["LocalTodoWorkspace", "LocalTodoMarkdown"]
+        ),
+        .testTarget(
+            name: "LocalTodoPresentationTests",
+            dependencies: ["LocalTodoPresentation"]
         ),
         .testTarget(
             name: "LocalTodoCLITests",

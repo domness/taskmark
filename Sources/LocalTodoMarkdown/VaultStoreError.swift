@@ -11,6 +11,7 @@ public enum VaultStoreError: Error, Equatable, Sendable {
     case unsupportedSchema(Int)
     case wrongEntityType(VaultPath)
     case inputOutput(String)
+    case providerConflictChanged(String)
 }
 
 extension VaultStoreError: LocalizedError {
@@ -25,6 +26,8 @@ extension VaultStoreError: LocalizedError {
         case let .unsupportedSchema(version): "Vault schema version \(version) is not supported."
         case let .wrongEntityType(path): "The file type changed outside Taskmark: \(path.value)."
         case let .inputOutput(message): "File operation failed: \(message)."
+        case let .providerConflictChanged(path):
+            "Provider versions changed while resolving \(path). Reload and review every version again."
         }
     }
 }

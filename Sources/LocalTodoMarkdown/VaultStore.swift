@@ -6,6 +6,7 @@ public actor VaultStore {
 
     let fileSystem: any VaultFileSystem
     private var generation: UInt64 = 0
+    private var lastSnapshot: VaultSnapshot?
 
     public init(root: URL, fileSystem: any VaultFileSystem = FoundationVaultFileSystem()) {
         self.root = root.standardizedFileURL
@@ -14,11 +15,44 @@ public actor VaultStore {
 
     public func snapshot() throws -> VaultSnapshot {
         generation += 1
-        let snapshot = try VaultScanner(root: root, fileSystem: fileSystem).scan(generation: generation)
+        let scanned = try VaultScanner(root: root, fileSystem: fileSystem).scan(generation: generation)
+        let snapshot = mergePartialScan(scanned)
+        lastSnapshot = snapshot
+        let filterIssues = snapshot.scanCompleteness == .complete ? filterDiagnostics(in: snapshot) : []
         return VaultSnapshot(
             generation: snapshot.generation, configuration: snapshot.configuration,
             tasks: snapshot.tasks, projects: snapshot.projects, areas: snapshot.areas,
-            diagnostics: snapshot.diagnostics + filterDiagnostics(in: snapshot)
+            diagnostics: snapshot.diagnostics + filterIssues,
+            scanCompleteness: snapshot.scanCompleteness,
+            availability: snapshot.availability,
+            providerConflicts: snapshot.providerConflicts
+        )
+    }
+
+    private func mergePartialScan(_ scanned: VaultSnapshot) -> VaultSnapshot {
+        guard case .partial = scanned.scanCompleteness, let previous = lastSnapshot else { return scanned }
+        var tasks = previous.tasks
+        var projects = previous.projects
+        var areas = previous.areas
+        var providerConflicts = previous.providerConflicts
+        tasks.merge(scanned.tasks) { _, new in new }
+        projects.merge(scanned.projects) { _, new in new }
+        areas.merge(scanned.areas) { _, new in new }
+        providerConflicts.merge(scanned.providerConflicts) { _, new in new }
+        var availability = scanned.availability
+        for path in Set(tasks.keys).union(projects.keys).union(areas.keys) where availability[path] == nil {
+            availability[path] = .unavailable("Not returned by an incomplete provider scan")
+        }
+        return VaultSnapshot(
+            generation: scanned.generation,
+            configuration: scanned.configuration,
+            tasks: tasks,
+            projects: projects,
+            areas: areas,
+            diagnostics: scanned.diagnostics,
+            scanCompleteness: scanned.scanCompleteness,
+            availability: availability,
+            providerConflicts: providerConflicts
         )
     }
 
@@ -39,7 +73,14 @@ public actor VaultStore {
             if !missingDirectories.isEmpty {
                 try performIO { try fileSystem.createDirectory(at: url.deletingLastPathComponent()) }
             }
-            try performIO { try fileSystem.writeExclusively(data, to: url) }
+            try performIO {
+                try fileSystem.coordinateWriting(at: url, intent: .creating) { coordinatedURL in
+                    guard coordinatedURL.standardizedFileURL == url.standardizedFileURL else {
+                        throw VaultStoreError.conflict(entity.path)
+                    }
+                    try fileSystem.writeExclusively(data, to: coordinatedURL)
+                }
+            }
         } catch {
             for directory in missingDirectories {
                 try? fileSystem.removeEmptyDirectory(at: directory)
