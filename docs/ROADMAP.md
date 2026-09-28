@@ -1,6 +1,6 @@
 # Roadmap
 
-Status reviewed against the repository on 2026-09-22. Implemented features below are backed by source and automated checks; they do not imply completed manual acceptance.
+Status reviewed against the repository on 2026-09-28. Implemented features below are backed by source and automated checks; they do not imply completed manual acceptance.
 
 ## Implemented: macOS And CLI
 
@@ -72,15 +72,15 @@ See [CI and release setup](CI_RELEASES.md).
 
 The maintained test suites under `Tests/` and `Apps/LocalTodoApp/Tests/` are the automated evidence; use the current `make check` result rather than historical test counts.
 
-## Next Platform: iOS — Planned
+## iOS — Implementation Candidate
 
-- Target iPhone and iPad on iOS/iPadOS 18+, with a native compact navigation shell and adaptive iPad sidebar/list/detail layout.
-- Open the same schema-2 local or iCloud Drive vault in place, including shared configuration, saved filters, ordering, all six themes and the bounded stylesheet contract.
-- Extract existing workspace and presentation behavior for reuse alongside Domain/Markdown; add provider availability/version handling and mobile lifecycle/draft recovery before broad UI work.
-- Proposed compact navigation is Today, Inbox, Browse and Search; Browse exposes the remaining built-in routes and collections while honoring all existing startup-view choices.
-- Complete physical-device iCloud interoperability, conflict and recovery validation before claiming mobile sync support.
+- The `LocalTodoIOSApp` target supports iPhone and iPad on iOS/iPadOS 18+, with compact Today, Inbox, Browse and Search navigation and an adaptive iPad sidebar/list/detail layout.
+- The app opens or creates the same schema-2 local or iCloud Drive vault in place and reuses Domain, Markdown, Workspace and Presentation behavior, including shared configuration, saved filters, ordering, themes and bounded stylesheet values.
+- Provider-aware scans request iCloud materialization, distinguish partial availability, expose provider conflicts and combine file-presenter events with foreground polling. Mobile lifecycle and device-local draft recovery preserve unsaved input without creating a canonical app database.
+- Automated iOS coverage executes the shared Domain, Markdown, Workspace and Presentation suites plus app and phone UI tests. A signed current-branch build has opened an existing iCloud vault on a physical iPhone and restored a complete workspace with its navigation title visible.
+- The complete Mac-to-iPhone/iPad mutation, offline/reconnection, provider-conflict, recovery, accessibility, minimum-OS and archive/TestFlight matrix remains required before claiming released mobile or iCloud-sync support.
 
-The [iOS specification](IOS_SPEC.md) defines behavior and acceptance; the [agent implementation plan](IOS_IMPLEMENTATION.md) provides dependency-ordered work packets and dispatch prompts. These documents describe planned work, not implemented mobile support.
+The [iOS specification](IOS_SPEC.md) defines behavior and acceptance, the [agent implementation plan](IOS_IMPLEMENTATION.md) preserves the dependency-ordered work packets, and [iOS acceptance](IOS_ACCEPTANCE.md) records current evidence and explicit gaps.
 
 ## Later: Web — Planned
 

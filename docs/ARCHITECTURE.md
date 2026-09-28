@@ -2,7 +2,7 @@
 
 ## Decision Summary
 
-Taskmark is Apple-native and macOS-first. SwiftUI provides the app shell, while Swift packages hold all portable behavior. iOS will reuse those packages after the file contract and desktop workflows are reliable. A later web client must implement the same documented Markdown contract; it does not determine today's native architecture.
+Taskmark is Apple-native and macOS-first. Separate macOS and iOS SwiftUI shells reuse Swift packages for portable behavior. The iOS client is an implementation candidate until the required physical-device interoperability and release-readiness checks pass. A later web client must implement the same documented Markdown contract; it does not determine today's native architecture.
 
 Markdown is canonical. Any index or cache is derived, disposable, and rebuildable.
 
@@ -11,10 +11,19 @@ Markdown is canonical. Any index or cache is derived, disposable, and rebuildabl
 The macOS product is `Taskmark.app`, and the CLI executable is `taskmark`. Existing `LocalTodo*` modules and the app bundle identifier remain stable. Vault schema 2 stores metadata under `.config/`.
 
 ```text
-LocalTodoApp ---> LocalTodoMarkdown <--- LocalTodoCLI
-      |                   |
-      +--> LocalTodoDomain <+
+LocalTodoApp ------+                  +------ LocalTodoIOSApp
+                   |                  |
+                   v                  v
+           LocalTodoWorkspace   LocalTodoPresentation
+                   |
+                   v
+           LocalTodoMarkdown <-------- LocalTodoCLI
+                   |
+                   v
+            LocalTodoDomain
 ```
+
+Both app shells also import the narrow Domain and Markdown APIs they compose. `LocalTodoCLI` imports Domain and Markdown only. Dependency arrows continue to point inward; no shared target imports a platform shell.
 
 ### LocalTodoDomain
 
@@ -23,6 +32,14 @@ Owns value types, validation, recurrence rules, view membership, and state trans
 ### LocalTodoMarkdown
 
 Owns frontmatter translation, body preservation, vault discovery, path-reference updates, file coordination, conflict reporting, and atomic writes. Yams is an implementation detail behind this target.
+
+### LocalTodoWorkspace
+
+Owns the portable vault session, snapshots, routes, mutations, drafts, filters, recovery checkpoints and lifecycle-safe state transitions used by both app shells. It depends on Domain and Markdown, and imports no SwiftUI, UIKit or AppKit.
+
+### LocalTodoPresentation
+
+Owns shared palette, stylesheet parsing and presentation values without depending on either platform shell. Each app projects those values into its own native SwiftUI composition.
 
 ### LocalTodoCLI
 
@@ -42,9 +59,11 @@ The app alone links the pinned Sparkle framework. An app-scoped `AppUpdates` own
 
 Each `WorkspaceWindowRoot` owns a distinct `WorkspaceModel` and `AppPreferences` projection of its vault configuration. The app-scoped `WorkspaceWindows` coordinates open-model lifetime, the last active Settings context and all-window termination flushing. Different vault windows can use different themes; windows on the same vault refresh shared values from disk. `WorkspaceCommands` uses SwiftUI focused scene values rather than a single app-wide model. A main-actor AppKit window-delegate bridge validates close requests, supplies a per-window UndoManager, forwards SwiftUI's scene callbacks and releases vault resources after closing. Only the initial window restores the last bookmark; newly requested windows start unbound.
 
-### Planned iOS Extension
+### LocalTodoIOSApp
 
-The [iOS specification](IOS_SPEC.md#3-proposed-architecture) proposes iPhone/iPad support on iOS 18+, with a separate `LocalTodoIOSApp` shell and staged extraction of `LocalTodoWorkspace` (Foundation/Observation session behavior) and `LocalTodoPresentation` (shared native presentation). These targets do not exist yet. Both app shells will continue to use the same Domain/Markdown contract; mobile adds no canonical database or synchronization transport. The [implementation plan](IOS_IMPLEMENTATION.md) defines target ownership, provider-safety validation and the extraction order. Update the implemented target diagram when those changes land.
+Owns the iPhone/iPad SwiftUI composition, folder picker, security-scoped bookmark lifetime, scene lifecycle, provider observation and device-local recovery stores. It targets iOS/iPadOS 18+ and opens the same schema-2 folder in place. Foreground sessions combine `NSFilePresenter` notifications with a coalesced approximately two-second refresh loop; scans request materialization for iCloud placeholders and surface partial availability instead of treating it as a complete empty vault. Backgrounding removes the presenter and stops polling.
+
+Mobile adds no canonical database or synchronization transport. The [iOS specification](IOS_SPEC.md) remains the normative behavior and acceptance contract, while [iOS acceptance](IOS_ACCEPTANCE.md) records current evidence and gaps. The implementation remains a candidate rather than released mobile support until the required physical iCloud, recovery, accessibility and distribution checks pass.
 
 ## Data Flow
 
@@ -55,7 +74,7 @@ The [iOS specification](IOS_SPEC.md#3-proposed-architecture) proposes iPhone/iPa
 3. Domain queries drive Inbox, Today, Next, Upcoming, Waiting, Someday, All Tasks, collection/tag/priority views, search and saved filters. The app applies the vault's Custom ordering after shared query evaluation when enabled.
 4. User actions produce explicit mutations.
 5. The Markdown target applies mutations through coordinated atomic replacement.
-6. An approximately two-second app refresh loop obtains a full vault snapshot, reconciles drafts and reloads saved filters, stylesheet and configuration. Successful app mutations merge their result immediately and refresh. Incremental filesystem indexing is not implemented.
+6. An approximately two-second active-workspace refresh loop obtains a full vault snapshot, reconciles drafts and reloads saved filters, stylesheet and configuration. iOS additionally coalesces file-presenter callbacks and materialization requests. Successful app mutations merge their result immediately and refresh. Incremental filesystem indexing is not implemented.
 
 ## Persistence And Presentation
 

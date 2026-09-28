@@ -1,6 +1,6 @@
 # Taskmark For iPhone And iPad
 
-Status: implementation specification, not implemented. Prepared 2026-09-24 against the repository on branch `docs/ios-app-spec`.
+Status: normative implementation and acceptance specification. An implementation candidate exists on `codex/ios-app`; [IOS_ACCEPTANCE.md](IOS_ACCEPTANCE.md) records verified evidence and remaining release blockers. Prepared 2026-09-24 and reconciled with the repository on 2026-09-28.
 
 The agreed platform scope is **iPhone and iPad, iOS/iPadOS 18+**. The implementation sequence and copy-ready agent instructions are in [IOS_IMPLEMENTATION.md](IOS_IMPLEMENTATION.md).
 

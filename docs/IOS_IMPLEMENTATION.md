@@ -1,6 +1,6 @@
 # iOS Agent Implementation Plan
 
-Status: planned work. Build the product specified in [IOS_SPEC.md](IOS_SPEC.md); this document supplies bounded work packets, dependencies and handoff requirements. No mobile implementation is included in the planning branch.
+Status: implemented candidate with acceptance remaining. The product specified in [IOS_SPEC.md](IOS_SPEC.md) is present on `codex/ios-app`; this document remains the record of bounded work packets, dependencies and completion requirements. See [IOS_ACCEPTANCE.md](IOS_ACCEPTANCE.md) for verified evidence and outstanding release blockers.
 
 ## Working Rules
 
