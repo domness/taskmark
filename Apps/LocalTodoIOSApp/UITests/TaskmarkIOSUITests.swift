@@ -71,6 +71,30 @@ final class TaskmarkIOSUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Retry"].exists)
     }
 
+    func testTabletAdaptiveWorkspaceShowsSidebarListAndDetail() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing"]
+        app.launch()
+
+        let workspace = app.descendants(matching: .any)["tablet-workspace"]
+        guard workspace.waitForExistence(timeout: 5) else {
+            throw XCTSkip("The tablet workspace is available only in a regular horizontal size class.")
+        }
+        XCTAssertTrue(app.staticTexts["Today"].exists)
+        if app.staticTexts["Search"].exists {
+            app.staticTexts["Search"].tap()
+            XCTAssertTrue(app.searchFields["Tasks and notes"].waitForExistence(timeout: 2))
+            app.staticTexts["Today"].firstMatch.tap()
+        } else {
+            let sidebarButton = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] 'sidebar'")).firstMatch
+            XCTAssertTrue(sidebarButton.waitForExistence(timeout: 2))
+        }
+        XCTAssertTrue(app.staticTexts["Today fixture"].waitForExistence(timeout: 2))
+
+        app.staticTexts["Today fixture"].tap()
+        XCTAssertTrue(app.navigationBars["Task"].waitForExistence(timeout: 2))
+    }
+
     private func launchFixtureApp() -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing"]

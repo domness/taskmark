@@ -1,10 +1,12 @@
-.PHONY: bootstrap generate format lint test test-ios test-release-scripts build build-ios check run-cli
+.PHONY: bootstrap generate format lint test test-ios test-release-scripts build build-ios check-ios-destinations check run-cli
 
 XCODEBUILD_ARGS ?= -destination 'platform=macOS'
 XCODE_TEST_ARGS ?=
 IOS_SIMULATOR_NAME ?= iPhone 16 Pro
 IOS_SIMULATOR_ID := $(shell xcrun simctl list devices available | sed -nE 's/^[[:space:]]+$(IOS_SIMULATOR_NAME) \(([0-9A-F-]+)\).*/\1/p' | head -n 1)
 IOS_DESTINATION ?= platform=iOS Simulator,id=$(IOS_SIMULATOR_ID)
+IOS_TABLET_SIMULATOR_ID := $(shell xcrun simctl list devices available | sed -nE 's/^[[:space:]]+iPad.* \(([0-9A-F-]+)\) \((Booted|Shutdown)\).*/\1/p' | head -n 1)
+IOS_TABLET_DESTINATION ?= platform=iOS Simulator,id=$(IOS_TABLET_SIMULATOR_ID)
 
 bootstrap:
 	swift package resolve
@@ -28,8 +30,13 @@ test: generate
 build: generate
 	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoApp -configuration Debug build CODE_SIGNING_ALLOWED=NO $(XCODEBUILD_ARGS)
 
-test-ios: generate
+check-ios-destinations:
+	@if [ -z "$(IOS_SIMULATOR_ID)" ]; then echo "No available $(IOS_SIMULATOR_NAME) simulator found."; exit 1; fi
+	@if [ -z "$(IOS_TABLET_SIMULATOR_ID)" ]; then echo "No available iPad simulator found."; exit 1; fi
+
+test-ios: generate check-ios-destinations
 	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoIOSApp -configuration Debug test CODE_SIGNING_ALLOWED=NO -destination '$(IOS_DESTINATION)'
+	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoIOSApp -configuration Debug test CODE_SIGNING_ALLOWED=NO -destination '$(IOS_TABLET_DESTINATION)' -only-testing:LocalTodoIOSAppUITests/TaskmarkIOSUITests/testTabletAdaptiveWorkspaceShowsSidebarListAndDetail
 
 build-ios: generate
 	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoIOSApp -configuration Debug build CODE_SIGNING_ALLOWED=NO -destination '$(IOS_DESTINATION)'

@@ -55,6 +55,8 @@ private struct TabletWorkspaceView: View {
     let workspace: MobileWorkspace
     @State private var route: WorkspaceRoute?
     @State private var selectedPath: VaultPath?
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
+    @State private var preferredCompactColumn: NavigationSplitViewColumn = .sidebar
 
     init(workspace: MobileWorkspace) {
         self.workspace = workspace
@@ -62,11 +64,19 @@ private struct TabletWorkspaceView: View {
     }
 
     var body: some View {
-        NavigationSplitView {
+        NavigationSplitView(
+            columnVisibility: $columnVisibility,
+            preferredCompactColumn: $preferredCompactColumn
+        ) {
             MobileRouteList(workspace: workspace, selection: $route).navigationTitle("Taskmark")
         } content: {
             if let route {
-                MobileTaskListView(workspace: workspace, route: route, selectedPath: $selectedPath)
+                if route == .search {
+                    MobileTaskListView(workspace: workspace, route: route, selectedPath: $selectedPath)
+                        .searchable(text: Bindable(workspace).searchText, prompt: "Tasks and notes")
+                } else {
+                    MobileTaskListView(workspace: workspace, route: route, selectedPath: $selectedPath)
+                }
             }
         } detail: {
             if let selectedPath {
@@ -75,6 +85,8 @@ private struct TabletWorkspaceView: View {
                 ContentUnavailableView("Select a Task", systemImage: "checklist")
             }
         }
+        .navigationSplitViewStyle(.balanced)
+        .accessibilityIdentifier("tablet-workspace")
     }
 }
 
@@ -107,7 +119,13 @@ private struct MobileRouteList: View {
     @State private var isCreatingCollection = false
     @State private var newCollectionKind: WorkspaceCollectionKind = .project
     @State private var isCreatingFilter = false
-    private let builtIns: [WorkspaceRoute] = [.next, .upcoming, .waiting, .someday, .all]
+    private var builtIns: [WorkspaceRoute] {
+        if selection == nil {
+            [.next, .upcoming, .waiting, .someday, .all]
+        } else {
+            [.today, .inbox, .next, .upcoming, .waiting, .someday, .all, .search]
+        }
+    }
 
     var body: some View {
         List(selection: selection) {
