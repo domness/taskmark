@@ -1,6 +1,7 @@
 name: LocalTodo
 
 options:
+  xcodeVersion: "27.0"
   bundleIdPrefix: com.domness
   deploymentTarget:
     macOS: "15.0"
@@ -21,6 +22,8 @@ settings:
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
     ENABLE_USER_SCRIPT_SANDBOXING: NO
+    DEAD_CODE_STRIPPING: YES
+    ASSETCATALOG_COMPILER_GENERATE_ASSET_SYMBOL_EXTENSIONS: YES
 
 targets:
   TaskmarkCLI:
