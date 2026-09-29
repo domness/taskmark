@@ -23,6 +23,13 @@ final class TaskmarkIOSUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["New Task"].waitForExistence(timeout: 2))
     }
 
+    func testTaskListRendersInlineMarkdown() {
+        let app = launchFixtureApp()
+
+        XCTAssertTrue(app.staticTexts["Review carefully with code"].waitForExistence(timeout: 2))
+        XCTAssertFalse(app.staticTexts["Review **carefully** with `code`"].exists)
+    }
+
     func testCapturePersistsThroughTheCanonicalVault() {
         let app = launchFixtureApp()
         app.buttons["add-task"].tap()

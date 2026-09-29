@@ -3,6 +3,9 @@ name: LocalTodo
 options:
   xcodeVersion: "27.0"
   bundleIdPrefix: com.domness
+  fileTypes:
+    icon:
+      file: true
   deploymentTarget:
     macOS: "15.0"
     iOS: "18.0"
@@ -132,7 +135,8 @@ targets:
         LSSupportsOpeningDocumentsInPlace: true
     sources:
       - path: Apps/LocalTodoIOSApp/Sources
-      - path: Apps/LocalTodoApp/Resources/Assets.xcassets
+      - path: Apps/LocalTodoIOSApp/Resources/AppIcon.icon
+        buildPhase: resources
       - path: Apps/LocalTodoApp/Resources/Fonts
         type: folder
         buildPhase: resources

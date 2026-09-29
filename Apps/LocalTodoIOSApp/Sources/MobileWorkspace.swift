@@ -168,6 +168,7 @@ final class MobileWorkspace {
             try VaultInitializer.initialize(at: url, timezone: "Europe/London")
             try await session.open(root: url)
             let todayPath = try await session.capture(title: "Today fixture", route: .today)
+            _ = try await session.capture(title: "Review **carefully** with `code`", route: .today)
             _ = try await session.capture(title: "Inbox fixture", route: .inbox)
             if ProcessInfo.processInfo.arguments.contains("--ui-testing-incomplete") {
                 let taskURL = url.appendingPathComponent(todayPath.value)
