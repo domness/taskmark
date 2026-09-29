@@ -1,6 +1,6 @@
 # Taskmark For iPhone And iPad
 
-Status: normative implementation and acceptance specification. An implementation candidate exists on `codex/ios-app`; [IOS_ACCEPTANCE.md](IOS_ACCEPTANCE.md) records verified evidence and remaining release blockers. Prepared 2026-09-24 and reconciled with the repository on 2026-09-28.
+Status: normative implementation and acceptance specification. The implementation candidate was merged in pull request #32; [IOS_ACCEPTANCE.md](IOS_ACCEPTANCE.md) records verified evidence and remaining release blockers. Prepared 2026-09-24 and reconciled with the repository on 2026-09-28.
 
 The agreed platform scope is **iPhone and iPad, iOS/iPadOS 18+**. The implementation sequence and copy-ready agent instructions are in [IOS_IMPLEMENTATION.md](IOS_IMPLEMENTATION.md).
 
@@ -25,29 +25,24 @@ Mobile V1 is a daily-use client, including task editing, planning, projects/area
 
 Use SwiftUI with small UIKit integrations for platform capabilities. The mobile product has no embedded CLI, shell installer, Taskmark account, CloudKit task database or custom synchronization transport. Widgets, Share extension, App Intents, reminders, collaboration, web, rich-text serialization, full multi-window iPad support and arbitrary third-party-provider certification are later work. Keep existing project/area path moves disabled.
 
-## 2. Repository Baseline And Gaps
+## 2. Repository Implementation And Remaining Gaps
 
-These paths exist today; proposed targets in section 3 do not.
-
-| Existing implementation | Reuse / gap |
+| Implemented location | Responsibility / remaining gap |
 | --- | --- |
-| `Sources/LocalTodoDomain/` | Shared entities, dates, recurrence, query and transition semantics; already UI-independent. |
-| `Sources/LocalTodoMarkdown/` | Shared codecs, revisions, storage, configuration and saved filters. Audit every filesystem operation for iOS and document-provider behavior. |
-| `Package.swift` | Currently declares macOS 15 only; add iOS 18 support to reusable libraries and simulator test coverage. |
-| `project.yml` | Currently macOS app, CLI and app-test targets only; this is the source for generated Xcode changes. |
-| `Apps/LocalTodoApp/Sources/Workspace/WorkspaceModel*.swift` | Substantial reusable draft, autosave, query, conflict, ordering and history logic, coupled to desktop routing, vault picking and lifetime. Extract rather than fork. |
-| `Apps/LocalTodoApp/Sources/Vault/` | AppKit picker and macOS bookmark options; iOS needs its own picker/bookmark adapter and access-failure handling. |
-| `Apps/LocalTodoApp/Sources/Settings/` and `Workspace/VaultAppearance.swift` | Six palettes, preference projection and bounded CSS parser; typography and some settings controls use AppKit. |
-| `Apps/LocalTodoApp/Resources/Fonts/` | Existing Inter/Figtree font resources and licenses; reuse the same font assets. |
-| `FoundationVaultFileSystem+Coordination.swift` | Implements coordinated writes and moves. `VaultFileSystem` has no coordinated-read API; `read(at:)` currently uses `Data(contentsOf:)`. |
-| `VaultStore.swift` / `VaultScanner.swift` | Full scans and exclusive creation exist, but plain existence/enumeration/read results are not a complete provider-availability model. Entity creation currently publishes exclusively without a surrounding coordinator call. |
-| `WorkspaceModel.swift` refresh loop | Approximately two-second full scans; iOS needs foreground-aware scheduling and suspension handling. |
+| `Sources/LocalTodoDomain/` | Shared entities, dates, recurrence, query and transition semantics; UI-independent. |
+| `Sources/LocalTodoMarkdown/` | Shared codecs, revisions, configuration, saved filters, coordinated storage, provider availability and unresolved provider-version conflicts. Provider-specific behavior still needs the complete physical interoperability matrix. |
+| `Sources/LocalTodoWorkspace/` | Portable observable session state, routes, task mutations, filters, view preferences, history and checkpoint values/stores. The iOS shell chooses app-local locations and drives checkpointing from scene lifecycle. |
+| `Sources/LocalTodoPresentation/` | Shared SwiftUI palettes, bounded stylesheet parsing and native presentation values. |
+| `Apps/LocalTodoApp/` | macOS composition, windows, commands, picker/bookmarks, Dock, Sparkle and CLI installation. |
+| `Apps/LocalTodoIOSApp/` | iPhone/iPad composition, folder picker/bookmark lifetime, foreground provider observation and device-local recovery stores. |
+| `Package.swift` / `project.yml` | macOS 15 and iOS/iPadOS 18 libraries/apps, shared iOS test bundle, compact-phone UI suite and adaptive-iPad UI check. |
+| `Apps/LocalTodoApp/Resources/` | Shared icon catalog and Inter/Figtree assets/licenses embedded in both app targets. |
 
-**Meaning of existing iCloud support:** the app can work with a user-selected synchronized folder and has coordinated mutation primitives. There is no dedicated sync engine, configured app-owned iCloud container, download-state model, file presenter or `NSFileVersion` conflict workflow in the current code. The roadmap still calls for real-device iCloud validation. Mobile work must close these gaps instead of treating current file coordination as proof of complete sync behavior.
+**Meaning of current iCloud support:** the apps can open a user-selected synchronized folder, request placeholder materialization, coordinate file operations, observe foreground changes, distinguish partial availability and surface unresolved provider versions. Taskmark still has no dedicated sync engine or app-owned CloudKit task database. The full bidirectional, offline/reconnection, conflict, recovery and accessibility sequence remains release-blocking; current code and a single-device smoke test are not proof of complete sync behavior.
 
-## 3. Proposed Architecture
+## 3. Implemented Architecture
 
-Preserve the existing module names, Mac bundle identifier and dependency direction. Introduce two focused app-layer libraries through staged extraction; do not move UI or application lifecycle into Domain or Markdown.
+The merged targets preserve the existing module names, Mac bundle identifier and inward dependency direction. UI and application lifecycle remain in the platform shells rather than Domain or Markdown.
 
 ```text
 LocalTodoApp (macOS)             LocalTodoIOSApp (iOS/iPadOS)
@@ -61,17 +56,17 @@ LocalTodoApp (macOS)             LocalTodoIOSApp (iOS/iPadOS)
                      LocalTodoDomain <------------+
 ```
 
-Both app-layer libraries may use Domain values directly. `LocalTodoPresentation` may use Workspace APIs; Workspace must not depend on Presentation. All vault reads/writes go through Markdown APIs.
+Both app shells may use Domain and Markdown APIs directly where they compose platform behavior. Workspace depends on Domain and Markdown. Presentation is independent of Workspace and Markdown; neither shared target imports a platform shell. All vault reads/writes go through Markdown APIs.
 
-| Planned target / location | Responsibility |
+| Target / location | Responsibility |
 | --- | --- |
-| `LocalTodoWorkspace`, `Sources/LocalTodoWorkspace/` | Foundation/Observation app-session state: snapshots, task/project drafts, autosave, conflict/recovery state, preferences, filters, ordering and persisted-action history. No SwiftUI, AppKit or UIKit. |
-| `LocalTodoPresentation`, `Sources/LocalTodoPresentation/` | Shared SwiftUI presentation primitives: palette definitions, token parsing/application, Markdown rendering and reusable controls where interaction genuinely matches. Separate platform typography bridges are allowed. No filesystem mutations. |
+| `LocalTodoWorkspace`, `Sources/LocalTodoWorkspace/` | Foundation/Observation app-session snapshots and mutations, routes, recurrence editing values, preferences, filters, ordering, persisted-action history and recovery checkpoint stores. No SwiftUI, AppKit or UIKit. The macOS shell currently reuses route/recurrence types rather than `WorkspaceSession`. |
+| `LocalTodoPresentation`, `Sources/LocalTodoPresentation/` | Shared SwiftUI palette definitions, token parsing/application and presentation values. Platform typography and compositions remain in their app shells. No filesystem mutations. |
 | Existing `LocalTodoApp` | Mac scenes, toolbar, inspectors, window lifecycle, commands, Dock badge, picker, bookmarks, Finder/pasteboard integration and CLI installation. |
 | `LocalTodoIOSApp`, `Apps/LocalTodoIOSApp/` | iOS composition, adaptive navigation, picker/bookmarks, scene lifecycle, touch editors, sharing/copying and device-local recovery storage adapter. Product display name: Taskmark. |
 | Existing `LocalTodoMarkdown` | File availability/coordination, provider-version access, canonical persistence and diagnostics on both platforms. |
 
-Use the planned iOS bundle identifier `com.domness.localtodo.ios`; verify signing-account availability during device setup. Never change `com.domness.localtodo` to enable mobile. Shared source extraction does not justify making all existing implementation types public: expose narrow session/action/state APIs.
+The iOS bundle identifier is `com.domness.localtodo.ios`; the macOS identifier remains `com.domness.localtodo`. Shared source extraction does not justify making all implementation types public: expose narrow session/action/state APIs.
 
 ### Extraction rules
 
@@ -192,7 +187,7 @@ Settings has General, Theme and Vault sections using native mobile navigation. I
 
 ### Typography and token adaptation
 
-This is a planned platform adaptation, not a change to the implemented Mac typography:
+The implemented mobile typography adapts the shared theme values without changing Mac typography:
 
 - Default mobile body base is **17 pt**, or **18 pt for Catppuccin**, at the default Dynamic Type category; Mac defaults remain 13/14 pt. Keep the same family selection: SF, Inter or Figtree.
 - An explicit `--task-font-size` remains an **11–24 logical-point base** at the default content-size category, on both platforms. On iOS it scales through semantic Dynamic Type metrics exactly once. Do not reinterpret a user-supplied 14px as 18pt or write platform defaults into `style.css`.
@@ -255,7 +250,7 @@ Track each case as passed, failed or not run. iCloud delivery has no promised fi
 
 ### Build and distribution
 
-Add explicit phone/tablet simulator build/test targets and extend `make check` so the complete gate includes iOS once the target lands. Select installed simulator destinations explicitly and fail clearly if a required runtime is missing. Shared Domain/Markdown/Workspace tests must execute on iOS, not merely compile indirectly in the app. Keep Mac/CLI tests and release-script checks.
+The repository has explicit phone/tablet simulator test targets, and `make check` includes iOS. It selects available simulator destinations and fails clearly if a required phone or tablet destination is missing. Shared Domain, Markdown, Workspace and Presentation tests execute in the iOS test bundle rather than merely compiling indirectly in the app; Mac/CLI tests and release-script checks remain part of the same gate.
 
 Support an iOS 18 runtime and a current supported runtime in the validation matrix; newer-only APIs need availability checks. Configure GitHub-hosted CI with pinned Xcode/runtime choices, simulator results and logs. Verify the current `macos-15` / Xcode 26.3 workflow's installed runtimes rather than assuming parity with local Xcode 27.
 

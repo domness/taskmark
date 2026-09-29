@@ -24,7 +24,7 @@ The product must not feel like a Jira issue editor. Task entry and review are wo
 
 ## 2. Colors
 
-The palette uses adaptive, subtly tinted near-neutrals. The built-in Taskmark tokens below are implemented in `Apps/LocalTodoApp/Sources/Settings/AppTheme.swift`; [docs/THEMES.md](docs/THEMES.md) maintains all palette values and override rules.
+The palette uses adaptive, subtly tinted near-neutrals. The shared Taskmark tokens below are implemented in `Sources/LocalTodoPresentation/TaskmarkAppearance.swift`; platform shells project them into native views. [docs/THEMES.md](docs/THEMES.md) maintains all palette values and override rules.
 
 ### Primary
 - **Working Ink**: Native `.primary` and `.secondary` text styles, with system-owned focus/selection/disabled semantics. Control accent is `#365f99` in light mode and `#92b8ee` in dark mode.
@@ -76,6 +76,8 @@ The system is flat by default. Tonal surface changes and native dividers establi
 - **Dates**: Compact scheduled/deadline controls open native popovers with suggestions, exact ISO entry and a graphical calendar. Inspector dates use separate labeled rows with borderless values, an Add prompt when unset, and Today for the current vault-local date; accessibility labels retain the full date. Other dates respect the configured date format.
 - **Ordering**: Native List insertion gestures reorder collections and tasks in Custom mode. In every sort mode, the full task row is a drag source for sidebar projects, areas and tags without prior selection. Custom order uses that same source for list insertion, without a separate handle. A tap-only content action handles ordinary row clicks without restoring a drag-blocking row button.
 - **Settings**: Fixed 170-point native sidebar beneath a compact titlebar; grouped General controls, a scrollable Theme grid and grouped Updates controls. General includes a machine-local Command-line interface toggle, available without a vault, with native administrator authorization, progress and error feedback. Updates shows the installed version, opt-in automatic checking, last check and Check for Updates; Sparkle supplies native download/install feedback. Updates remains available without a vault.
+- **Mobile workspace**: iPhone uses four native destinations—Today, Inbox, Browse and Search—each preserving its navigation state. iPad uses an adaptive balanced sidebar/list/detail split that collapses at compact widths. Capture and task editing use native sheets/navigation, keep notes before metadata, and expose provider availability, conflicts and recovered drafts as explicit states rather than replacing task content with a false empty view.
+- **Mobile settings**: General, Theme and Vault use native pushed lists/forms. Shared vault choices retain the same identifiers and values as macOS; CLI registration, Dock, window and Sparkle controls do not appear on iOS.
 
 Native controls own interaction feedback. Any future custom motion should remain functional, respect Reduce Motion and avoid decorative transitions; no custom animation-duration token system is implemented.
 
@@ -100,14 +102,14 @@ Sidebar task destinations show compact, right-aligned capsule counts, including 
 - **Don't** use decorative motion, nested cards, gradient text, or colored side-stripe borders. Native Liquid Glass is limited to navigation/controls: the window toolbar uses system-owned presentation and accessibility adaptations. Task rows, notes and inspector content remain opaque. Existing palette and stylesheet surface tokens remain authoritative for content.
 - **Don't** use pure black, pure white, or chroma-free gray as final production colors.
 
-## 7. Implemented macOS Settings And Appearance
+## 7. Implemented Platform Settings And Appearance
 
-The Settings surface inherits the selected theme's font and base size, native sidebar navigation, visible keyboard focus and flat working plane. General uses native grouped form controls; Theme uses a segmented appearance picker and six compact selectable previews with text/checkmark selection cues. Preview samples use each tile's own typography. Preferences apply immediately and autosave to the active vault's `.config/config.yml`; other windows/machines opening that vault reload the same choices. Different vaults may use different palettes. Configuration save errors and conflicts have visible resolution controls.
+The macOS Settings surface inherits the selected theme's font and base size, native sidebar navigation, visible keyboard focus and flat working plane. General uses native grouped form controls; Theme uses a segmented appearance picker and six compact selectable previews with text/checkmark selection cues. The mobile shell uses native lists, forms and pickers for the shared settings. Preferences apply immediately and save to the active vault's `.config/config.yml`; other clients opening that vault reload the same choices. Different vaults may use different palettes. Configuration save errors and conflicts have visible resolution controls.
 
-Appearance is independently System, Light or Dark. Slate, Forest and Sand extend the default Taskmark palette's restrained surface language. Catppuccin pairs Latte/Mocha and Dracula pairs Alucard/Dracula, bringing their upstream backgrounds and purple accents into the same native surface system. All paired token values and extension rules are documented in [docs/THEMES.md](docs/THEMES.md), with code in `Apps/LocalTodoApp/Sources/Settings/AppTheme.swift`.
+Appearance is independently System, Light or Dark. Slate, Forest and Sand extend the default Taskmark palette's restrained surface language. Catppuccin pairs Latte/Mocha and Dracula pairs Alucard/Dracula, bringing their upstream backgrounds and purple accents into the same native surface system. All paired token values and extension rules are documented in [docs/THEMES.md](docs/THEMES.md), with shared code in `Sources/LocalTodoPresentation/TaskmarkAppearance.swift`.
 
 Native primary/secondary text and control state semantics remain adaptive. Custom vault styles override named surface/accent/priority tokens, interface base size (11–24 logical points, default 14 for Catppuccin and 13 otherwise), and row metadata spacing (2–16, default 3). The base size scales app-authored text and editors across the workspace and Settings while retaining semantic hierarchy. Styles do not replace keyboard focus or selection behavior. Window rendering and contrast require visual acceptance; parser/model/build checks do not establish that evidence.
 
 ## 8. App Icon
 
-Taskmark uses a folded purple checkmark on a charcoal rounded tile. The committed PNGs, including their transparency and shadows, live in `Apps/LocalTodoApp/Resources/Assets.xcassets/AppIcon.appiconset`. The 512-point 2x slot is the 1024-pixel master; all ten macOS 1x/2x slots are included. `project.yml` selects `AppIcon`, and Xcode compiles the distribution icon into the app bundle.
+Taskmark uses a folded purple checkmark on a charcoal rounded tile. The shared asset catalog lives in `Apps/LocalTodoApp/Resources/Assets.xcassets/AppIcon.appiconset` and contains the macOS renditions plus the iPhone/iPad marketing icon. `project.yml` selects `AppIcon` for both app targets, and Xcode compiles the appropriate renditions into each bundle.

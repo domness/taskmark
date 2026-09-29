@@ -36,7 +36,7 @@ Check `ERRORS.md` before suggesting approaches to similar tasks.
 
 These facts are always true for this project. Apply them to every session without exception. If a task conflicts with one of these facts, flag the conflict before proceeding.
 
-- This is Taskmark (formerly Local Todo), an Apple-native, macOS-first, local-first task manager and CLI built with Swift 6. The CLI command and companion skill are named `taskmark`, with no `localtodo` alias; existing internal Swift modules and the app bundle identifier remain stable. Vault schema 2 uses `.config/` for all metadata and shared preferences; the earlier development layout has no migration, as explicitly requested by the user.
+- This is Taskmark (formerly Local Todo), an Apple-native, macOS-first, local-first task manager for macOS, iPhone and iPad, with a macOS-bundled CLI, built with Swift 6. The iOS/iPadOS app is an implementation candidate rather than released mobile support until its documented acceptance gates pass. The CLI command and companion skill are named `taskmark`, with no `localtodo` alias; existing internal Swift modules and bundle identifiers remain stable. Vault schema 2 uses `.config/` for all metadata and shared preferences; the earlier development layout has no migration, as explicitly requested by the user.
 - Follow the repository as it exists today. Do not invent missing layers, directories, or tooling because older docs, templates, or examples imply they should exist.
 - `AGENTS.md`, `MEMORY.md`, `ERRORS.md`, `docs/ARCHITECTURE.md`, and `docs/FILE_FORMAT.md` are load-bearing project guidance. Read and follow them before changing code.
 - `docs/ARCHITECTURE.md` is the source of truth for target boundaries, dependency direction, data flow, concurrency, and storage safety.
@@ -51,22 +51,32 @@ These facts are always true for this project. Apply them to every session withou
 - Entity identity is the exact, case-sensitive, vault-relative path. Do not add hidden UUIDs.
 - App-driven moves must update known path references atomically.
 - Surface unresolved references and malformed files; never silently discard or repair user content.
-- Keep the app and CLI as thin clients over shared domain and Markdown targets.
+- Keep both app shells and the CLI as thin clients over the shared Domain, Markdown, Workspace and Presentation targets appropriate to each client.
 
 ## Dependency Direction
 
 Dependencies point inward:
 
 ```text
-LocalTodoApp ---> LocalTodoMarkdown <--- LocalTodoCLI
-      |                   |
-      +--> LocalTodoDomain <+
+LocalTodoApp --------+                    +-------- LocalTodoIOSApp
+                     |                    |
+                     +--> LocalTodoWorkspace <---+
+                     |           |
+                     |           v
+                     +--> LocalTodoMarkdown <-------- LocalTodoCLI
+                     |           |
+                     |           v
+                     +----> LocalTodoDomain <---------+
+
+LocalTodoApp ------> LocalTodoPresentation <------ LocalTodoIOSApp
 ```
 
 - `LocalTodoDomain` contains value types and business rules. It imports no UI, CLI, or YAML package.
 - `LocalTodoMarkdown` owns schema translation and filesystem operations.
+- `LocalTodoWorkspace` owns portable routes, recurrence editor values, vault-session operations, filters, view preferences, history and recovery checkpoints. The macOS shell currently consumes the shared route/recurrence values while retaining `WorkspaceModel`; the iOS shell composes `WorkspaceSession`. The target imports no SwiftUI, AppKit or UIKit.
+- `LocalTodoPresentation` owns shared SwiftUI palette, stylesheet and presentation values without importing either app shell.
 - `LocalTodoCLI` owns argument parsing and output formatting only.
-- `LocalTodoApp` owns SwiftUI composition and platform integration only.
+- `LocalTodoApp` and `LocalTodoIOSApp` own their platform-specific SwiftUI composition, access lifetime and OS integration only.
 
 Do not create a catch-all `Utils`, `Helpers`, `Manager`, or `Services` module.
 
@@ -95,8 +105,9 @@ Run the complete quality gate before handing work back or committing changes:
 make check
 ```
 
-- `make check` regenerates the Xcode project, checks formatting/lint, runs Swift package and macOS app tests, and builds the `LocalTodoApp` Debug scheme. All stages must pass; `swift build` or `swift test` alone does not compile the app.
+- `make check` regenerates the Xcode project, checks formatting/lint and release scripts, runs Swift package, macOS app, shared iOS and phone/tablet UI tests, then builds both app schemes. All stages must pass; `swift build` or `swift test` alone does not compile the apps.
 - Run `make build` for a focused unsigned app-build check. The generated `LocalTodo.xcodeproj` is ignored by Git; change `project.yml` for project settings and regenerate with `make generate` after pulling source changes.
+- Run `make build-ios` for a focused unsigned iOS Simulator build. `make test-ios` runs the shared/mobile suites on the configured phone simulator and the adaptive-workspace UI check on an available iPad simulator.
 - When investigating Xcode Build/Run failures, also validate the normal signed build used by Xcode, without `CODE_SIGNING_ALLOWED=NO`:
 
   ```bash
@@ -110,7 +121,7 @@ make check
 
 - Follow the implemented native patterns and design direction in `DESIGN.md`; keep token documentation aligned with the source.
 - Preserve keyboard access, visible focus, reduced motion, scalable text, and non-color state cues.
-- Keep core interactions familiar. Do not use decorative motion, nested cards, gradient text, or colored side stripes. Native glass is permitted only on navigation/control surfaces on macOS 26+, with accessibility and older-system fallbacks; persistent task content stays opaque.
+- Keep core interactions familiar. Do not use decorative motion, nested cards, gradient text, or colored side stripes. Native glass is permitted only on navigation/control surfaces on supported macOS/iOS versions, with accessibility and older-system fallbacks; persistent task content stays opaque.
 
 ## Commits
 

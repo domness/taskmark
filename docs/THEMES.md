@@ -17,7 +17,7 @@ Task and project inspector notes use the shared native **Secondary** text style 
 
 ## Built-In Tokens
 
-All colors are sRGB `#RRGGBB`. `AppTheme.swift` is the implementation source of truth.
+All colors are sRGB `#RRGGBB`. `Sources/LocalTodoPresentation/TaskmarkAppearance.swift` is the shared implementation source of truth.
 
 | Palette / appearance | Background | Sidebar | Inspector | Accent |
 | --- | --- | --- | --- | --- |
@@ -113,14 +113,14 @@ Selectors are exactly `:root`, `:root[data-appearance=light]` and `:root[data-ap
 
 ## Extending The Implementation
 
-Source paths below are relative to `Apps/LocalTodoApp/Sources/`. For window composition and behavior, see [Settings](SETTINGS.md); for ordering and task interactions, see [Personalization](PERSONALIZATION.md).
+Shared presentation lives in `Sources/LocalTodoPresentation/`; platform projection remains in each app shell. For macOS window composition and behavior, see [Settings](SETTINGS.md); for ordering and task interactions, see [Personalization](PERSONALIZATION.md).
 
-- `Settings/AppPreferences.swift`: observable per-vault choices projected from canonical configuration. Workspace-owned autosave persists changes through `LocalTodoMarkdown`; use temporary vaults in tests rather than machine defaults. Malformed stored preferences are diagnosed and not silently reset.
-- `Settings/AppTheme.swift`: add palette cases here, each with explicit light/dark tokens and a useful preview label. The Settings grid derives from `allCases`. Also update `Sources/LocalTodoMarkdown/VaultPreferenceValidation.swift` and the file-contract theme values so app and CLI can reopen saved choices.
-- `Workspace/VaultAppearance.swift`: validates the CSS subset and merges overrides. Add new tokens to its allowlist with validation, tests and an entry in this document; never silently accept unsupported declarations.
-- `Settings/AppAppearanceModifier.swift`: applies preference-driven native appearance at **both scene roots**, propagates calendar/date-format/theme environments, and defines `ThemeSurface` for explicit semantic surfaces. Do not force every text/control fill to a custom color; macOS still owns focus, selection and form-control states.
-- `Settings/ThemePreview.swift`: displays the same built-in tokens as the workspace. Keep the textual selected state and checkmark; color alone is insufficient.
-- `Settings/ThemeTypography.swift`: maps themes to bundled families, scales native semantic roles from the effective interface base size, and supplies `themeFont` for explicit roles. `project.yml` copies the Fonts resource folder and generates the `ATSApplicationFontsPath` Info.plist entry for app-local registration.
+- `Apps/LocalTodoApp/Sources/Settings/AppPreferences.swift`: observable per-vault choices projected from canonical configuration. Workspace-owned autosave persists changes through `LocalTodoMarkdown`; use temporary vaults in tests rather than machine defaults. Malformed stored preferences are diagnosed and not silently reset.
+- `Sources/LocalTodoPresentation/TaskmarkAppearance.swift`: add palette cases here, each with explicit light/dark tokens and a useful preview label. Both apps derive their theme choices from `allCases`. The same file validates the CSS subset and merges overrides; add new tokens to its allowlist with validation, tests and an entry in this document. Also update `Sources/LocalTodoMarkdown/VaultPreferenceValidation.swift` and the file-contract theme values so every client can reopen saved choices.
+- `Apps/LocalTodoApp/Sources/Settings/AppAppearanceModifier.swift`: applies preference-driven native appearance at **both macOS scene roots**, propagates calendar/date-format/theme environments, and defines `ThemeSurface` for explicit semantic surfaces. Do not force every text/control fill to a custom color; macOS still owns focus, selection and form-control states.
+- `Apps/LocalTodoIOSApp/Sources/MobileThemeModifier.swift`: applies the same shared theme and stylesheet values to mobile scene content while leaving system control semantics native.
+- `Apps/LocalTodoApp/Sources/Settings/ThemePreview.swift`: displays the same built-in tokens as the workspace. Keep the textual selected state and checkmark; color alone is insufficient.
+- `Apps/LocalTodoApp/Sources/Settings/ThemeTypography.swift`: maps themes to bundled families, scales native semantic roles from the effective interface base size, and supplies `themeFont` for explicit roles. `project.yml` copies the Fonts resource folder into both apps and registers it with each platform's generated Info.plist.
 - New surfaces should opt into the appropriate surface token and otherwise inherit native appearance. Use `CalendarDateField` or the shared display formatter for dates; persisted values remain ISO.
 
 Tests cover paired tokens, override precedence, disabling overrides, malformed-file fallback, reload, persistence, bundled font resolution (including bold/italic and license resources), and inherited/semantic native editor family and size updates across theme switches. Full visual contrast and system-appearance interaction still require native window testing; build success alone is not that evidence.

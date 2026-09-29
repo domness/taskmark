@@ -6,7 +6,7 @@ Status reviewed against the repository on 2026-09-28. Implemented features below
 
 ### Local-First Foundation
 
-- Swift 6 Domain and Markdown targets shared by the native macOS app and CLI, with documented [architecture](ARCHITECTURE.md) and [vault contract](FILE_FORMAT.md).
+- Swift 6 Domain, Markdown, Workspace and Presentation targets shared as appropriate by the native macOS/iOS apps and CLI, with documented [architecture](ARCHITECTURE.md) and [vault contract](FILE_FORMAT.md).
 - Vault schema 2 uses `.config/` for the manifest, saved filters, stylesheet and shared preferences. The unused earlier development format has no migration or fallback, as requested.
 - Safe empty-folder initialization, vault selection and security-scoped restoration, full-scan snapshots and periodic external-change refresh.
 - Revision-checked atomic updates, preservation of unknown frontmatter and Markdown bodies, visible malformed-file and missing-reference diagnostics.
@@ -57,7 +57,7 @@ See [settings](SETTINGS.md) and [themes](THEMES.md).
 
 ### Build And Distribution Tooling
 
-- `make check` regenerates the project, checks formatting/lint and release scripts, runs package/macOS app tests, and builds the unsigned Debug app.
+- `make check` regenerates the project, checks formatting/lint and release scripts, runs package, macOS app, shared iOS, compact-phone and adaptive-iPad tests, and builds both unsigned Debug apps.
 - All quality and release jobs target GitHub-hosted runners. The release workflow validates a merged commit without credentials, gates signing through the owner-approved `release` environment and grants release-write permission only to the upload job.
 - Release scripts build a universal macOS app, select the pinned Developer ID identity and explicit temporary notarization Keychain, notarize/staple, and upload DMG/ZIP/checksum assets to an existing published release. The former personal-runner pipeline published through 0.8.1; the hosted credential path still requires an approved release validation. Downloaded-app interaction remains a separate manual acceptance step.
 
@@ -70,14 +70,14 @@ See [CI and release setup](CI_RELEASES.md).
 - Restore project/area path moves only after a multi-file recovery and visibility design satisfies the atomic reference-update contract. They remain rejected before mutation; task moves use exclusive atomic rename.
 - Continue downloaded-app launch and interaction acceptance for each release; successful signing/notarization does not establish full UI correctness.
 
-The maintained test suites under `Tests/` and `Apps/LocalTodoApp/Tests/` are the automated evidence; use the current `make check` result rather than historical test counts.
+The maintained suites under `Tests/`, `Apps/LocalTodoApp/Tests/`, `Apps/LocalTodoIOSApp/Tests/` and `Apps/LocalTodoIOSApp/UITests/` are the automated evidence; use the current `make check` result rather than historical test counts.
 
 ## iOS — Implementation Candidate
 
 - The `LocalTodoIOSApp` target supports iPhone and iPad on iOS/iPadOS 18+, with compact Today, Inbox, Browse and Search navigation and an adaptive iPad sidebar/list/detail layout.
 - The app opens or creates the same schema-2 local or iCloud Drive vault in place and reuses Domain, Markdown, Workspace and Presentation behavior, including shared configuration, saved filters, ordering, themes and bounded stylesheet values.
 - Provider-aware scans request iCloud materialization, distinguish partial availability, expose provider conflicts and combine file-presenter events with foreground polling. Mobile lifecycle and device-local draft recovery preserve unsaved input without creating a canonical app database.
-- Automated iOS coverage executes the shared Domain, Markdown, Workspace and Presentation suites plus app, compact-phone and adaptive-iPad UI tests. A signed current-branch build has opened an existing iCloud vault on a physical iPhone and restored a complete workspace with its navigation title visible.
+- Automated iOS coverage executes the shared Domain, Markdown, Workspace and Presentation suites plus app, compact-phone and adaptive-iPad UI tests. A signed build of the merged implementation opened an existing iCloud vault on a physical iPhone and restored a complete workspace with its navigation title visible.
 - The complete Mac-to-iPhone/iPad mutation, offline/reconnection, provider-conflict, recovery, accessibility, minimum-OS and archive/TestFlight matrix remains required before claiming released mobile or iCloud-sync support.
 
 The [iOS specification](IOS_SPEC.md) defines behavior and acceptance, the [agent implementation plan](IOS_IMPLEMENTATION.md) preserves the dependency-ordered work packets, and [iOS acceptance](IOS_ACCEPTANCE.md) records current evidence and explicit gaps.

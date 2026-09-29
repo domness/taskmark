@@ -1,4 +1,4 @@
-# Hosted CI And macOS Releases
+# Hosted CI And Apple Platform Releases
 
 Taskmark uses GitHub-hosted runners for every workflow. Your Mac does not need to be online or signed into Xcode for CI. Standard hosted runners are used; larger runners are not required.
 
@@ -10,7 +10,9 @@ PRs, pushes to `main` and manual runs execute `make check` on `macos-15`, select
 
 Conventional Commit subject format and the 72-character limit apply to ordinary commits. Actual merge commits are exempt in both the optional local `commit-msg` hook and the CI range check, allowing Git-generated messages such as `Merge branch 'develop'`. The range check still validates ordinary commits brought in by merges; writing a merge-like subject on a single-parent commit does not bypass validation. `make check` tests these rules using temporary Git repositories.
 
-The complete gate includes formatting/lint, release-script tests, Swift package tests, macOS app tests and an unsigned Debug app build. Validation receives no signing secrets and only a read-only repository token. PRs use `pull_request`, never privileged execution of contributor code through `pull_request_target`. Validation logs and `.xcresult` files are retained for seven days.
+The complete gate includes formatting/lint, release-script tests, Swift package and macOS app tests, shared/mobile tests on a phone simulator, the adaptive-workspace UI check on an available iPad simulator, and unsigned Debug builds of both apps. This is build/simulator evidence, not physical-device or iCloud interoperability acceptance. Validation receives no signing secrets and only a read-only repository token. PRs use `pull_request`, never privileged execution of contributor code through `pull_request_target`. Validation logs and `.xcresult` files are retained for seven days.
+
+The release workflow below distributes only the macOS app and bundled CLI. iOS App Store/TestFlight signing, export and publication are not part of the current release workflow; their remaining gates are tracked in [iOS acceptance](IOS_ACCEPTANCE.md).
 
 ### macOS Release — `.github/workflows/release.yml`
 

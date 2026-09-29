@@ -4,10 +4,10 @@ This file summarizes current, durable decisions that are not better expressed in
 
 ## Product And Scope
 
-- Taskmark is a macOS-first, local-first task manager and CLI for a dedicated Markdown vault.
+- Taskmark is a macOS-first, local-first task manager for macOS, iPhone and iPad, with a macOS-bundled CLI, all operating on a dedicated Markdown vault.
 - The app combines fast capture and daily planning with transparent, user-owned files. It does not require an account, canonical database, or Taskmark sync service.
 - Tasks are individual Markdown files. Lightweight subtasks remain Markdown checkboxes in the parent task body. Collaboration, first-class child-task entities, reminders, natural-language capture, and Todoist migration are outside current scope.
-- An iPhone/iPad implementation candidate targets iOS/iPadOS 18+ on `codex/ios-app`, reusing the same local/iCloud Drive vault and shared personalizations. Automated shared/app/UI tests and a signed physical-iPhone open/restore smoke test pass; the full cross-device iCloud, offline/conflict/recovery, accessibility and distribution matrix still gates release and sync claims. `docs/IOS_SPEC.md`, `docs/IOS_IMPLEMENTATION.md` and `docs/IOS_ACCEPTANCE.md` define the contract, work packets and current evidence. Web is later and must honor the same file contract.
+- The merged iPhone/iPad implementation candidate targets iOS/iPadOS 18+, reusing the same local/iCloud Drive vault and shared personalizations. Automated shared/app/UI tests and a signed physical-iPhone open/restore smoke test pass; the full cross-device iCloud, offline/conflict/recovery, accessibility and distribution matrix still gates release and sync claims. `docs/IOS_SPEC.md`, `docs/IOS_IMPLEMENTATION.md` and `docs/IOS_ACCEPTANCE.md` define the contract, work packets and current evidence. Web is later and must honor the same file contract.
 
 ## Naming And Compatibility
 
@@ -25,6 +25,7 @@ This file summarizes current, durable decisions that are not better expressed in
 
 ## Editing, Conflicts, And History
 
+- `LocalTodoWorkspace` holds portable routes, recurrence editor values, vault-session operations and recovery checkpoint types. The iOS shell composes `WorkspaceSession`; the macOS shell currently shares route/recurrence values while retaining `WorkspaceModel` for desktop orchestration.
 - `WorkspaceModel` owns task/project drafts, debounced autosave, conflict state, and persistence work so edits survive selection and inspector changes and flush before close or quit.
 - Non-overlapping external changes rebase automatically. Concurrent edits to the same field, or to semantic dependencies of calculated transitions, require explicit file/local resolution.
 - Native Undo registers only after successful persistence and restores the fields owned by an action rather than replacing unrelated state.

@@ -5,7 +5,7 @@
 <h1 align="center">Taskmark</h1>
 
 <p align="center">
-  A native, local-first task manager for macOS, backed by plain Markdown.
+  A native, local-first task manager for Apple platforms, backed by plain Markdown.
 </p>
 
 <p align="center">
@@ -19,11 +19,13 @@
   <img src="docs/design-exploration/native/focused-canvas.png" width="900" alt="Taskmark Today view on macOS">
 </p>
 
-Taskmark combines a focused macOS app, a scriptable CLI, and a transparent file format. Tasks, projects, and areas remain readable and editable without Taskmark; the app and CLI share the same validation, recurrence, query, and storage code.
+Taskmark combines focused native apps for macOS, iPhone and iPad, a scriptable macOS CLI, and a transparent file format. Tasks, projects, and areas remain readable and editable without Taskmark. All clients share validation, recurrence, query, and storage foundations; the native apps also reuse portable workspace and presentation components.
 
 ## Download
 
 Download the latest signed and notarized universal build from [GitHub Releases](https://github.com/domness/taskmark/releases/latest). Taskmark requires macOS 15 or newer and supports Apple Silicon and Intel Macs.
+
+The iPhone/iPad app requires iOS/iPadOS 18 or newer and is currently an implementation candidate built from source. It is not yet distributed as released mobile or iCloud-sync support; the remaining physical-device and distribution gates are tracked in [iOS Acceptance Evidence](docs/IOS_ACCEPTANCE.md).
 
 1. Open the DMG, or extract the ZIP.
 2. Move **Taskmark.app** to **Applications**.
@@ -36,8 +38,9 @@ Release downloads include SHA-256 checksums. Taskmark does not provide a sync se
 - Fast Inbox, Today, Next, Upcoming, Waiting, Someday, search, and saved-filter workflows.
 - Fixed and after-completion recurrence, paired-date rescheduling, and interactive Markdown checklists.
 - Projects, areas, tags, priorities, custom task ordering, and multiple independent vault windows.
+- Native iPhone navigation and adaptive iPad sidebar/list/detail workflows over the same schema-2 vault.
 - Rendered Markdown titles and notes with source editing when needed.
-- Autosave, native Undo/Redo, external-change refresh, conflict handling, and malformed-file diagnostics.
+- Autosave, native Undo/Redo, device-local draft recovery, external-change refresh, conflict handling, provider availability, and malformed-file diagnostics.
 - Six adaptive native themes, bundled typography, and optional per-vault style tokens.
 - A bundled `taskmark` CLI with human-readable and stable JSON output.
 - No canonical database, account, analytics service, or cloud dependency.
@@ -94,14 +97,15 @@ Install a skill by copying its complete directory, including any `references/` f
 
 | Guide | Purpose |
 | --- | --- |
-| [Daily Workflows](docs/DAILY_WORK.md) | App behavior and keyboard shortcuts |
-| [Settings](docs/SETTINGS.md) | Vault preferences and CLI registration |
+| [Daily Workflows](docs/DAILY_WORK.md) | macOS app behavior and keyboard shortcuts |
+| [Settings](docs/SETTINGS.md) | Shared vault preferences and macOS-only settings |
 | [Themes](docs/THEMES.md) | Built-in palettes and style tokens |
 | [File Format](docs/FILE_FORMAT.md) | Canonical vault and entity contract |
 | [Architecture](docs/ARCHITECTURE.md) | Targets, dependency direction, and storage safety |
-| [Roadmap](docs/ROADMAP.md) | Implemented work, validation gaps, and planned platforms |
-| [iOS Specification](docs/IOS_SPEC.md) | Planned iPhone/iPad behavior, shared vaults, themes, and acceptance |
-| [iOS Agent Plan](docs/IOS_IMPLEMENTATION.md) | Dependency-ordered implementation packets and agent prompts |
+| [Roadmap](docs/ROADMAP.md) | Implemented work, validation gaps, and later platforms |
+| [iOS Specification](docs/IOS_SPEC.md) | Normative iPhone/iPad behavior, shared vaults, themes, and acceptance |
+| [iOS Implementation](docs/IOS_IMPLEMENTATION.md) | Implemented work packets, dependencies, and remaining completion requirements |
+| [iOS Acceptance](docs/IOS_ACCEPTANCE.md) | Verified simulator/device evidence and outstanding release blockers |
 | [CI and Releases](docs/CI_RELEASES.md) | Validation, signing, notarization, and packaging |
 
 ## Build From Source
@@ -116,7 +120,7 @@ make check
 open LocalTodo.xcodeproj
 ```
 
-Run the `LocalTodoApp` scheme to build **Taskmark.app**. The internal `LocalTodo*` module names and bundle identifier intentionally remain stable. `make check` regenerates the project, checks formatting and lint, validates release scripts, runs package and app tests, and builds the Debug app.
+Run the `LocalTodoApp` scheme to build **Taskmark.app** or `LocalTodoIOSApp` for the iPhone/iPad app. The internal `LocalTodo*` module names and bundle identifiers intentionally remain stable. `make check` regenerates the project, checks formatting and lint, validates release scripts, runs package, macOS, shared iOS, phone and tablet tests, and builds both Debug apps. Use `make build` or `make build-ios` for a focused unsigned build.
 
 ## Contributing
 

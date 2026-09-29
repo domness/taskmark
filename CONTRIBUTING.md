@@ -27,9 +27,9 @@ make bootstrap
 make check
 ```
 
-`make bootstrap` resolves Swift packages, generates `LocalTodo.xcodeproj`, and opts this clone into the repository's Git hooks. `make check` runs formatting/strict lint, release-script checks, package and macOS app tests, and an unsigned Debug app build. The generated project is ignored; change `project.yml` and run `make generate` after pulling source additions or changing project settings.
+`make bootstrap` resolves Swift packages, generates `LocalTodo.xcodeproj`, and opts this clone into the repository's Git hooks. `make check` runs formatting/strict lint, release-script checks, package, macOS app, shared iOS and phone/tablet UI tests, then builds both unsigned Debug apps. The generated project is ignored; change `project.yml` and run `make generate` after pulling source additions or changing project settings.
 
-Use `make build` for a focused unsigned app build. Package-only `swift build` or `swift test` does not compile the app. For an Xcode Build/Run failure, also validate the normal signed path:
+Use `make build` for a focused unsigned macOS build and `make build-ios` for a focused unsigned simulator build. `make test-ios` runs the configured phone suite and adaptive iPad check. Package-only `swift build` or `swift test` does not compile either app. For a macOS Xcode Build/Run failure, also validate the normal signed path:
 
 ```bash
 make generate
@@ -44,7 +44,7 @@ Record the Xcode version, commands/results and any skipped checks at handoff. Di
 - Respect the package boundaries in `docs/ARCHITECTURE.md`.
 - Update `docs/FILE_FORMAT.md` and fixtures before changing persisted semantics.
 - Include tests for behavior changes and regressions.
-- Add app behavior tests under `Apps/LocalTodoApp/Tests`; keep domain, storage, and CLI tests under `Tests/`.
+- Add platform-shell behavior tests under `Apps/LocalTodoApp/Tests` or `Apps/LocalTodoIOSApp/Tests` and UI automation under `Apps/LocalTodoIOSApp/UITests`. Keep portable Domain, Markdown, Workspace, Presentation and CLI tests under `Tests/`; the shared suites must remain runnable on iOS where configured.
 - Run `make format` before `make check`.
 - Keep current behavior in the user guides and implementation status in [ROADMAP.md](docs/ROADMAP.md). Keep `MEMORY.md` to current durable decisions; use Git history for chronology and avoid duplicating test counts in multiple guides.
 
