@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="right" gradientUnits="userSpaceOnUse" x1="700" y1="225" x2="540" y2="675">
+      <stop offset="0" stop-color="#d8c5fb"/>
+      <stop offset="0.18" stop-color="#bfa6f5"/>
+      <stop offset="0.52" stop-color="#9569df"/>
+      <stop offset="0.82" stop-color="#713eba"/>
+      <stop offset="1" stop-color="#481878"/>
+    </linearGradient>
+    <radialGradient id="rightGlow" gradientUnits="userSpaceOnUse" cx="750" cy="240" r="470">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.18"/>
+      <stop offset="0.5" stop-color="#ffffff" stop-opacity="0.03"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="fold" gradientUnits="userSpaceOnUse" x1="350" y1="425" x2="575" y2="700">
+      <stop offset="0" stop-color="#2d0752"/>
+      <stop offset="0.23" stop-color="#3d0e68"/>
+      <stop offset="0.58" stop-color="#511a82"/>
+      <stop offset="0.86" stop-color="#64279b"/>
+      <stop offset="1" stop-color="#8149bd"/>
+    </linearGradient>
+    <linearGradient id="left" gradientUnits="userSpaceOnUse" x1="220" y1="445" x2="455" y2="760">
+      <stop offset="0" stop-color="#ddd0fc"/>
+      <stop offset="0.17" stop-color="#c8b5f7"/>
+      <stop offset="0.51" stop-color="#9d7ae7"/>
+      <stop offset="0.82" stop-color="#7447c5"/>
+      <stop offset="1" stop-color="#43266f"/>
+    </linearGradient>
+    <radialGradient id="leftGlow" gradientUnits="userSpaceOnUse" cx="290" cy="445" r="350">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="0.48" stop-color="#ffffff" stop-opacity="0.05"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <path d="M474 540 L691 254 C700 241 711 235 728 234 L826 235 C848 235 861 251 853 271 L635 641 C626 657 615 666 603 666 C595 666 589 662 582 655 Z" fill="url(#right)"/>
+  <path d="M474 540 L691 254 C700 241 711 235 728 234 L826 235 C848 235 861 251 853 271 L635 641 C626 657 615 666 603 666 C595 666 589 662 582 655 Z" fill="url(#rightGlow)"/>
+  <path d="M344 425 C352 423 360 426 368 433 L598 640 C610 651 611 661 600 668 L461 753 C455 757 449 760 443 758 Z" fill="url(#fold)"/>
+  <path d="M341 426 C349 424 355 427 359 439 L459 739 C464 754 457 766 443 764 L344 739 C329 735 318 727 309 712 L192 513 C179 491 188 468 210 458 L341 426 Z" fill="url(#left)"/>
+  <path d="M341 426 C349 424 355 427 359 439 L459 739 C464 754 457 766 443 764 L344 739 C329 735 318 727 309 712 L192 513 C179 491 188 468 210 458 L341 426 Z" fill="url(#leftGlow)"/>
+  <path d="M210 458 L341 426 C349 424 355 427 359 439" fill="none" stroke="#ffffff" stroke-opacity="0.48" stroke-width="4" stroke-linecap="round"/>
+  <path d="M691 254 C700 241 711 235 728 234 L826 235" fill="none" stroke="#ffffff" stroke-opacity="0.4" stroke-width="4" stroke-linecap="round"/>
+  <path d="M344 425 L598 640 C610 651 611 661 600 668" fill="none" stroke="#e9d9ff" stroke-opacity="0.28" stroke-width="3" stroke-linecap="round"/>
+</svg>

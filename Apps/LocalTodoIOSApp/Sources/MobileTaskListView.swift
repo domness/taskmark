@@ -54,6 +54,7 @@ struct MobileTaskListView: View {
                 }
             }
         }
+        .listStyle(.plain)
         .navigationTitle(route.title)
         .overlay {
             if displayedTasks.isEmpty {
@@ -242,7 +243,8 @@ private struct MobileTaskRow: View {
             .disabled(!isAvailable)
             .accessibilityLabel(task.status.isComplete ? "Reopen task" : "Complete task")
             VStack(alignment: .leading, spacing: 3) {
-                Text(task.title).strikethrough(task.status.isComplete)
+                Text(MobileTaskMarkdown.inline(task.title))
+                    .strikethrough(task.status.isComplete)
                 HStack {
                     if let scheduled = task.scheduled {
                         Text(scheduled.description)

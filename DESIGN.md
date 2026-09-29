@@ -112,4 +112,4 @@ Native primary/secondary text and control state semantics remain adaptive. Custo
 
 ## 8. App Icon
 
-Taskmark uses a folded purple checkmark on a charcoal rounded tile. The shared asset catalog lives in `Apps/LocalTodoApp/Resources/Assets.xcassets/AppIcon.appiconset` and contains the macOS renditions plus the iPhone/iPad marketing icon. `project.yml` selects `AppIcon` for both app targets, and Xcode compiles the appropriate renditions into each bundle.
+Taskmark uses a folded purple checkmark on a charcoal tile. The macOS renditions live in `Apps/LocalTodoApp/Resources/Assets.xcassets/AppIcon.appiconset`. The iPhone/iPad app uses the layered Icon Composer source at `Apps/LocalTodoIOSApp/Resources/AppIcon.icon`, with separate SVG artwork for the opaque background and folded checkmark layers so the system owns icon masking and appearance effects without exposing a light edge. `project.yml` selects `AppIcon` for both app targets.
