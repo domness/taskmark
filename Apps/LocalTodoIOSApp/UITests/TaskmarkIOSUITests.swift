@@ -31,7 +31,8 @@ final class TaskmarkIOSUITests: XCTestCase {
         title.typeText("Captured on iPhone")
         app.buttons["Add"].tap()
 
-        XCTAssertTrue(app.staticTexts["Captured on iPhone"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.navigationBars["New Task"].waitForNonExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Captured on iPhone"].waitForExistence(timeout: 5))
     }
 
     func testIncompleteVaultKeepsNavigationTitleVisible() {
