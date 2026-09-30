@@ -41,7 +41,7 @@ IOS-03 and IOS-04 may run independently after IOS-02 APIs are integrated, with e
 
 **Work:**
 
-1. Add reusable-library iOS 18 platform support, a `LocalTodoIOSApp` scheme and iOS unit/UI test targets. Link Domain/Markdown only; never embed the CLI. Use `com.domness.localtodo.ios`, Taskmark display name and iPhone/iPad device families.
+1. Add reusable-library iOS 18 platform support, a `LocalTodoIOSApp` scheme and iOS unit/UI test targets. Link Domain/Markdown only; never embed the CLI. Use `com.tinycorestudios.taskmark`, Taskmark display name and iPhone/iPad device families.
 2. Add native Open/Create controls with a folder document picker, iOS bookmark persistence and scoped access. A minimal fixture list is sufficient for this packet.
 3. Exercise manifest read, a single revision-checked task edit and readback in a disposable local folder and externally selected iCloud folder. The final coordination/availability model belongs to IOS-03; document gaps instead of implying full support.
 4. Audit platform availability of storage primitives and macOS-only APIs. Prove exclusive creation and replace/move behavior on iCloud. Record provider failure modes, placeholder/version discovery and folder creation behavior.

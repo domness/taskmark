@@ -42,7 +42,7 @@ Use SwiftUI with small UIKit integrations for platform capabilities. The mobile 
 
 ## 3. Implemented Architecture
 
-The merged targets preserve the existing module names, Mac bundle identifier and inward dependency direction. UI and application lifecycle remain in the platform shells rather than Domain or Markdown.
+The merged targets preserve the existing module names and inward dependency direction. The Mac bundle identifier is `com.tinycorestudios.taskmark`. UI and application lifecycle remain in the platform shells rather than Domain or Markdown.
 
 ```text
 LocalTodoApp (macOS)             LocalTodoIOSApp (iOS/iPadOS)
@@ -66,7 +66,7 @@ Both app shells may use Domain and Markdown APIs directly where they compose pla
 | `LocalTodoIOSApp`, `Apps/LocalTodoIOSApp/` | iOS composition, adaptive navigation, picker/bookmarks, scene lifecycle, touch editors, sharing/copying and device-local recovery storage adapter. Product display name: Taskmark. |
 | Existing `LocalTodoMarkdown` | File availability/coordination, provider-version access, canonical persistence and diagnostics on both platforms. |
 
-The iOS bundle identifier is `com.domness.localtodo.ios`; the macOS identifier remains `com.domness.localtodo`. Shared source extraction does not justify making all implementation types public: expose narrow session/action/state APIs.
+The iOS and macOS bundle identifier is `com.tinycorestudios.taskmark`. Shared source extraction does not justify making all implementation types public: expose narrow session/action/state APIs.
 
 ### Extraction rules
 

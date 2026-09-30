@@ -12,7 +12,7 @@ This file summarizes current, durable decisions that are not better expressed in
 ## Naming And Compatibility
 
 - The product, app bundle, CLI command, and companion skills are named Taskmark / `taskmark`.
-- There is no `localtodo` CLI alias. Existing internal `LocalTodo*` Swift modules, generated Xcode project name, bundle identifier, and some build artifact names remain stable intentionally.
+- There is no `localtodo` CLI alias. Existing internal `LocalTodo*` Swift modules, generated Xcode project name, and some build artifact names remain stable intentionally. Both native apps use the bundle identifier `com.tinycorestudios.taskmark`.
 - Vault schema 2 is the only supported layout. All metadata and shared preferences live under reserved `.config/`; the earlier development layout has no migration or fallback.
 
 ## Storage And Identity
