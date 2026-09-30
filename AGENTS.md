@@ -99,7 +99,9 @@ Do not create a catch-all `Utils`, `Helpers`, `Manager`, or `Services` module.
 - Test dates with an injected calendar, timezone, and clock.
 - Add regression tests before fixing a reproduced bug.
 
-Run the complete quality gate before handing work back or committing changes:
+For pure documentation changes, do not run `make check`. Review the changed text for accuracy and consistency, verify relevant links and examples, and run `git diff --check` before handing work back or committing. Documentation includes Markdown guides and agent instructions; changes to executable code, build configuration, dependencies, scripts or test fixtures are not pure documentation changes.
+
+For changes beyond pure documentation, run the complete quality gate before handing work back or committing:
 
 ```bash
 make check

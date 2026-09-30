@@ -53,7 +53,7 @@ Record the Xcode version, commands/results and any skipped checks at handoff. Di
 1. Fork the repository and create a focused branch from `main`.
 2. Add tests for behavior changes and regression fixes.
 3. Update affected user, contract, architecture, or design documentation.
-4. Run `make format` and `make check`.
+4. For pure documentation changes, review accuracy, links and examples, and run `git diff --check`; do not run `make check`. For other changes, run `make format` and `make check`.
 5. Open a pull request that explains the problem, solution, validation, and any remaining manual checks.
 
 Pull requests must keep Markdown canonical, preserve unknown frontmatter and bodies, and respect the target boundaries in [ARCHITECTURE.md](docs/ARCHITECTURE.md). A maintainer may ask to split unrelated work or revise a persisted-format change before review.
