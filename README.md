@@ -97,6 +97,7 @@ Install a skill by copying its complete directory, including any `references/` f
 
 | Guide | Purpose |
 | --- | --- |
+| [Privacy Policy](PRIVACY.md) | Data handling, optional services, retention and privacy contact |
 | [Daily Workflows](docs/DAILY_WORK.md) | macOS app behavior and keyboard shortcuts |
 | [Settings](docs/SETTINGS.md) | Shared vault preferences and macOS-only settings |
 | [Themes](docs/THEMES.md) | Built-in palettes and style tokens |
