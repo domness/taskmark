@@ -8,7 +8,7 @@ Status recorded 2026-09-28 for the `codex/ios-app` implementation candidate deli
 - iPhone 16 Pro and iPad Pro 11-inch (M4) simulators on iOS/iPadOS 18.4 for the repository gate.
 - iPhone 18 Pro and iPad Pro 13-inch (M5) simulators on iOS/iPadOS 27.0 for current-runtime UI checks.
 - Physical iPhone 17 Pro Max on iOS 27.0 (build 24A437).
-- Taskmark 0.12.0 build 18, bundle identifier `com.domness.localtodo.ios`.
+- Taskmark 0.12.0 build 18, bundle identifier `com.domness.localtodo.ios` (historical evidence; the current source now configures `com.tinycorestudios.taskmark` for the next build).
 - The physical run used a signed development build. No account identifier, certificate identity or vault content is recorded here.
 
 ## Verified Evidence
@@ -47,6 +47,7 @@ The seven-step sequence in [IOS_SPEC.md](IOS_SPEC.md#required-physical-device-in
 
 ## Distribution Status
 
+- Current source bundle identifier for the next archive/TestFlight build: `com.tinycorestudios.taskmark`.
 - Development-signed installation and launch: **passed**.
 - Generic iOS development-signed archive and resource validation: **passed**.
 - App Store distribution signing and TestFlight export validation: **not run**.

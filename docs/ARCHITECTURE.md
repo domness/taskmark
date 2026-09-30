@@ -8,7 +8,7 @@ Markdown is canonical. Any index or cache is derived, disposable, and rebuildabl
 
 ## Targets
 
-The products are `Taskmark.app` for macOS, Taskmark for iOS/iPadOS, and the macOS `taskmark` CLI. Existing `LocalTodo*` modules and both app bundle identifiers remain stable. Vault schema 2 stores metadata under `.config/`.
+The products are `Taskmark.app` for macOS, Taskmark for iOS/iPadOS, and the macOS `taskmark` CLI. Existing `LocalTodo*` modules remain stable. Both native apps use the bundle identifier `com.tinycorestudios.taskmark`. Vault schema 2 stores metadata under `.config/`.
 
 ```text
 LocalTodoApp --------+                    +-------- LocalTodoIOSApp

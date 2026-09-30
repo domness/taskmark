@@ -120,7 +120,7 @@ make check
 open LocalTodo.xcodeproj
 ```
 
-Run the `LocalTodoApp` scheme to build **Taskmark.app** or `LocalTodoIOSApp` for the iPhone/iPad app. The internal `LocalTodo*` module names and bundle identifiers intentionally remain stable. `make check` regenerates the project, checks formatting and lint, validates release scripts, runs package, macOS, shared iOS, phone and tablet tests, and builds both Debug apps. Use `make build` or `make build-ios` for a focused unsigned build.
+Run the `LocalTodoApp` scheme to build **Taskmark.app** or `LocalTodoIOSApp` for the iPhone/iPad app. The internal `LocalTodo*` module names remain stable; both native apps use `com.tinycorestudios.taskmark`. `make check` regenerates the project, checks formatting and lint, validates release scripts, runs package, macOS, shared iOS, phone and tablet tests, and builds both Debug apps. Use `make build` or `make build-ios` for a focused unsigned build.
 
 ## Contributing
 
