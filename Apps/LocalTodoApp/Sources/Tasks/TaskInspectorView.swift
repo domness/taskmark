@@ -12,7 +12,6 @@ struct TaskInspectorView: View {
                 VStack(alignment: .leading, spacing: 18) {
                     TaskInspectorHeader(model: model, draft: draft, isTitleEditing: $isTitleEditing)
                     TaskNotesView(draft: draft)
-                        .padding(.leading, 26)
                     TaskChecklistView(model: model, draft: draft)
                         .padding(.leading, 26)
                 }

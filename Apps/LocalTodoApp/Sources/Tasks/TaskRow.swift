@@ -8,25 +8,20 @@ struct TaskRow: View {
     let reorderContext: TaskReorderContext
     let onSelect: () -> Void
     @Environment(\.colorScheme) private var colorScheme
+    @State private var isPerformingCompletionAction = false
+    @State private var showsCompletionFeedback = false
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 0) {
             Button {
-                guard let revision = model.snapshot?.tasks[task.path]?.revision else { return }
-                let vaultSession = model.vaultSession
-                Task {
-                    await model.completeTask(
-                        at: task.path,
-                        expectedRevision: revision,
-                        vaultSession: vaultSession
-                    )
-                }
+                toggleCompletion()
             } label: {
-                Image(systemName: completionImage)
+                TaskCompletionIcon(status: task.status, showsCompletionFeedback: showsCompletionFeedback)
             }
             .buttonStyle(.plain)
-            .foregroundStyle(priorityColor)
-            .accessibilityLabel(task.status.isComplete ? "Reopen task" : "Mark complete")
+            .foregroundStyle(showsCompletionFeedback ? Color.green : priorityColor)
+            .disabled(isPerformingCompletionAction)
+            .accessibilityLabel(completionAccessibilityLabel)
 
             taskLabel
                 .onTapGesture(perform: onSelect)
@@ -45,14 +40,6 @@ struct TaskRow: View {
             .disabled(task.status.isComplete)
             Divider()
             TaskContextActions(model: model, path: task.path)
-        }
-    }
-
-    private var completionImage: String {
-        switch task.status {
-        case .done: "checkmark.circle.fill"
-        case .canceled: "xmark.circle.fill"
-        default: "circle"
         }
     }
 
@@ -102,6 +89,41 @@ struct TaskRow: View {
         case .p2: return model.effectiveAppearance.color("--priority-2", scheme: colorScheme, fallback: .orange)
         case .p3: return model.effectiveAppearance.color("--priority-3", scheme: colorScheme, fallback: .blue)
         default: return .primary
+        }
+    }
+
+    private var completionAccessibilityLabel: String {
+        if showsCompletionFeedback {
+            return "Task completed"
+        }
+        return task.status.isComplete ? "Reopen task" : "Mark complete"
+    }
+
+    private func toggleCompletion() {
+        guard !isPerformingCompletionAction else { return }
+        let vaultSession = model.vaultSession
+        let isMarkingComplete = !task.status.isComplete
+        isPerformingCompletionAction = true
+        showsCompletionFeedback = isMarkingComplete
+        Task {
+            if isMarkingComplete {
+                try? await Task.sleep(for: .milliseconds(180))
+            }
+            guard let revision = model.snapshot?.tasks[task.path]?.revision else {
+                showsCompletionFeedback = false
+                isPerformingCompletionAction = false
+                return
+            }
+            let succeeded = await model.completeTask(
+                at: task.path,
+                expectedRevision: revision,
+                vaultSession: vaultSession
+            )
+            if succeeded, isMarkingComplete {
+                try? await Task.sleep(for: .milliseconds(120))
+            }
+            showsCompletionFeedback = false
+            isPerformingCompletionAction = false
         }
     }
 }

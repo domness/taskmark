@@ -61,18 +61,19 @@ extension WorkspaceModel {
         }
     }
 
+    @discardableResult
     func completeTask(
         at path: VaultPath,
         expectedRevision: FileRevision,
         vaultSession intentSession: UUID
-    ) async {
-        guard intentSession == vaultSession else { return }
+    ) async -> Bool {
+        guard intentSession == vaultSession else { return false }
         guard let store, let snapshot, let record = snapshot.tasks[path], record.revision == expectedRevision else {
             errorMessage = "The task changed before completion. Taskmark refreshed it; try again."
-            return
+            return false
         }
-        guard let record = await prepareCompletion(record, session: intentSession) else { return }
-        guard beginMutation(at: path) else { return }
+        guard let record = await prepareCompletion(record, session: intentSession) else { return false }
+        guard beginMutation(at: path) else { return false }
         do {
             let now = clock()
             let task = record.value
@@ -87,7 +88,7 @@ extension WorkspaceModel {
                 )
             let saved = try await store.update(.task(updated), expectedRevision: record.revision)
             endMutation(at: path)
-            guard intentSession == vaultSession else { return }
+            guard intentSession == vaultSession else { return false }
             merge(saved)
             if task.status.isComplete {
                 completedTaskStatuses.removeValue(forKey: path)
@@ -100,9 +101,11 @@ extension WorkspaceModel {
                 actionName: task.status.isComplete ? "Reopen Task" : "Complete Task"
             )
             await refresh()
+            return true
         } catch {
             endMutation(at: path)
             errorMessage = error.localizedDescription
+            return false
         }
     }
 
