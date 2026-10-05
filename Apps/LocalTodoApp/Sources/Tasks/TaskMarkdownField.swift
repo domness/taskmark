@@ -23,6 +23,7 @@ struct TaskMarkdownField: View {
     var body: some View {
         if isEditing {
             source
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .focused($isSourceFocused)
                 .accessibilityLabel("\(label), Markdown")
                 .background {
@@ -57,11 +58,14 @@ struct TaskMarkdownField: View {
                 .labelsHidden()
                 .lineLimit(1 ... 6)
                 .themeFont(.headline)
+                .background(Color(nsColor: .textBackgroundColor))
         } else {
             TextEditor(text: $text)
                 .themeFont(.body)
                 .foregroundStyle(.secondary)
-                .frame(minHeight: 160)
+                .scrollContentBackground(.hidden)
+                .frame(maxWidth: .infinity, minHeight: 160, alignment: .topLeading)
+                .background(Color(nsColor: .textBackgroundColor))
         }
     }
 
@@ -92,5 +96,6 @@ struct TaskNotesView: View {
 
     var body: some View {
         TaskMarkdownField(text: $draft.notes, kind: .notes, subject: "Task", isEditing: $isEditing)
+            .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

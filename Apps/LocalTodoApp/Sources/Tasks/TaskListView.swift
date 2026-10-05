@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import LocalTodoDomain
 import SwiftUI
@@ -98,13 +99,15 @@ struct TaskListView: View {
             .listStyle(.inset)
             .focused($isListFocused)
             .onKeyPress(characters: CharacterSet(charactersIn: "\u{8}\u{7F}")) { press in
-                guard press.modifiers.isEmpty, let path = model.selectedTaskPath else { return .ignored }
+                guard press.modifiers.isEmpty, !isEditingText, let path = model.selectedTaskPath else {
+                    return .ignored
+                }
                 Task { await model.deleteTask(at: path) }
                 return .handled
             }
             .scrollContentBackground(.hidden)
             .onDeleteCommand {
-                guard let path = model.selectedTaskPath else { return }
+                guard !isEditingText, let path = model.selectedTaskPath else { return }
                 Task { await model.deleteTask(at: path) }
             }
         }
@@ -178,6 +181,17 @@ private extension TaskListView {
         model.selectTask(path)
         model.isInspectorPresented = true
         isListFocused = true
+    }
+
+    var isEditingText: Bool {
+        !TaskListKeyboardRouting.shouldDeleteTask(firstResponder: NSApp.keyWindow?.firstResponder)
+    }
+}
+
+enum TaskListKeyboardRouting {
+    static func shouldDeleteTask(firstResponder: NSResponder?) -> Bool {
+        guard let editor = firstResponder as? NSTextView else { return true }
+        return !editor.isEditable
     }
 }
 

@@ -84,6 +84,15 @@ struct TaskListKeyboardTests {
         }
     }
 
+    @Test func backspaceRoutingPreservesEditableTextResponders() {
+        let editor = NSTextView()
+        editor.isEditable = true
+        #expect(!TaskListKeyboardRouting.shouldDeleteTask(firstResponder: editor))
+        editor.isEditable = false
+        #expect(TaskListKeyboardRouting.shouldDeleteTask(firstResponder: editor))
+        #expect(TaskListKeyboardRouting.shouldDeleteTask(firstResponder: NSTableView()))
+    }
+
     private func makeWindow(model: WorkspaceModel, draft: TaskDraft) -> NSWindow {
         let controller = NSHostingController(rootView: HStack {
             TaskListView(model: model)
