@@ -42,6 +42,7 @@ This file summarizes current, durable decisions that are not better expressed in
 ## macOS Experience
 
 - The focused canvas defaults to sidebar plus task list. Clicking a task row opens the inspector in reading mode without entering title editing; double-click edits the title inline and Command-E opens/focuses details.
+- The middle task canvas fills its available pane. Completed is a dedicated Focus destination grouped by vault-local completion day; full-row drops onto Focus destinations apply their workflow transition. Native checklist controls add, toggle and delete Markdown body checkboxes.
 - Task/project Markdown renders read-first and reveals source for editing. Source text remains canonical; no rich-text serialization or web view is used.
 - The composed task inspector groups Planning and Organization beneath task content; project, area, tags, and recurrence stay directly available. File details are collapsed by default while pending saves and recovery remain visible. Full-row task dragging supports sidebar organization and Custom list insertion without requiring prior selection.
 - Sidebar order, Custom task order, view options, appearance, theme, stylesheet enablement, calendar/display settings, startup view, and timezone travel with `.config/config.yml`. Bookmarks and window geometry remain machine-local.

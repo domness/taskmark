@@ -25,6 +25,7 @@ struct MobileTaskDetailView: View {
     @State var pendingConflictedCheckpoint: TaskDraftCheckpoint?
     @State private var isEditingSource = false
     @State var exactMarkdown = ""
+    @State private var newChecklistItem = ""
 
     var task: TodoTask? {
         workspace.snapshot?.tasks[path]?.value
@@ -133,16 +134,26 @@ struct MobileTaskDetailView: View {
                 TextField("Tags, one per line", text: $tagsText, axis: .vertical)
             }
             let checklist = MarkdownChecklist(bodyText)
-            if !checklist.items.isEmpty {
-                Section("Checklist") {
-                    ForEach(checklist.items) { item in
-                        Toggle(item.title, isOn: Binding(
-                            get: { item.isChecked },
-                            set: { checked in
-                                bodyText = (try? checklist.settingChecked(checked, item: item)) ?? bodyText
-                            }
-                        ))
+            Section("Checklist") {
+                ForEach(checklist.items) { item in
+                    Toggle(item.title.isEmpty ? "Untitled step" : item.title, isOn: Binding(
+                        get: { item.isChecked },
+                        set: { checked in
+                            bodyText = (try? checklist.settingChecked(checked, item: item)) ?? bodyText
+                        }
+                    ))
+                    .swipeActions {
+                        Button("Delete", systemImage: "trash", role: .destructive) {
+                            bodyText = (try? checklist.removing(item)) ?? bodyText
+                        }
                     }
+                }
+                HStack {
+                    TextField("New checklist item", text: $newChecklistItem)
+                        .onSubmit(addChecklistItem)
+                    Button("Add checklist item", systemImage: "plus", action: addChecklistItem)
+                        .labelStyle(.iconOnly)
+                        .disabled(newChecklistItem.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
             if let task {
@@ -188,7 +199,9 @@ struct MobileTaskDetailView: View {
             }
         }
     }
+}
 
+private extension MobileTaskDetailView {
     var projects: [Project] {
         workspace.snapshot?.projects.values.map(\.value).sorted { $0.title < $1.title } ?? []
     }
@@ -197,18 +210,16 @@ struct MobileTaskDetailView: View {
         workspace.snapshot?.areas.values.map(\.value).sorted { $0.title < $1.title } ?? []
     }
 
-    var vaultCalendar: Calendar {
-        var calendar = Calendar(identifier: .gregorian)
-        if let identifier = workspace.snapshot?.configuration.timezone {
-            if let timezone = TimeZone(identifier: identifier) {
-                calendar.timeZone = timezone
-            }
-        }
-        return calendar
+    func addChecklistItem() {
+        let title = newChecklistItem.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty else { return }
+        let lineEnding = bodyText.contains("\r\n") ? "\r\n" : "\n"
+        let endsInLineBreak = bodyText.utf8.last.map { $0 == 10 || $0 == 13 } ?? false
+        let separator = bodyText.isEmpty || endsInLineBreak ? "" : lineEnding
+        bodyText += separator + "- [ ] \(title)" + lineEnding
+        newChecklistItem = ""
     }
-}
 
-private extension MobileTaskDetailView {
     func weekdayBinding(_ day: Weekday) -> Binding<Bool> {
         Binding(
             get: { recurrence.weekdays.contains(day) },
@@ -218,6 +229,18 @@ private extension MobileTaskDetailView {
                 }
             }
         )
+    }
+}
+
+extension MobileTaskDetailView {
+    var vaultCalendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        if let identifier = workspace.snapshot?.configuration.timezone {
+            if let timezone = TimeZone(identifier: identifier) {
+                calendar.timeZone = timezone
+            }
+        }
+        return calendar
     }
 }
 

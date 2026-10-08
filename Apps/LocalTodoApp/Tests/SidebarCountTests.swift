@@ -24,6 +24,7 @@ struct SidebarCountTests {
             active, done, task("Canceled", status: .canceled), task("Inbox", status: .inbox),
             task("Waiting", status: .waiting), task("Someday", status: .someday),
         ])
+        #expect(model.sidebarTaskCount(for: .completed) == 1)
         let routes: [WorkspaceRoute] = [
             .today, .upcoming, .next, .inbox, .waiting, .someday,
             .project(project), .area(area), .tag("work"), .priority(.p1),

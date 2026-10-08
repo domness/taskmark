@@ -1,7 +1,7 @@
 import LocalTodoDomain
 
 public enum WorkspaceRoute: Hashable, Sendable {
-    case today, inbox, next, upcoming, waiting, someday, all, search, filters, issues
+    case today, inbox, next, upcoming, waiting, someday, completed, all, search, filters, issues
     case savedFilter(String)
     case project(VaultPath)
     case area(VaultPath)
@@ -16,7 +16,7 @@ public enum WorkspaceRoute: Hashable, Sendable {
         case .upcoming: .upcoming
         case .waiting: .waiting
         case .someday: .someday
-        case .all, .search, .filters, .issues, .savedFilter: .all
+        case .completed, .all, .search, .filters, .issues, .savedFilter: .all
         case let .project(path): .project(path)
         case let .area(path): .area(path)
         case let .tag(tag): .tag(tag)
@@ -32,6 +32,7 @@ public enum WorkspaceRoute: Hashable, Sendable {
         case .upcoming: "Upcoming"
         case .waiting: "Waiting"
         case .someday: "Someday"
+        case .completed: "Completed"
         case .all: "All Tasks"
         case .search: "Search"
         case .filters: "Filter Tasks"
@@ -52,6 +53,7 @@ public enum WorkspaceRoute: Hashable, Sendable {
         case .upcoming: .upcoming
         case .waiting: .waiting
         case .someday: .someday
+        case .completed: nil
         case .all: .all
         default: nil
         }
@@ -65,6 +67,7 @@ public enum WorkspaceRoute: Hashable, Sendable {
         case .search: "search"
         case .filters: "filters"
         case .issues: "issues"
+        case .completed: "completed"
         case let .savedFilter(name): "filter:\(name)"
         case let .project(path): "project:\(path.value)"
         case let .area(path): "area:\(path.value)"
@@ -77,6 +80,7 @@ public enum WorkspaceRoute: Hashable, Sendable {
     public var defaultSort: TaskSort {
         switch self {
         case .today, .next, .waiting, .someday: .priority
+        case .completed: .updated
         case .upcoming: .scheduled
         default: .path
         }

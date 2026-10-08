@@ -44,12 +44,14 @@ enum SidebarAssignmentTarget {
     case project(VaultPath)
     case area(VaultPath)
     case tag(String)
+    case focus(FocusDropTarget)
 
     var helpText: String {
         switch self {
         case .project: "Drop a task to assign this project"
         case .area: "Drop a task to assign this area"
         case .tag: "Drop a task to add this tag"
+        case let .focus(target): "Drop a task to move it to \(target.title)"
         }
     }
 
@@ -61,6 +63,24 @@ enum SidebarAssignmentTarget {
             snapshot?.tasks.values.contains { $0.value.tags.contains(tag) } == true
                 || snapshot?.projects.values.contains { $0.value.tags.contains(tag) } == true
                 || snapshot?.areas.values.contains { $0.value.tags.contains(tag) } == true
+        case .focus:
+            snapshot != nil
+        }
+    }
+}
+
+enum FocusDropTarget: CaseIterable {
+    case inbox, today, next, upcoming, waiting, someday, completed
+
+    var title: String {
+        switch self {
+        case .inbox: "Inbox"
+        case .today: "Today"
+        case .next: "Next"
+        case .upcoming: "Upcoming"
+        case .waiting: "Waiting"
+        case .someday: "Someday"
+        case .completed: "Completed"
         }
     }
 }

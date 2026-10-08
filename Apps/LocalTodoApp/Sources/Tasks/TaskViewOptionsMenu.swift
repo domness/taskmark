@@ -6,16 +6,20 @@ struct TaskViewOptionsMenu: View {
 
     var body: some View {
         Menu {
-            TaskSortPicker(model: model)
+            if model.route != .completed {
+                TaskSortPicker(model: model)
+            }
             Section("Show in Rows") {
                 Toggle("Project", isOn: metadataBinding(.project))
                 Toggle("Area", isOn: metadataBinding(.area))
                 Toggle("Tags", isOn: metadataBinding(.tags))
             }
             AppearanceMenu(model: model)
-            Picker("Group By", selection: groupingBinding) {
-                ForEach(TaskListGrouping.allCases) { grouping in
-                    Text(grouping.title).tag(grouping)
+            if model.route != .completed {
+                Picker("Group By", selection: groupingBinding) {
+                    ForEach(TaskListGrouping.allCases) { grouping in
+                        Text(grouping.title).tag(grouping)
+                    }
                 }
             }
         } label: {

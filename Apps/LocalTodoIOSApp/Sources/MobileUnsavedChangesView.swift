@@ -175,6 +175,7 @@ struct MobileUnsavedChangesView: View {
         case "upcoming": .upcoming
         case "waiting": .waiting
         case "someday": .someday
+        case "completed": .completed
         case "search": .search
         default: dynamicRoute(for: key) ?? .all
         }
