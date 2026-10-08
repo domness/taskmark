@@ -44,6 +44,17 @@ import Testing
     }
 }
 
+@Test func checklistRemovesOnlyTheSelectedLineAndPreservesLineEndings() throws {
+    let body = "Notes\r\n- [ ] First\r\n  * [X] Second\r\nAfter\r\n"
+    let checklist = MarkdownChecklist(body)
+    let second = try #require(checklist.items.last)
+
+    #expect(try checklist.removing(second) == "Notes\r\n- [ ] First\r\nAfter\r\n")
+    #expect(throws: DomainValidationError.invalidChecklistItem) {
+        try MarkdownChecklist("- [ ] Different\n").removing(second)
+    }
+}
+
 @Test(arguments: [false, true])
 func recurrenceResetsChecklistsOnlyWhenEnabled(enabled: Bool) throws {
     var patch = TaskPatch()

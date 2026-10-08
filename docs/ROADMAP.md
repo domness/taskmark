@@ -16,11 +16,11 @@ Status reviewed against the repository on 2026-09-28. Implemented features below
 
 ### Daily Workflows
 
-- Inbox, Today, Next, Upcoming, Waiting, Someday and All Tasks, plus project/area/tag/priority views and search. Inbox precedes Today in the sidebar.
+- Inbox, Today, Next, Upcoming, Waiting, Someday, Completed and All Tasks, plus project/area/tag/priority views and search. Inbox precedes Today in the sidebar; Completed groups done tasks by vault-local completion day.
 - Contextual capture, keyboard selection/editing/completion and paired-date rescheduling.
-- Fixed and after-completion recurrence; late fixed completion skips missed occurrences. Interactive body checklists and opt-in checklist reset on repeat.
+- Fixed and after-completion recurrence; late fixed completion skips missed occurrences. Native checklist add/toggle/delete controls edit body checkboxes, with opt-in checklist reset on repeat.
 - Project title/notes/status editing, completion/reopening and collapsed inactive-project navigation.
-- Combined filters and canonical saved filters shared with the CLI, with explicit Save/Update and conflict recovery.
+- Combined filters and canonical saved filters shared with the CLI, with explicit Save/Update/Delete actions, Undo/Redo and conflict recovery.
 - Automatic sorting and **Custom** drag ordering per view/vault, persisted in shared configuration. Grouped custom moves stay within their group; hidden task positions and order across launches/sort switches are retained.
 
 See [daily workflows and shortcuts](DAILY_WORK.md).
@@ -35,7 +35,7 @@ See [daily workflows and shortcuts](DAILY_WORK.md).
 - Task rows resize as planning metadata appears or disappears. Search/list headers stay top-aligned; Switch Vault has its own footer; the inspector toggle is at the trailing window toolbar.
 - Task Duplicate/Delete/Copy actions; project/area/tag context-menu removal with automatic assignment cleanup, including completed tasks and saved filters. Session-local Undo/Redo restores deleted collection bytes and affected assignments; interrupted cleanup reports reversible partial progress.
 - Independent native Projects/Areas sidebar ordering, with Move Up/Move Down/Restore Default Order actions.
-- Drag unselected tasks directly from the full row onto sidebar projects, areas or tags, with additive tag assignment and field-specific Undo/Redo. Custom order uses the same row drag for native list insertion.
+- Drag unselected tasks directly from the full row onto Focus destinations, sidebar projects, areas or tags, with workflow transitions, additive tag assignment and field-specific Undo/Redo. Custom order uses the same row drag for native list insertion.
 - P1 red/P2 orange/P3 blue indicators and labels, neutral task titles and optional native CSS-token overrides in `.config/style.css`.
 
 See [personalization](PERSONALIZATION.md).

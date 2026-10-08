@@ -47,7 +47,7 @@ Typed Markdown files may live anywhere below the vault except `.config/`. Folder
 
 `system` is a shared choice to follow the current machine's appearance, locale or timezone; select explicit values when identical presentation is wanted across machines.
 
-View keys are built-in view names, `search`, `filters`, `filter:<name>`, `project:<exact-path>`, `area:<exact-path>`, `tag:<tag>` or `priority:<p1|p2|p3|p4|none>`. Each `views` entry has boolean `showsProject`, `showsArea`, `showsTags`, a `grouping` of `none`, `project` or `area`, and optional/null `sort` (`path`, `title`, `priority`, `scheduled`, `deadline`, `created`, `updated`). For example:
+View keys are built-in view names (including `completed`), `search`, `filters`, `filter:<name>`, `project:<exact-path>`, `area:<exact-path>`, `tag:<tag>` or `priority:<p1|p2|p3|p4|none>`. Each `views` entry has boolean `showsProject`, `showsArea`, `showsTags`, a `grouping` of `none`, `project` or `area`, and optional/null `sort` (`path`, `title`, `priority`, `scheduled`, `deadline`, `created`, `updated`). For example:
 
 ```yaml
 preferences:
@@ -178,6 +178,7 @@ Area status is `active` or `archived`.
 - Today contains incomplete tasks scheduled on or before today or with a deadline on or before today.
 - Upcoming contains incomplete tasks with a scheduled date or deadline strictly after today. A task may appear in both Today and Upcoming when one date is overdue and the other is in the future.
 - Waiting and Someday contain tasks in their corresponding explicit statuses, whether dated or undated.
+- Completed contains tasks with `status: done`, grouped by the vault-local calendar date of `completed_at` in native clients. Canceled tasks are excluded.
 - Projects, areas, tags, and priorities are queries over explicit metadata.
 - Combined filters intersect project, area, status, priority, required tags, and inclusive scheduled/deadline ranges. Multiple statuses/priorities are alternatives; all selected tags are required and case-sensitive. A date range excludes undated tasks and its start must not exceed its end. Completed/canceled tasks require the include-completed option.
 - Sorting supports exact path, title, priority (P1 first), scheduled/deadline (earliest first, missing last), and creation/update time (newest first). Ties use exact path. CLI defaults to path order.

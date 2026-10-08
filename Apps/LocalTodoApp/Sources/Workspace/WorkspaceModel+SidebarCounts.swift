@@ -7,6 +7,10 @@ extension WorkspaceModel {
         switch route {
         case .all, .search, .filters, .issues:
             return nil
+        case .completed:
+            var filters = TaskFilters()
+            filters.statuses = [.done]
+            query = TaskQuery(filters: filters, includeCompleted: true)
         case let .savedFilter(name):
             guard filterState.loadError == nil,
                   let savedQuery = filterState.record?.filters.first(where: { $0.name == name })?.query

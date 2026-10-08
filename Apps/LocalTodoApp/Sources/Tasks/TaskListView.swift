@@ -22,7 +22,6 @@ struct TaskListView: View {
             listContent
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         }
-        .frame(maxWidth: 760, maxHeight: .infinity, alignment: .top)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .themeSurface()
         .onChange(of: model.route) { _, route in
@@ -132,7 +131,19 @@ struct TaskListView: View {
 
 private extension TaskListView {
     var taskSections: [TaskListSection] {
-        switch model.currentTaskListDisplayOptions.grouping {
+        if model.route == .completed {
+            return CompletedTaskGrouping.groups(
+                model.visibleTasks,
+                calendar: model.vaultCalendar
+            ).map { group in
+                TaskListSection(
+                    id: group.date.description,
+                    title: completedSectionTitle(group.date),
+                    tasks: group.tasks
+                )
+            }
+        }
+        return switch model.currentTaskListDisplayOptions.grouping {
         case .none:
             [TaskListSection(id: "all", title: nil, tasks: model.visibleTasks)]
         case .project:
@@ -148,6 +159,19 @@ private extension TaskListView {
                 title: model.areaDisplayTitle
             )
         }
+    }
+
+    func completedSectionTitle(_ date: CalendarDate) -> String {
+        guard let today = try? CalendarDate(date: model.clock(), calendar: model.vaultCalendar) else {
+            return model.preferences.dateFormat.string(date, calendar: model.vaultCalendar)
+        }
+        if date == today {
+            return "Today"
+        }
+        if date == (try? today.adding(DateComponents(day: -1), calendar: model.vaultCalendar)) {
+            return "Yesterday"
+        }
+        return model.preferences.dateFormat.string(date, calendar: model.vaultCalendar)
     }
 
     func groupedSections(

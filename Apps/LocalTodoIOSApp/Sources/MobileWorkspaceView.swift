@@ -98,7 +98,7 @@ struct MobileBrowseView: View {
     init(workspace: MobileWorkspace, initialRoute: WorkspaceRoute = .all) {
         self.workspace = workspace
         self.initialRoute = initialRoute
-        let builtIns: Set<WorkspaceRoute> = [.next, .upcoming, .waiting, .someday, .all]
+        let builtIns: Set<WorkspaceRoute> = [.next, .upcoming, .waiting, .someday, .completed, .all]
         _path = State(initialValue: builtIns.contains(initialRoute) ? [initialRoute] : [])
     }
 
@@ -121,9 +121,9 @@ private struct MobileRouteList: View {
     @State private var isCreatingFilter = false
     private var builtIns: [WorkspaceRoute] {
         if selection == nil {
-            [.next, .upcoming, .waiting, .someday, .all]
+            [.next, .upcoming, .waiting, .someday, .completed, .all]
         } else {
-            [.today, .inbox, .next, .upcoming, .waiting, .someday, .all, .search]
+            [.today, .inbox, .next, .upcoming, .waiting, .someday, .completed, .all, .search]
         }
     }
 

@@ -13,7 +13,6 @@ struct TaskInspectorView: View {
                     TaskInspectorHeader(model: model, draft: draft, isTitleEditing: $isTitleEditing)
                     TaskNotesView(draft: draft)
                     TaskChecklistView(model: model, draft: draft)
-                        .padding(.leading, 26)
                 }
                 planning
                 organization

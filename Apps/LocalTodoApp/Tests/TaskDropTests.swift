@@ -113,6 +113,41 @@ struct TaskDropTests {
         }
     }
 
+    @Test func focusDropsApplyWorkflowStatusDatesCompletionAndUndo() async throws {
+        let now = try #require(ISO8601DateFormatter().date(from: "2026-10-08T12:00:00Z"))
+        try await withWorkspace(now: now) { model, _ in
+            await model.createTask(title: "Focus task", vaultSession: model.vaultSession)
+            let path = try #require(model.selectedTaskPath)
+            let item = TaskDragItem(path: path.value, vaultSession: model.vaultSession)
+
+            await model.applyTaskDrop([item], onto: .focus(.today))
+            #expect(model.snapshot?.tasks[path]?.value.status == .next)
+            #expect(model.snapshot?.tasks[path]?.value.scheduled?.description == "2026-10-08")
+
+            await model.applyTaskDrop([item], onto: .focus(.upcoming))
+            #expect(model.snapshot?.tasks[path]?.value.scheduled?.description == "2026-10-09")
+            await model.applyTaskDrop([item], onto: .focus(.waiting))
+            #expect(model.snapshot?.tasks[path]?.value.status == .waiting)
+            await model.applyTaskDrop([item], onto: .focus(.someday))
+            #expect(model.snapshot?.tasks[path]?.value.status == .someday)
+
+            let undo = UndoManager()
+            model.setUndoManager(undo)
+            await model.applyTaskDrop([item], onto: .focus(.completed))
+            #expect(model.snapshot?.tasks[path]?.value.status == .done)
+            #expect(model.snapshot?.tasks[path]?.value.completedAt == now)
+            #expect(undo.undoActionName == "Complete Task")
+
+            model.performUndo()
+            try await waitForHistory(model)
+            #expect(model.snapshot?.tasks[path]?.value.status == .someday)
+            #expect(model.snapshot?.tasks[path]?.value.completedAt == nil)
+
+            await model.applyTaskDrop([item], onto: .focus(.inbox))
+            #expect(model.snapshot?.tasks[path]?.value.status == .inbox)
+        }
+    }
+
     private func waitForHistory(_ model: WorkspaceModel) async throws {
         for _ in 0 ..< 200 where model.isHistoryBusy {
             try await Task.sleep(for: .milliseconds(10))

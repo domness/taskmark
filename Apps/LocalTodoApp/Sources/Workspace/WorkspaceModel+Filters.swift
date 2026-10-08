@@ -11,6 +11,11 @@ extension WorkspaceModel {
             guard filterState.loadError == nil else { return nil }
             return filterState.record?.filters.first { $0.name == name }?.query
         }
+        if route == .completed {
+            var filters = TaskFilters()
+            filters.statuses = [.done]
+            return TaskQuery(filters: filters, includeCompleted: true, sort: .updated)
+        }
         return TaskQuery(
             scope: route.scope,
             text: route == .search ? searchText.trimmingCharacters(in: .whitespacesAndNewlines) : "",

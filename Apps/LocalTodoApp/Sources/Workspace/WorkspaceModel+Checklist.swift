@@ -1,3 +1,4 @@
+import Foundation
 import LocalTodoDomain
 
 extension WorkspaceModel {
@@ -18,5 +19,48 @@ extension WorkspaceModel {
         } catch {
             errorMessage = "The checklist item changed. Review the notes and try again."
         }
+    }
+
+    @discardableResult
+    func addChecklistItem(_ title: String, to draft: TaskDraft) -> Bool {
+        let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty, !title.contains("\n"), !title.contains("\r") else {
+            errorMessage = "Enter a checklist item on one line."
+            return false
+        }
+        guard canEditChecklist(draft) else { return false }
+        let lineEnding = draft.notes.contains("\r\n") ? "\r\n" : "\n"
+        let endsInLineBreak = draft.notes.utf8.last.map { $0 == 10 || $0 == 13 } ?? false
+        let separator = draft.notes.isEmpty || endsInLineBreak ? "" : lineEnding
+        let notes = draft.notes + separator + "- [ ] \(title)" + lineEnding
+        changeDraft(draft, keyPath: \.notes, to: notes, actionName: "Add Checklist Item")
+        return true
+    }
+
+    func removeChecklistItem(
+        _ item: MarkdownChecklist.Item,
+        from draft: TaskDraft,
+        projection: MarkdownChecklist
+    ) {
+        guard draft.vaultSession == vaultSession, draft.notes == projection.body else {
+            errorMessage = "The notes changed. Review the checklist and try again."
+            return
+        }
+        guard canEditChecklist(draft) else { return }
+        do {
+            let notes = try projection.removing(item)
+            changeDraft(draft, keyPath: \.notes, to: notes, actionName: "Delete Checklist Item")
+        } catch {
+            errorMessage = "The checklist item changed. Review the notes and try again."
+        }
+    }
+
+    private func canEditChecklist(_ draft: TaskDraft) -> Bool {
+        guard draft.vaultSession == vaultSession else { return false }
+        guard !draft.hasConflicts, draft.sourceUnavailableMessage == nil else {
+            errorMessage = "Resolve the task’s file changes before changing its checklist."
+            return false
+        }
+        return true
     }
 }

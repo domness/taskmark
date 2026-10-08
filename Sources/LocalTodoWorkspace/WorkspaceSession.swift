@@ -62,12 +62,21 @@ public final class WorkspaceSession {
         if route == .search, searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             return []
         }
-        let query = savedQuery(for: route) ?? TaskQuery(
-            scope: route.scope,
-            text: route == .search ? searchText : "",
-            includeCompleted: includeCompleted,
-            sort: sort ?? defaultSort(for: route)
-        )
+        let query: TaskQuery
+        if let saved = savedQuery(for: route) {
+            query = saved
+        } else if route == .completed {
+            var filters = TaskFilters()
+            filters.statuses = [.done]
+            query = TaskQuery(filters: filters, includeCompleted: true, sort: sort ?? .updated)
+        } else {
+            query = TaskQuery(
+                scope: route.scope,
+                text: route == .search ? searchText : "",
+                includeCompleted: includeCompleted,
+                sort: sort ?? defaultSort(for: route)
+            )
+        }
         return applyingCustomOrder(query.results(from: snapshot.tasks.values.map(\.value), today: today), for: route)
     }
 

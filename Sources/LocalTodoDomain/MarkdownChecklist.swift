@@ -69,6 +69,15 @@ public struct MarkdownChecklist: Sendable {
         return Self.text(bytes)
     }
 
+    public func removing(_ item: Item) throws -> String {
+        guard items.contains(item) else { throw DomainValidationError.invalidChecklistItem }
+        var bytes = Array(body.utf8)
+        let lineStart = bytes[..<item.id].lastIndex(of: 10).map { $0 + 1 } ?? 0
+        let lineEnd = bytes[item.id...].firstIndex(of: 10).map { $0 + 1 } ?? bytes.endIndex
+        bytes.removeSubrange(lineStart ..< lineEnd)
+        return Self.text(bytes)
+    }
+
     private static func text(_ bytes: [UInt8]) -> String {
         // Slicing a String at ASCII delimiters and replacing ASCII markers preserves valid UTF-8.
         // swiftlint:disable:next optional_data_string_conversion

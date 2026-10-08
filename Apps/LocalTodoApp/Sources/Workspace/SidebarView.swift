@@ -24,12 +24,13 @@ struct SidebarView: View {
         let session = model.vaultSession
         return List(selection: $model.route) {
             Section("Focus") {
-                route(.inbox, "Inbox", "tray")
-                route(.today, "Today", "sun.max")
-                route(.next, "Next", "arrow.right.circle")
-                route(.upcoming, "Upcoming", "calendar")
-                route(.waiting, "Waiting", "hourglass")
-                route(.someday, "Someday", "archivebox")
+                focusRoute(.inbox, "Inbox", "tray", target: .inbox)
+                focusRoute(.today, "Today", "sun.max", target: .today)
+                focusRoute(.next, "Next", "arrow.right.circle", target: .next)
+                focusRoute(.upcoming, "Upcoming", "calendar", target: .upcoming)
+                focusRoute(.waiting, "Waiting", "hourglass", target: .waiting)
+                focusRoute(.someday, "Someday", "archivebox", target: .someday)
+                focusRoute(.completed, "Completed", "checkmark.circle", target: .completed)
                 route(.all, "All Tasks", "checklist")
                 route(.search, "Search", "magnifyingglass")
             }
@@ -97,5 +98,20 @@ struct SidebarView: View {
 
     private func route(_ route: WorkspaceRoute, _ title: String, _ image: String) -> some View {
         SidebarRouteLabel(model: model, route: route, title: title, systemImage: image).tag(route)
+    }
+
+    private func focusRoute(
+        _ route: WorkspaceRoute,
+        _ title: String,
+        _ image: String,
+        target: FocusDropTarget
+    ) -> some View {
+        SidebarAssignmentRoute(
+            model: model,
+            route: route,
+            title: title,
+            systemImage: image,
+            target: .focus(target)
+        )
     }
 }
