@@ -1,28 +1,30 @@
 ---
 name: taskmark-release
-description: Prepare and publish a Taskmark GitHub release from this repository, including versioning, release notes, quality checks, and verification of signed and notarized macOS downloads. Use for requests such as “create a new release” or “release Taskmark”; not for managing tasks in a vault.
+description: Bump Taskmark versions across macOS and iOS/iPadOS, or prepare and publish a GitHub release with verified signed and notarized macOS downloads. Use for “bump the version”, “create a new release” or “release Taskmark”; not for managing tasks in a vault.
 ---
 
 # Release Taskmark
 
-Run commands from the repository root. This skill works as plain Markdown with any coding agent; it requires Git, the GitHub CLI (`gh`), and the repository's macOS build tools, not a particular agent harness.
+Run commands from the repository root. This skill works as plain Markdown with any coding agent; it requires Git and the repository's macOS build tools, plus the GitHub CLI (`gh`) for publication, not a particular agent harness.
 
 Read the root `AGENTS.md` and its startup guidance, then [the release guide](../../docs/CI_RELEASES.md) and `.github/workflows/release.yml`. Those files remain authoritative for tooling, signing and packaging. Use the existing workflow rather than reproducing signing locally.
 
+Determine whether the request is a version bump only or includes publication. Version changes cover both native apps unless the user explicitly limits them to one platform. A version-only request ends after preparation and validation in section 2, without release notes, tags or publication. The current GitHub workflow distributes only macOS; for an iOS-only publication request, inspect [iOS acceptance](../../docs/IOS_ACCEPTANCE.md) and report the remaining distribution steps rather than invoking macOS packaging as an iOS release.
+
 ## 1. Establish the release inputs
 
-- Inspect `git status -sb`, `git remote -v`, recent history and `gh auth status`. Fetch the remote and tags. Confirm the GitHub repository from the remote; this project currently publishes to `domness/taskmark`.
-- Inspect `gh release list`, the latest release's notes/assets, and commits/diff since its tag. Check recent Quality and macOS Release runs with `gh run list`.
-- Unless the user specifies another target, release the latest merged `origin/main`. Require a clean checkout synchronized with that target before versioning. Preserve uncommitted work; do not stash it, include it, reset it or publish an unmerged branch implicitly. Ask when the target is ambiguous.
-- Use the user's requested version when supplied. Otherwise infer from the actual unreleased changes and announce the choice: follow the existing three-part `0.x.y` tag style without `v`, increment minor for new features and patch for fixes only. Ask about incompatible changes rather than silently selecting a compatibility policy. If nothing has changed since the latest release, report that instead of making an empty release.
-- Verify the proposed tag and release do not already exist, locally or remotely. Existing versions belong to the retry path below, never a force-updated tag.
+- Inspect `git status -sb`, `git remote -v` and recent history. For publication, also inspect `gh auth status`, fetch the remote and tags, and confirm the GitHub repository from the remote; this project currently publishes to `domness/taskmark`.
+- For publication, inspect `gh release list`, the latest release's notes/assets, and commits/diff since its tag. Check recent Quality and macOS Release runs with `gh run list`.
+- For publication, unless the user specifies another target, release the latest merged `origin/main`. Require a clean checkout synchronized with that target before release versioning. For a version-only request, use the user's intended working branch. Preserve unrelated uncommitted work; do not stash it, include it, reset it or publish an unmerged branch implicitly. Ask when the target is ambiguous.
+- Use the user's requested version when supplied. Otherwise infer from the actual unreleased changes and announce the choice: follow the existing three-part `0.x.y` tag style without `v`, increment minor for new features and patch for fixes only. Ask about incompatible changes rather than silently selecting a compatibility policy. For publication, if nothing has changed since the latest release, report that instead of making an empty release.
+- For publication, verify the proposed tag and release do not already exist, locally or remotely. Existing versions belong to the retry path below, never a force-updated tag.
 
 ## 2. Prepare and validate
 
-1. In `project.yml`, update `LocalTodoApp`'s `MARKETING_VERSION` to the numeric release version and increment `CURRENT_PROJECT_VERSION`. For a prerelease, the marketing version omits the suffix. Inspect current version sources if the repository has changed; do not invent version files. The packaging script overrides archive versions from the tag and workflow run/attempt.
-2. Run `xcodebuild -version` and **`make check`**. All stages must pass, including macOS app tests and the Debug app build. Record the commands, toolchain and outcome; do not claim launch or visual validation from tests/builds.
+1. Inspect both `LocalTodoApp` and `LocalTodoIOSApp` in `project.yml`. Unless the user explicitly requested a platform-only version change, set both targets' `MARKETING_VERSION` to the same numeric version and increment each `CURRENT_PROJECT_VERSION` from its own current value; build numbers need not match. For a prerelease, the marketing version omits the suffix. Follow [both-app versioning](../../docs/CI_RELEASES.md#versioning-both-native-apps); inspect current version sources if the repository has changed rather than inventing version files. The macOS packaging script overrides only its archive versions from the tag and workflow run/attempt.
+2. Run `xcodebuild -version` and **`make check`**. All stages must pass, including macOS app tests, shared/mobile and phone/tablet UI tests, and both Debug app builds. Verify both generated app targets' marketing and build versions match the intended changes. Record the commands, toolchain and outcome; do not claim launch, physical-device acceptance or iOS distribution from tests/builds.
 3. Inspect status, diff, `git diff --check` and `git log --oneline -10`. Stage only the intended release version file(s). When committing/pushing is authorized, use `chore(build): bump Taskmark to <version>` and push normally to the intended branch. Follow the calling agent's authorization rules; ask for any missing commit/push permission. Never bypass branch protection or hooks. If a PR is required, wait for its merge and validate the resulting target before publication.
-4. Resolve and retain the **full release commit SHA**. Confirm it is on the remote target branch. Do not target a moving branch name when creating the release.
+4. For a version-only request, report both platforms' resulting marketing/build versions and validation, then stop. For publication, resolve and retain the **full release commit SHA**. Confirm it is on the remote target branch. Do not target a moving branch name when creating the release.
 
 Write concise user-facing notes from the actual changes since the previous tag: improvements/fixes, any real compatibility changes, macOS requirements and installation instructions, validation evidence, and a comparison link. Do not recycle old release highlights or claim artifacts exist before packaging completes. Write notes to a temporary file outside the checkout using the agent's file-writing tool.
 
@@ -56,7 +58,7 @@ Require the matching release workflow to conclude successfully. Inspect `gh rele
 - `Taskmark-<tag>-SHA256SUMS.txt`
 - `appcast.xml` (its signed enclosure must target this release's ZIP and build)
 
-Check final Git status. Return the release URL, direct DMG link, a brief change summary, and validation/packaging outcome. Distinguish signed/notarized packaging from a manual downloaded-app launch. Report any remaining local changes explicitly.
+Check final Git status. Return the release URL, direct DMG link, a brief change summary, both platforms' source marketing/build versions, and validation/packaging outcome. Distinguish signed/notarized macOS packaging from a manual downloaded-app launch and from iOS distribution. Report any remaining local changes explicitly.
 
 ## Failed or existing releases
 

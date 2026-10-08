@@ -2,6 +2,21 @@
 
 Taskmark uses GitHub-hosted runners for every workflow. Your Mac does not need to be online or signed into Xcode for CI. Standard hosted runners are used; larger runners are not required.
 
+## Versioning Both Native Apps
+
+For a Taskmark version bump or release, update both app targets in `project.yml` unless the user explicitly requests a platform-only version change:
+
+| Target | Platform | Version fields |
+| --- | --- | --- |
+| `LocalTodoApp` | macOS | `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION` |
+| `LocalTodoIOSApp` | iPhone/iPad | `MARKETING_VERSION`, `CURRENT_PROJECT_VERSION` |
+
+Set both marketing versions to the same three-part numeric version; omit any prerelease suffix. Increment each target's build number from its own current value without resetting or decreasing it. The build numbers may differ. Inspect both targets before editing so an older iOS version is not overlooked. `project.yml` is the maintained source; regenerate the ignored Xcode project through `make check` and verify both targets' generated version settings before handoff.
+
+A request only to bump the version requires validation with `make check`, but does not authorize creating a tag, publishing a GitHub release or uploading an iOS build. Follow [the release skill](../skills/taskmark-release/SKILL.md) for preparation and publication when requested.
+
+Versioning includes the iOS implementation candidate even while mobile acceptance is pending. The current GitHub release workflow packages only macOS and overrides its archive marketing version from the tag and build number from the workflow run/attempt. It does not override, archive or upload the iOS target. TestFlight/App Store distribution requires its own signed archive/export/upload and the remaining [iOS acceptance](IOS_ACCEPTANCE.md) gates; a matching source version or successful macOS release does not establish iOS distribution.
+
 ## Workflows And Trust Boundaries
 
 ### Quality — `.github/workflows/quality.yml`
