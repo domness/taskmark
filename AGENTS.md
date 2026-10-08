@@ -14,7 +14,7 @@ At the start of every session, read these files after this guide and before maki
 
 ## Repository Skills
 
-When asked to create or publish a Taskmark release, read and follow `skills/taskmark-release/SKILL.md`. It covers version selection, validation, GitHub publication and verification of signed/notarized downloads. Agents without automatic skill discovery should read that file directly.
+When asked to bump the Taskmark version or create/publish a release, read and follow `skills/taskmark-release/SKILL.md`. Unless the user explicitly limits the version change to one platform, update both `LocalTodoApp` (macOS) and `LocalTodoIOSApp` (iPhone/iPad) in `project.yml`: use the same `MARKETING_VERSION` and increment each target's `CURRENT_PROJECT_VERSION` from its own current value. A version-only request stops before tagging or publication. The [release guide](docs/CI_RELEASES.md#versioning-both-native-apps) defines versioning and distribution boundaries; the current GitHub workflow publishes macOS downloads only. Agents without automatic skill discovery should read the skill directly.
 
 ## Session Memory And Error Logs
 
