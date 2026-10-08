@@ -26,28 +26,28 @@ public enum TaskmarkTheme: String, CaseIterable, Identifiable, Sendable {
     public var tokens: TaskmarkAppearance {
         switch self {
         case .standard: palette(
-                light: ["#f7f8fa", "#edf0f3", "#f1f3f6", "#365f99"],
-                dark: ["#202226", "#191b1f", "#25282d", "#92b8ee"]
+                light: ["#f7f8fa", "#edf0f3", "#f1f3f6", "#365f99", "#dfe4e9"],
+                dark: ["#202226", "#191b1f", "#25282d", "#92b8ee", "#32353a"]
             )
         case .slate: palette(
-                light: ["#f1f5f9", "#e4ebf3", "#eaf0f7", "#315e9d"],
-                dark: ["#1c2532", "#151d29", "#232e3d", "#91bdf4"]
+                light: ["#f1f5f9", "#e4ebf3", "#eaf0f7", "#315e9d", "#d5dee8"],
+                dark: ["#1c2532", "#151d29", "#232e3d", "#91bdf4", "#2d3948"]
             )
         case .forest: palette(
-                light: ["#f2f7f3", "#e4ede6", "#ebf2ed", "#306b49"],
-                dark: ["#1d2922", "#162019", "#25332a", "#91c9a3"]
+                light: ["#f2f7f3", "#e4ede6", "#ebf2ed", "#306b49", "#d6e2d9"],
+                dark: ["#1d2922", "#162019", "#25332a", "#91c9a3", "#304037"]
             )
         case .sand: palette(
-                light: ["#faf6ef", "#efe7da", "#f4ede2", "#8b562c"],
-                dark: ["#2b2520", "#211c17", "#342d25", "#dfb486"]
+                light: ["#faf6ef", "#efe7da", "#f4ede2", "#8b562c", "#e3dacd"],
+                dark: ["#2b2520", "#211c17", "#342d25", "#dfb486", "#443a31"]
             )
         case .catppuccin: palette(
-                light: ["#eff1f5", "#dce0e8", "#e6e9ef", "#8839ef"],
-                dark: ["#1e1e2e", "#11111b", "#181825", "#cba6f7"]
+                light: ["#eff1f5", "#dce0e8", "#e6e9ef", "#8839ef", "#ccd0da"],
+                dark: ["#1e1e2e", "#11111b", "#181825", "#cba6f7", "#313244"]
             )
         case .dracula: palette(
-                light: ["#fffbeb", "#f4f0e1", "#f8f4e5", "#644ac9"],
-                dark: ["#282a36", "#22242e", "#2e303d", "#bd93f9"]
+                light: ["#fffbeb", "#f4f0e1", "#f8f4e5", "#644ac9", "#e6dfca"],
+                dark: ["#282a36", "#22242e", "#2e303d", "#bd93f9", "#44475a"]
             )
         }
     }
@@ -61,7 +61,9 @@ public enum TaskmarkTheme: String, CaseIterable, Identifiable, Sendable {
     }
 
     private func palette(light: [String], dark: [String]) -> TaskmarkAppearance {
-        let keys = ["--background", "--sidebar-background", "--inspector-background", "--accent"]
+        let keys = [
+            "--background", "--sidebar-background", "--inspector-background", "--accent", "--selection-background",
+        ]
         let size = self == .catppuccin ? "14px" : "13px"
         return TaskmarkAppearance(
             light: Dictionary(uniqueKeysWithValues: zip(keys, light))
@@ -151,6 +153,7 @@ public struct TaskmarkAppearance: Equatable, Sendable {
             "--background",
             "--sidebar-background",
             "--inspector-background",
+            "--selection-background",
         ]
         let numbers: [String: ClosedRange<Double>] = ["--task-font-size": 11 ... 24, "--row-spacing": 2 ... 16]
         if colors.contains(token), value.range(of: #"^#[0-9a-fA-F]{6}$"#, options: .regularExpression) != nil {

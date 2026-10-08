@@ -69,6 +69,18 @@ public struct MarkdownChecklist: Sendable {
         return Self.text(bytes)
     }
 
+    /// Returns the body with recognized checklist lines removed for presentations
+    /// that render those items as separate native controls.
+    public var bodyWithoutChecklistItems: String {
+        var bytes = Array(body.utf8)
+        for item in items.reversed() {
+            let lineStart = bytes[..<item.id].lastIndex(of: 10).map { $0 + 1 } ?? 0
+            let lineEnd = bytes[item.id...].firstIndex(of: 10).map { $0 + 1 } ?? bytes.endIndex
+            bytes.removeSubrange(lineStart ..< lineEnd)
+        }
+        return Self.text(bytes)
+    }
+
     public func removing(_ item: Item) throws -> String {
         guard items.contains(item) else { throw DomainValidationError.invalidChecklistItem }
         var bytes = Array(body.utf8)

@@ -79,8 +79,15 @@ struct TaskMarkdownField: View {
             Text(TaskMarkdown.inline(text))
                 .themeFont(.headline)
         } else {
-            TaskMarkdownPreview(source: text)
-                .foregroundStyle(.secondary)
+            let previewSource = TaskMarkdown.notesPreviewSource(text)
+            if previewSource.allSatisfy(\.isWhitespace) {
+                Text(kind.placeholder)
+                    .foregroundStyle(.secondary)
+                    .themeFont(.body)
+            } else {
+                TaskMarkdownPreview(source: previewSource)
+                    .foregroundStyle(.secondary)
+            }
         }
     }
 
@@ -91,11 +98,17 @@ struct TaskMarkdownField: View {
 }
 
 struct TaskNotesView: View {
+    let model: WorkspaceModel
     @Bindable var draft: TaskDraft
     @State private var isEditing = false
 
     var body: some View {
-        TaskMarkdownField(text: $draft.notes, kind: .notes, subject: "Task", isEditing: $isEditing)
-            .frame(maxWidth: .infinity, alignment: .leading)
+        VStack(alignment: .leading, spacing: 10) {
+            TaskMarkdownField(text: $draft.notes, kind: .notes, subject: "Task", isEditing: $isEditing)
+            if !isEditing {
+                TaskChecklistView(model: model, draft: draft)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }

@@ -117,6 +117,34 @@ struct TaskListKeyboardTests {
 }
 
 @MainActor
+struct ThemedListSelectionTests {
+    @Test(arguments: [false, true])
+    func nativeSelectionAdapterMountsWithoutReplacingListTint(sidebar: Bool) async throws {
+        try await withWorkspace { model, _ in
+            model.route = .inbox
+            await model.createTask(title: "Selected task", vaultSession: model.vaultSession)
+            let root = sidebar
+                ? AnyView(SidebarView(model: model))
+                : AnyView(TaskListView(model: model))
+            let controller = NSHostingController(rootView: root.modifier(AppAppearanceModifier(model: model)))
+            let window = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 600, height: 400),
+                styleMask: [.titled], backing: .buffered, defer: false
+            )
+            window.isReleasedWhenClosed = false
+            window.contentViewController = controller
+            defer { window.close() }
+            try await presentForNativeInput(window)
+            let host = try #require(window.contentView)
+            try await waitForNativeUI("populated native list", in: window) {
+                findTable(in: host)?.numberOfRows ?? 0 > 0 && findSelectionAdapter(in: host) != nil
+            }
+            #expect(findSelectionAdapter(in: host) != nil)
+        }
+    }
+}
+
+@MainActor
 private func checkTextBackspace(in view: NSView, draft: TaskDraft, event: NSEvent) async throws {
     let field = try #require(findTitleField(in: view))
     field.selectText(nil)
@@ -144,4 +172,9 @@ private func findTable(in view: NSView) -> NSTableView? {
         return table
     }
     return view.subviews.lazy.compactMap { findTable(in: $0) }.first
+}
+
+@MainActor
+private func findSelectionAdapter(in view: NSView) -> NativeListSelectionView? {
+    (view as? NativeListSelectionView) ?? view.subviews.lazy.compactMap { findSelectionAdapter(in: $0) }.first
 }

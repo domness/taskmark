@@ -1,4 +1,5 @@
 import Foundation
+import LocalTodoDomain
 
 /// Read-only presentation; never serialize this projection back into a task.
 enum TaskMarkdown {
@@ -22,6 +23,10 @@ enum TaskMarkdown {
             }
         }
         return blocks
+    }
+
+    static func notesPreviewSource(_ source: String) -> String {
+        MarkdownChecklist(source).bodyWithoutChecklistItems
     }
 
     private static func parse(

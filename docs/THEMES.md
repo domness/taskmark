@@ -5,13 +5,13 @@ Taskmark is SwiftUI/AppKit, not a web view. Themes customize native appearance t
 ## Appearance And Precedence
 
 1. **Settings → Theme → Appearance** selects System, Light or Dark. System follows the Mac, while explicit modes override the application's window appearance.
-2. The selected built-in theme provides background/sidebar/inspector surfaces and an accent for that appearance, plus its interface font and default base size.
+2. The selected built-in theme provides background/sidebar/inspector and quiet list-selection surfaces, plus an accent for that appearance, its interface font and default base size.
 3. If **Apply vault stylesheet** is enabled, valid `.config/style.css` tokens override only those supplied. Other tokens retain the built-in palette or native control default.
 4. Within a stylesheet, matching rules/declarations apply in source order. Put appearance overrides after `:root` rules.
 
 The appearance choice and palette are independent. Choosing Forest while in Dark mode selects Forest's dark palette. Preview tiles show built-in themes without custom overrides; a stylesheet may visibly override a selected palette. Disable the stylesheet to see the unmodified built-in theme.
 
-Native primary/secondary text, focus, selection, disabled state, control fills and separators retain system semantics. Priority indicators keep P1 red/P2 orange/P3 blue by default, with explicit labels; P4/unset stay neutral and completed tasks use secondary styling. Themes do not change task order or content.
+Native primary/secondary text, focus, disabled state, control fills and separators retain system semantics. Sidebar and task-row selection uses the theme's neutral selection surface while preserving native list focus and interaction. Priority indicators keep P1 red/P2 orange/P3 blue by default, with explicit labels; P4/unset stay neutral and completed tasks use secondary styling. Themes do not change task order or content.
 
 Task and project inspector notes use the shared native **Secondary** text style in both rendered and source-editing modes. It provides a softer tone than titles and adapts to Light/Dark and accessibility contrast across every palette. Notes have no visible section heading; empty fields retain the “Add notes…” prompt and editors retain accessible labels.
 
@@ -19,20 +19,20 @@ Task and project inspector notes use the shared native **Secondary** text style 
 
 All colors are sRGB `#RRGGBB`. `Sources/LocalTodoPresentation/TaskmarkAppearance.swift` is the shared implementation source of truth.
 
-| Palette / appearance | Background | Sidebar | Inspector | Accent |
-| --- | --- | --- | --- | --- |
-| Taskmark / Light | `#f7f8fa` | `#edf0f3` | `#f1f3f6` | `#365f99` |
-| Taskmark / Dark | `#202226` | `#191b1f` | `#25282d` | `#92b8ee` |
-| Slate / Light | `#f1f5f9` | `#e4ebf3` | `#eaf0f7` | `#315e9d` |
-| Slate / Dark | `#1c2532` | `#151d29` | `#232e3d` | `#91bdf4` |
-| Forest / Light | `#f2f7f3` | `#e4ede6` | `#ebf2ed` | `#306b49` |
-| Forest / Dark | `#1d2922` | `#162019` | `#25332a` | `#91c9a3` |
-| Sand / Light | `#faf6ef` | `#efe7da` | `#f4ede2` | `#8b562c` |
-| Sand / Dark | `#2b2520` | `#211c17` | `#342d25` | `#dfb486` |
-| Catppuccin / Light (Latte) | `#eff1f5` | `#dce0e8` | `#e6e9ef` | `#8839ef` |
-| Catppuccin / Dark (Mocha) | `#1e1e2e` | `#11111b` | `#181825` | `#cba6f7` |
-| Dracula / Light (Alucard) | `#fffbeb` | `#f4f0e1` | `#f8f4e5` | `#644ac9` |
-| Dracula / Dark | `#282a36` | `#22242e` | `#2e303d` | `#bd93f9` |
+| Palette / appearance | Background | Sidebar | Inspector | Selection | Accent |
+| --- | --- | --- | --- | --- | --- |
+| Taskmark / Light | `#f7f8fa` | `#edf0f3` | `#f1f3f6` | `#dfe4e9` | `#365f99` |
+| Taskmark / Dark | `#202226` | `#191b1f` | `#25282d` | `#32353a` | `#92b8ee` |
+| Slate / Light | `#f1f5f9` | `#e4ebf3` | `#eaf0f7` | `#d5dee8` | `#315e9d` |
+| Slate / Dark | `#1c2532` | `#151d29` | `#232e3d` | `#2d3948` | `#91bdf4` |
+| Forest / Light | `#f2f7f3` | `#e4ede6` | `#ebf2ed` | `#d6e2d9` | `#306b49` |
+| Forest / Dark | `#1d2922` | `#162019` | `#25332a` | `#304037` | `#91c9a3` |
+| Sand / Light | `#faf6ef` | `#efe7da` | `#f4ede2` | `#e3dacd` | `#8b562c` |
+| Sand / Dark | `#2b2520` | `#211c17` | `#342d25` | `#443a31` | `#dfb486` |
+| Catppuccin / Light (Latte) | `#eff1f5` | `#dce0e8` | `#e6e9ef` | `#ccd0da` | `#8839ef` |
+| Catppuccin / Dark (Mocha) | `#1e1e2e` | `#11111b` | `#181825` | `#313244` | `#cba6f7` |
+| Dracula / Light (Alucard) | `#fffbeb` | `#f4f0e1` | `#f8f4e5` | `#e6dfca` | `#644ac9` |
+| Dracula / Dark | `#282a36` | `#22242e` | `#2e303d` | `#44475a` | `#bd93f9` |
 
 Select **Catppuccin** or **Dracula** in Settings, then choose Light/Dark (or System) to resolve the variant. Configuration stores `theme: catppuccin` or `theme: dracula` independently of `appearance`; both choices use the same stylesheet precedence as the original palettes.
 
@@ -74,6 +74,7 @@ Create the optional file `<vault>/.config/style.css`:
   --background: #f4f7fc;
   --sidebar-background: #e7edf6;
   --inspector-background: #edf2f9;
+  --selection-background: #d8e0eb;
   --accent: #345f9b;
   --priority-1: #ba3147;
   --priority-2: #9b5a13;
@@ -84,6 +85,7 @@ Create the optional file `<vault>/.config/style.css`:
   --background: #1c2532;
   --sidebar-background: #161e2b;
   --inspector-background: #243044;
+  --selection-background: #2c3a4d;
   --accent: #96c0f8;
   --priority-1: #ff95a4;
   --priority-2: #edbf81;
@@ -96,6 +98,7 @@ Create the optional file `<vault>/.config/style.css`:
 | `--background` | `#RRGGBB` | Main task-list and Settings detail surfaces |
 | `--sidebar-background` | `#RRGGBB` | Workspace and Settings navigation surfaces |
 | `--inspector-background` | `#RRGGBB` | Task/project inspector surface |
+| `--selection-background` | `#RRGGBB` | Selected workspace sidebar and task-list rows |
 | `--accent` | `#RRGGBB` | SwiftUI interactive control tint |
 | `--priority-1`, `--priority-2`, `--priority-3` | `#RRGGBB` | Incomplete-task completion indicators and priority labels |
 | `--task-font-size` | `11px`–`24px`, decimals allowed | App-authored window typography base size; default 14 for Catppuccin, 13 otherwise |
@@ -117,7 +120,7 @@ Shared presentation lives in `Sources/LocalTodoPresentation/`; platform projecti
 
 - `Apps/LocalTodoApp/Sources/Settings/AppPreferences.swift`: observable per-vault choices projected from canonical configuration. Workspace-owned autosave persists changes through `LocalTodoMarkdown`; use temporary vaults in tests rather than machine defaults. Malformed stored preferences are diagnosed and not silently reset.
 - `Sources/LocalTodoPresentation/TaskmarkAppearance.swift`: add palette cases here, each with explicit light/dark tokens and a useful preview label. Both apps derive their theme choices from `allCases`. The same file validates the CSS subset and merges overrides; add new tokens to its allowlist with validation, tests and an entry in this document. Also update `Sources/LocalTodoMarkdown/VaultPreferenceValidation.swift` and the file-contract theme values so every client can reopen saved choices.
-- `Apps/LocalTodoApp/Sources/Settings/AppAppearanceModifier.swift`: applies preference-driven native appearance at **both macOS scene roots**, propagates calendar/date-format/theme environments, and defines `ThemeSurface` for explicit semantic surfaces. Do not force every text/control fill to a custom color; macOS still owns focus, selection and form-control states.
+- `Apps/LocalTodoApp/Sources/Settings/AppAppearanceModifier.swift`: applies preference-driven native appearance at **both macOS scene roots**, propagates calendar/date-format/theme environments, and defines modifiers for explicit semantic and selection surfaces. Do not force every text/control fill to a custom color; macOS still owns focus and form-control states.
 - `Apps/LocalTodoIOSApp/Sources/MobileThemeModifier.swift`: applies the same shared theme and stylesheet values to mobile scene content while leaving system control semantics native.
 - `Apps/LocalTodoApp/Sources/Settings/ThemePreview.swift`: displays the same built-in tokens as the workspace. Keep the textual selected state and checkmark; color alone is insufficient.
 - `Apps/LocalTodoApp/Sources/Settings/ThemeTypography.swift`: maps themes to bundled families, scales native semantic roles from the effective interface base size, and supplies `themeFont` for explicit roles. `project.yml` copies the Fonts resource folder into both apps and registers it with each platform's generated Info.plist.

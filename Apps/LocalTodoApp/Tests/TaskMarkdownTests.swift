@@ -53,6 +53,18 @@ import Testing
     #expect(TaskMarkdown.blocks("").isEmpty)
 }
 
+@Test func taskNotesPreviewLeavesChecklistsToNativeControls() {
+    let source = "Intro\n\n- [ ] First step\n- Keep this ordinary item\n1. [x] Second step\n"
+
+    #expect(TaskMarkdown.notesPreviewSource(source) == "Intro\n\n- Keep this ordinary item\n")
+    #expect(TaskMarkdown.notesPreviewSource("- [ ] Only step\n").isEmpty)
+}
+
+@Test func taskListRowsUseTheHeaderContentInset() {
+    #expect(TaskListLayout.rowInsets.leading == TaskListLayout.contentHorizontalInset)
+    #expect(TaskListLayout.contentHorizontalInset == 28)
+}
+
 @MainActor
 @Test func markdownTaskEditsRoundTripWithoutRenderingIntoStorage() async throws {
     try await withWorkspace { model, _ in

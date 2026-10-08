@@ -15,16 +15,20 @@ struct SidebarRouteLabel: View {
                 Text(count, format: .number)
                     .themeFont(.caption, weight: .medium)
                     .monospacedDigit()
-                    .foregroundStyle(model.route == route ? Color.white : Color.secondary)
+                    .foregroundStyle(model.route == route ? Color.primary : Color.secondary)
                     .padding(.horizontal, 7)
                     .padding(.vertical, 2)
                     .background {
-                        Capsule().fill(model.route == route ? Color.white.opacity(0.21) : Color.secondary.opacity(0.12))
+                        Capsule().fill(
+                            model.route == route ? Color.primary.opacity(0.12) : Color.secondary.opacity(0.12)
+                        )
                     }
                     .fixedSize()
                     .accessibilityHidden(true)
             }
         }
+        .foregroundStyle(.primary)
+        .themedListSelection(isSelected: model.route == route)
         .accessibilityElement(children: .combine)
         .accessibilityValue(count.map { "\($0) tasks" } ?? "")
     }

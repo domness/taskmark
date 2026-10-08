@@ -40,6 +40,7 @@ Turn off **View Options → Appearance → Use Vault Stylesheet** or **Settings 
 /* Base tokens apply to both appearances. */
 :root {
   --accent: #3265ad;
+  --selection-background: #d8e0eb;
   --priority-1: #c83242;
   --priority-2: #b96712;
   --priority-3: #3265ad;
@@ -49,6 +50,7 @@ Turn off **View Options → Appearance → Use Vault Stylesheet** or **Settings 
 
 :root[data-appearance=dark] {
   --accent: #88b9ff;
+  --selection-background: #2c3a4d;
   --priority-1: #ff8792;
   --priority-2: #ffb765;
   --priority-3: #88b9ff;
@@ -63,11 +65,12 @@ Supported selectors are exactly `:root`, `:root[data-appearance=light]`, and `:r
 | `--background` | `#RRGGBB` | Main task-list and Settings detail surfaces |
 | `--sidebar-background` | `#RRGGBB` | Workspace and Settings sidebars |
 | `--inspector-background` | `#RRGGBB` | Task/project inspector surface |
+| `--selection-background` | `#RRGGBB` | Selected workspace sidebar and task-list rows |
 | `--priority-1` / `--priority-2` / `--priority-3` | `#RRGGBB` | Incomplete task completion indicator and priority label |
 | `--task-font-size` | `11px`–`24px`, decimals allowed | Theme typography base size across app-authored window content |
 | `--row-spacing` | `2px`–`16px`, decimals allowed | Space between task title and metadata |
 
-`px` values map to native logical points. The `--task-font-size` name remains supported for compatibility, but scales semantic text throughout the workspace and Settings rather than only task rows. There is no browser CSS engine: arbitrary selectors, layout rules, imports, URLs, variables, named colors and media queries are unsupported. Titles, focus rings and selection retain native semantics; custom surface colors override the selected palette only where supplied. Check custom colors against your preferred appearance and contrast settings.
+`px` values map to native logical points. The `--task-font-size` name remains supported for compatibility, but scales semantic text throughout the workspace and Settings rather than only task rows. There is no browser CSS engine: arbitrary selectors, layout rules, imports, URLs, variables, named colors and media queries are unsupported. Titles and focus rings retain native semantics; selection uses the configured neutral surface without replacing native list interaction. Custom surface colors override the selected palette only where supplied. Check custom colors against your preferred appearance and contrast settings.
 
 The entry point is case-sensitive, UTF-8, at most 64 KiB, and cannot have symlink components below the vault root. `.config/` is reserved for metadata, including the manifest `.config/config.yml` and saved filters `.config/filters.md`. Per-view metadata visibility, grouping and automatic sorting are stored under `preferences.views` in the manifest. All preference writes preserve unknown configuration keys, use revision checks, and expose conflicts for explicit resolution.
 

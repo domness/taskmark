@@ -55,6 +55,13 @@ import Testing
     }
 }
 
+@Test func checklistPresentationBodyOmitsOnlyRecognizedItemLines() {
+    let body = "Notes 🦊\r\n- [ ] First\r\n- Ordinary list item\r\n> - [x] Quoted\r\n  * [X] Nested\r\nAfter"
+    let checklist = MarkdownChecklist(body)
+
+    #expect(checklist.bodyWithoutChecklistItems == "Notes 🦊\r\n- Ordinary list item\r\n> - [x] Quoted\r\nAfter")
+}
+
 @Test(arguments: [false, true])
 func recurrenceResetsChecklistsOnlyWhenEnabled(enabled: Bool) throws {
     var patch = TaskPatch()
