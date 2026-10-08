@@ -155,8 +155,8 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.tinycorestudios.taskmark
         PRODUCT_NAME: Taskmark
-        MARKETING_VERSION: 0.12.0
-        CURRENT_PROJECT_VERSION: 18
+        MARKETING_VERSION: 0.15.0
+        CURRENT_PROJECT_VERSION: 19
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         PRODUCT_MODULE_NAME: LocalTodoIOSApp
         GENERATE_INFOPLIST_FILE: YES
