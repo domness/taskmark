@@ -60,7 +60,7 @@ struct TaskListView: View {
                     .focused($isSearchFocused)
             }
         }
-        .padding(.horizontal, 28)
+        .padding(.horizontal, TaskListLayout.contentHorizontalInset)
         .padding(.top, 12)
         .padding(.bottom, 20)
     }
@@ -96,6 +96,7 @@ struct TaskListView: View {
                 }
             }
             .listStyle(.inset)
+            .disableNativeListSelectionHighlight()
             .focused($isListFocused)
             .onKeyPress(characters: CharacterSet(charactersIn: "\u{8}\u{7F}")) { press in
                 guard press.modifiers.isEmpty, !isEditingText, let path = model.selectedTaskPath else {
@@ -121,12 +122,24 @@ struct TaskListView: View {
                 onSelect: { openTaskDetails(task.path) }
             )
             .tag(task.path)
+            .themedListSelection(isSelected: model.selectedTaskPath == task.path)
+            .listRowInsets(TaskListLayout.rowInsets)
             .listRowSeparator(.hidden)
         }
         .onInsert(of: model.isCustomTaskOrder ? [UTType.localTodoTaskReference] : []) { destination, providers in
             model.insertDraggedTask(from: providers, at: destination, context: context)
         }
     }
+}
+
+enum TaskListLayout {
+    static let contentHorizontalInset: CGFloat = 28
+    static let rowInsets = EdgeInsets(
+        top: 0,
+        leading: contentHorizontalInset,
+        bottom: 0,
+        trailing: contentHorizontalInset
+    )
 }
 
 private extension TaskListView {

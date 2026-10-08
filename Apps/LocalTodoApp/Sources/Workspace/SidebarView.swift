@@ -93,6 +93,7 @@ struct SidebarView: View {
                 }
             }
         }
+        .disableNativeListSelectionHighlight()
         .scrollContentBackground(.hidden)
     }
 

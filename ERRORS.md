@@ -26,6 +26,12 @@ Read this file before repeating an approach that previously required several att
 - **Reliable approach:** Host through the real view-controller/scene boundary, locate current native controls after transitions, post keyboard events through the application queue, and use bounded predicates for responders, selection, editor lifetime, toolbar labels, mutation results, and window constraints. Disable animations in final-geometry tests and wait for both panel presentation and stable toolbar frames.
 - **Next-time rule:** Test readiness rather than elapsed time, run focused tests inside the complete app suite, and keep physical gesture/VoiceOver acceptance distinct from hosted integration evidence. Exercise native buttons in focused hosts rather than relying on an inactive accessibility tree to locate SwiftUI actions.
 
+## Native List Selection Styling
+
+- **Failure pattern:** SwiftUI list-level `.tint` changes embedded button tint but does not replace macOS `NSTableView` selection blue. Row backgrounds remain beneath the native highlight, and inactive hosted tests may not establish a selected native row.
+- **Reliable approach:** Preserve native List selection and control tint, resolve the themed selection token separately, and insert a list-scoped AppKit background above the native selection drawing but below row content. Connect after window updates, then refresh on selection and scroll notifications.
+- **Next-time rule:** Test adapter mounting and token resolution automatically, but validate the final selected-row color in an active native window; do not infer it from an inactive hosted table.
+
 ## Adaptive iPad Navigation
 
 - **Failure pattern:** Reusing a compact Browse route list inside a three-column `NavigationSplitView`, while leaving column visibility automatic, can invalidate the startup selection and present only an empty detail column on iPad.
