@@ -44,6 +44,24 @@ import Testing
 }
 
 @MainActor
+@Test func filterDeletionRejectsAStaleRevisionWithoutRemovingExternalChanges() async throws {
+    try await withWorkspace { model, root in
+        model.beginFilterEditing()
+        model.filterState.name = "Saved"
+        await model.saveWorkingFilter()
+        let store = VaultStore(root: root)
+        let record = try await store.savedFilters()
+        let external = try SavedTaskFilter(name: "External", query: TaskQuery(scope: .waiting))
+        _ = try await store.saveFilters(record.filters + [external], expectedRevision: record.revision)
+
+        await model.deleteSavedFilter(named: "Saved")
+
+        #expect(model.errorMessage?.contains("changed before deletion") == true)
+        #expect(try await store.savedFilters().filters.map(\.name) == ["Saved", "External"])
+    }
+}
+
+@MainActor
 @Test func malformedSavedFiltersAndMissingReferencesAreVisible() async throws {
     try await withWorkspace { model, root in
         var filters = TaskFilters()

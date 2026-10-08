@@ -91,6 +91,37 @@ import Testing
 }
 
 @MainActor
+@Test func deletingSavedFilterSupportsUndoRedoAndLeavesTasksUntouched() async throws {
+    try await withWorkspace { model, root in
+        await model.createTask(title: "Keep", vaultSession: model.vaultSession)
+        let path = try #require(model.selectedTaskPath)
+        let taskBytes = try Data(contentsOf: root.appendingPathComponent(path.value))
+        model.beginFilterEditing()
+        model.filterState.name = "Saved"
+        await model.saveWorkingFilter()
+        #expect(model.route == .savedFilter("Saved"))
+
+        let undo = UndoManager()
+        undo.groupsByEvent = false
+        model.setUndoManager(undo)
+        undo.beginUndoGrouping()
+        await model.deleteSavedFilter(named: "Saved")
+        undo.endUndoGrouping()
+
+        #expect(model.route == .all)
+        #expect(try await VaultStore(root: root).savedFilters().filters.isEmpty)
+        #expect(undo.undoActionName == "Delete Filter")
+        model.performUndo()
+        try await waitForHistory(model)
+        #expect(try await VaultStore(root: root).savedFilters().filters.map(\.name) == ["Saved"])
+        model.performRedo()
+        try await waitForHistory(model)
+        #expect(try await VaultStore(root: root).savedFilters().filters.isEmpty)
+        #expect(try Data(contentsOf: root.appendingPathComponent(path.value)) == taskBytes)
+    }
+}
+
+@MainActor
 @Test func invalidOrDuplicateFiltersAreNotSaved() async throws {
     try await withWorkspace { model, root in
         model.beginFilterEditing()

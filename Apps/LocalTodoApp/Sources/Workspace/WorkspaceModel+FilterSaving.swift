@@ -19,7 +19,7 @@ extension WorkspaceModel {
             filterState.baseRevision = saved.revision
             filterState.editingName = filter.name
             filterState.saveError = nil
-            registerFilterHistory(restoring: record.filters)
+            registerFilterHistory(restoring: record.filters, actionName: "Save Filter")
             if filterState.name == filter.name, (try? filterState.editor.query()) == filter.query {
                 route = .savedFilter(filter.name)
             }
@@ -28,6 +28,40 @@ extension WorkspaceModel {
             filterState.saveError = error.localizedDescription
         } catch {
             filterState.saveError = error.localizedDescription
+        }
+    }
+
+    func deleteSavedFilter(named name: String) async {
+        guard let store, let record = filterState.record, !filterState.isSaving,
+              filterState.loadError == nil else { return }
+        let updated = record.filters.filter { $0.name != name }
+        guard updated.count != record.filters.count else { return }
+        filterState.isSaving = true
+        filterState.readGeneration += 1
+        defer { filterState.isSaving = false }
+        let session = vaultSession
+        do {
+            let saved = try await store.saveFilters(updated, expectedRevision: record.revision)
+            guard session == vaultSession else { return }
+            filterState.record = saved
+            filterState.baseRevision = saved.revision
+            filterState.saveError = nil
+            filterState.hasConflict = false
+            if filterState.editingName == name {
+                filterState.name = ""
+                filterState.editingName = nil
+                filterState.editor = TaskFilterEditor()
+            }
+            if route == .savedFilter(name) {
+                route = .all
+            }
+            registerFilterHistory(restoring: record.filters, actionName: "Delete Filter")
+        } catch let error as SavedFilterError where error == .conflict {
+            filterState.saveError = error.localizedDescription
+            errorMessage = "The saved filters changed before deletion. Reload them and try again."
+        } catch {
+            filterState.saveError = error.localizedDescription
+            errorMessage = error.localizedDescription
         }
     }
 
@@ -43,16 +77,16 @@ extension WorkspaceModel {
         return try SavedTaskFilter(name: filterState.name, query: filterState.editor.query())
     }
 
-    func registerFilterHistory(restoring filters: [SavedTaskFilter]) {
+    func registerFilterHistory(restoring filters: [SavedTaskFilter], actionName: String) {
         undoManager?.registerUndo(withTarget: self) { model in
-            MainActor.assumeIsolated { model.performFilterHistory(restoring: filters) }
+            MainActor.assumeIsolated { model.performFilterHistory(restoring: filters, actionName: actionName) }
         }
-        undoManager?.setActionName("Save Filter")
+        undoManager?.setActionName(actionName)
     }
 
-    private func performFilterHistory(restoring filters: [SavedTaskFilter]) {
+    private func performFilterHistory(restoring filters: [SavedTaskFilter], actionName: String) {
         guard let record = filterState.record, let store, !filterState.isSaving, !isHistoryBusy else { return }
-        registerFilterHistory(restoring: record.filters)
+        registerFilterHistory(restoring: record.filters, actionName: actionName)
         filterState.isSaving = true
         filterState.readGeneration += 1
         isHistoryBusy = true

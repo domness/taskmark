@@ -20,7 +20,7 @@ Status reviewed against the repository on 2026-09-28. Implemented features below
 - Contextual capture, keyboard selection/editing/completion and paired-date rescheduling.
 - Fixed and after-completion recurrence; late fixed completion skips missed occurrences. Native checklist add/toggle/delete controls edit body checkboxes, with opt-in checklist reset on repeat.
 - Project title/notes/status editing, completion/reopening and collapsed inactive-project navigation.
-- Combined filters and canonical saved filters shared with the CLI, with explicit Save/Update and conflict recovery.
+- Combined filters and canonical saved filters shared with the CLI, with explicit Save/Update/Delete actions, Undo/Redo and conflict recovery.
 - Automatic sorting and **Custom** drag ordering per view/vault, persisted in shared configuration. Grouped custom moves stay within their group; hidden task positions and order across launches/sort switches are retained.
 
 See [daily workflows and shortcuts](DAILY_WORK.md).
