@@ -24,6 +24,38 @@ import Testing
 }
 
 @MainActor
+@Test func commandWIsRecognizedWithoutInterceptingOtherCloseEvents() throws {
+    let commandW = try #require(NSEvent.keyEvent(
+        with: .keyDown,
+        location: .zero,
+        modifierFlags: .command,
+        timestamp: 0,
+        windowNumber: 0,
+        context: nil,
+        characters: "w",
+        charactersIgnoringModifiers: "w",
+        isARepeat: false,
+        keyCode: 13
+    ))
+    let plainW = try #require(NSEvent.keyEvent(
+        with: .keyDown,
+        location: .zero,
+        modifierFlags: [],
+        timestamp: 0,
+        windowNumber: 0,
+        context: nil,
+        characters: "w",
+        charactersIgnoringModifiers: "w",
+        isARepeat: false,
+        keyCode: 13
+    ))
+
+    #expect(WorkspaceCloseCommand.matches(commandW))
+    #expect(!WorkspaceCloseCommand.matches(plainW))
+    #expect(!WorkspaceCloseCommand.matches(nil))
+}
+
+@MainActor
 func openVaultScene() async throws -> NSWindow {
     let existing = Set(NSApp.windows.map(ObjectIdentifier.init))
     let trigger = NSWindow(contentViewController: NSHostingController(rootView: OpenVaultForTest()))

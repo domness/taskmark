@@ -8,13 +8,15 @@ struct SidebarAssignmentRoute: View {
     let title: String
     let systemImage: String
     let target: SidebarAssignmentTarget
+    var onOpenInTab: () -> Void = {}
 
     @State private var isTargeted = false
 
     var body: some View {
         SidebarRouteLabel(
             model: model, route: route, title: title,
-            systemImage: isTargeted ? "arrow.down.circle" : systemImage
+            systemImage: isTargeted ? "arrow.down.circle" : systemImage,
+            onOpenInTab: onOpenInTab
         )
         .frame(maxWidth: .infinity, alignment: .leading)
         .contentShape(Rectangle())

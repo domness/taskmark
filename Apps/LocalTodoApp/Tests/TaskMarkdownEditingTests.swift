@@ -25,6 +25,9 @@ struct TaskMarkdownEditingTests {
         #expect(state.isEditing)
         let editor = try #require(window.firstResponder as? NSTextView)
         #expect(editor.string == state.text)
+        if kind == .notes {
+            #expect(!editor.drawsBackground || editor.backgroundColor.alphaComponent == 0)
+        }
         editor.selectAll(nil)
         editor.insertText("Updated **Markdown**", replacementRange: editor.selectedRange())
         try await waitForNativeUI("typed Markdown reaching its binding", in: window) {

@@ -3,6 +3,7 @@ import SwiftUI
 
 struct ProjectSidebarSection: View {
     let model: WorkspaceModel
+    var onOpenRouteInTab: (WorkspaceRoute) -> Void = { _ in }
 
     var body: some View {
         let paths = model.orderedCollectionPaths(.project)
@@ -33,9 +34,12 @@ struct ProjectSidebarSection: View {
             title: model.projectDisplayTitle(project.path)
                 + (project.status == .active ? "" : " — \(project.status.rawValue.capitalized)"),
             systemImage: project.status == .done ? "checkmark.circle" : "square.stack",
-            target: .project(project.path)
+            target: .project(project.path),
+            onOpenInTab: { onOpenRouteInTab(.project(project.path)) }
         )
         .contextMenu {
+            Button("Open in New Tab") { onOpenRouteInTab(.project(project.path)) }
+            Divider()
             Button("Edit Project") {
                 model.route = .project(project.path)
                 model.editProject()

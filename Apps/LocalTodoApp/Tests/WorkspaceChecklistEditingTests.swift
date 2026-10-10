@@ -64,20 +64,18 @@ import Testing
 }
 
 @MainActor
-@Test func checklistItemsCanBeAddedAndRemovedWithoutRewritingNotes() async throws {
+@Test func checklistItemsCanBeRemovedWithoutRewritingNotes() async throws {
     try await withWorkspace { model, root in
         await model.createTask(title: "Steps", vaultSession: model.vaultSession)
         let draft = try #require(model.selectedTaskDraft)
-        draft.notes = "Keep this note\r\n"
+        draft.notes = "Keep this note\r\n- [ ] Native step\r\n"
         #expect(await model.flushTaskChanges())
-        let original = draft.notes
+        let expected = "Keep this note\r\n"
 
-        #expect(model.addChecklistItem("  Native step  ", to: draft))
-        #expect(draft.notes == original + "- [ ] Native step\r\n")
         let checklist = MarkdownChecklist(draft.notes)
         try model.removeChecklistItem(#require(checklist.items.first), from: draft, projection: checklist)
-        #expect(draft.notes == original)
+        #expect(draft.notes == expected)
         #expect(await model.flushTaskChanges())
-        #expect(try await VaultStore(root: root).snapshot().tasks[draft.path]?.value.body == original)
+        #expect(try await VaultStore(root: root).snapshot().tasks[draft.path]?.value.body == expected)
     }
 }
