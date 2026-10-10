@@ -3,6 +3,8 @@ import SwiftUI
 
 struct SidebarView: View {
     @Bindable var model: WorkspaceModel
+    var onNavigate: (WorkspaceRoute) -> Void = { _ in }
+    var onOpenRouteInTab: (WorkspaceRoute) -> Void = { _ in }
     @State private var showsTags = false
     @State private var showsPriorities = false
 
@@ -22,7 +24,7 @@ struct SidebarView: View {
     private var navigationList: some View {
         let areas = model.orderedCollectionPaths(.area)
         let session = model.vaultSession
-        return List(selection: $model.route) {
+        return List(selection: routeSelection) {
             Section("Focus") {
                 focusRoute(.inbox, "Inbox", "tray", target: .inbox)
                 focusRoute(.today, "Today", "sun.max", target: .today)
@@ -35,8 +37,8 @@ struct SidebarView: View {
                 route(.search, "Search", "magnifyingglass")
             }
             if let snapshot = model.snapshot {
-                FilterSidebarSection(model: model)
-                ProjectSidebarSection(model: model)
+                FilterSidebarSection(model: model, onOpenRouteInTab: onOpenRouteInTab)
+                ProjectSidebarSection(model: model, onOpenRouteInTab: onOpenRouteInTab)
                 Section("Areas") {
                     ForEach(areas, id: \.self) { path in
                         SidebarAssignmentRoute(
@@ -44,9 +46,12 @@ struct SidebarView: View {
                             route: .area(path),
                             title: model.areaDisplayTitle(path),
                             systemImage: "circle.grid.2x2",
-                            target: .area(path)
+                            target: .area(path),
+                            onOpenInTab: { onOpenRouteInTab(.area(path)) }
                         )
                         .contextMenu {
+                            Button("Open in New Tab") { onOpenRouteInTab(.area(path)) }
+                            Divider()
                             CollectionOrderActions(model: model, path: path, collection: .area)
                             Divider()
                             Button("Delete Area", role: .destructive) {
@@ -70,9 +75,12 @@ struct SidebarView: View {
                         ForEach(model.allTags, id: \.self) { tag in
                             SidebarAssignmentRoute(
                                 model: model, route: .tag(tag), title: tag,
-                                systemImage: "tag", target: .tag(tag)
+                                systemImage: "tag", target: .tag(tag),
+                                onOpenInTab: { onOpenRouteInTab(.tag(tag)) }
                             )
                             .contextMenu {
+                                Button("Open in New Tab") { onOpenRouteInTab(.tag(tag)) }
+                                Divider()
                                 Button("Delete Tag", role: .destructive) {
                                     Task { await model.deleteTag(tag) }
                                 }
@@ -98,7 +106,17 @@ struct SidebarView: View {
     }
 
     private func route(_ route: WorkspaceRoute, _ title: String, _ image: String) -> some View {
-        SidebarRouteLabel(model: model, route: route, title: title, systemImage: image).tag(route)
+        SidebarRouteLabel(
+            model: model,
+            route: route,
+            title: title,
+            systemImage: image,
+            onOpenInTab: { onOpenRouteInTab(route) }
+        )
+        .tag(route)
+        .contextMenu {
+            Button("Open in New Tab") { onOpenRouteInTab(route) }
+        }
     }
 
     private func focusRoute(
@@ -112,7 +130,21 @@ struct SidebarView: View {
             route: route,
             title: title,
             systemImage: image,
-            target: .focus(target)
+            target: .focus(target),
+            onOpenInTab: { onOpenRouteInTab(route) }
+        )
+        .contextMenu {
+            Button("Open in New Tab") { onOpenRouteInTab(route) }
+        }
+    }
+
+    private var routeSelection: Binding<WorkspaceRoute> {
+        Binding(
+            get: { model.route },
+            set: { route in
+                onNavigate(route)
+                model.route = route
+            }
         )
     }
 }

@@ -4,42 +4,12 @@ import SwiftUI
 struct TaskInspectorView: View {
     let model: WorkspaceModel
     @Bindable var draft: TaskDraft
-    @State private var isTitleEditing = false
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
-                VStack(alignment: .leading, spacing: 18) {
-                    TaskInspectorHeader(model: model, draft: draft, isTitleEditing: $isTitleEditing)
-                    TaskNotesView(model: model, draft: draft)
-                }
-                planning
-                organization
-                TaskInspectorFileDetails(model: model, draft: draft)
-                if let sourceUnavailableMessage = draft.sourceUnavailableMessage {
-                    Section("Task File Unavailable") {
-                        Text(sourceUnavailableMessage)
-                            .foregroundStyle(.secondary)
-                        HStack {
-                            if draft.canRecreateSource {
-                                Button("Recreate Task") { Task { await model.recreateTask(draft) } }
-                            } else {
-                                Button("Save Copy") { Task { await model.saveTaskCopy(draft) } }
-                            }
-                            Button("Discard Changes") { model.discardChanges(for: draft.path) }
-                        }
-                    }
-                } else if draft.hasConflicts {
-                    Section("Changed In File") {
-                        Text("Conflicting changes: \(conflictNames).")
-                            .foregroundStyle(.secondary)
-                        HStack {
-                            Button("Use File Version") { model.discardChanges(for: draft.path) }
-                            Button("Keep My Changes") { draft.resolveConflictsKeepingLocalChanges() }
-                        }
-                    }
-                }
-                saveStatus
+                TaskContentFields(model: model, draft: draft)
+                TaskInspectorOptions(model: model, draft: draft)
             }
             .padding(.horizontal, 22)
             .padding(.vertical, 24)
@@ -47,8 +17,44 @@ struct TaskInspectorView: View {
         }
         .scrollContentBackground(.hidden)
         .disabled(model.deletingTaskPaths.contains(draft.path))
+    }
+}
+
+struct TaskContentFields: View {
+    let model: WorkspaceModel
+    @Bindable var draft: TaskDraft
+    var startsNotesEditing = false
+    @State private var isTitleEditing = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            TaskInspectorHeader(model: model, draft: draft, isTitleEditing: $isTitleEditing)
+            TaskNotesView(model: model, draft: draft, startsEditing: startsNotesEditing)
+        }
         .onAppear { focusTitleIfRequested() }
         .onChange(of: model.titleEditRequest) { _, _ in focusTitleIfRequested() }
+    }
+
+    private func focusTitleIfRequested() {
+        if model.titleEditingPath == draft.path {
+            isTitleEditing = true
+            model.consumeTitleEditRequest(at: draft.path)
+        }
+    }
+}
+
+struct TaskInspectorOptions: View {
+    let model: WorkspaceModel
+    @Bindable var draft: TaskDraft
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 24) {
+            planning
+            organization
+            TaskInspectorFileDetails(model: model, draft: draft)
+            resolution
+            saveStatus
+        }
     }
 
     private var planning: some View {
@@ -95,6 +101,33 @@ struct TaskInspectorView: View {
             }
             TaskTagsView(model: model, draft: draft)
             TaskRecurrenceView(model: model, draft: draft)
+        }
+    }
+
+    @ViewBuilder
+    private var resolution: some View {
+        if let sourceUnavailableMessage = draft.sourceUnavailableMessage {
+            Section("Task File Unavailable") {
+                Text(sourceUnavailableMessage)
+                    .foregroundStyle(.secondary)
+                HStack {
+                    if draft.canRecreateSource {
+                        Button("Recreate Task") { Task { await model.recreateTask(draft) } }
+                    } else {
+                        Button("Save Copy") { Task { await model.saveTaskCopy(draft) } }
+                    }
+                    Button("Discard Changes") { model.discardChanges(for: draft.path) }
+                }
+            }
+        } else if draft.hasConflicts {
+            Section("Changed In File") {
+                Text("Conflicting changes: \(conflictNames).")
+                    .foregroundStyle(.secondary)
+                HStack {
+                    Button("Use File Version") { model.discardChanges(for: draft.path) }
+                    Button("Keep My Changes") { draft.resolveConflictsKeepingLocalChanges() }
+                }
+            }
         }
     }
 
@@ -176,12 +209,5 @@ struct TaskInspectorView: View {
             .map(\.rawValue)
             .sorted()
             .joined(separator: ", ")
-    }
-
-    private func focusTitleIfRequested() {
-        if model.titleEditingPath == draft.path {
-            isTitleEditing = true
-            model.consumeTitleEditRequest(at: draft.path)
-        }
     }
 }

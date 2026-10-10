@@ -1,11 +1,19 @@
+import LocalTodoDomain
 import SwiftUI
 
 struct WorkspaceView: View {
     @Bindable var model: WorkspaceModel
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
     @State private var inspectorWidth: CGFloat = 340
+    @State private var canvasWidth: CGFloat = 840
+    @State private var tabState = WorkspaceTabState()
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.undoManager) private var undoManager
+
+    init(model: WorkspaceModel, initialTabState: WorkspaceTabState = WorkspaceTabState()) {
+        self.model = model
+        _tabState = State(initialValue: initialTabState)
+    }
 
     var body: some View {
         Group {
@@ -50,38 +58,70 @@ struct WorkspaceView: View {
             }
         }
         .onAppear { model.setUndoManager(undoManager) }
+        .onChange(of: model.rootURL) { _, _ in
+            if !tabState.isEmpty {
+                tabState.removeAll()
+            }
+        }
+        .onChange(of: model.route) { oldRoute, route in
+            if oldRoute != route, !tabState.isEmpty {
+                tabState.navigate(to: route)
+            }
+        }
+        .background {
+            WorkspaceTabCloseBridge(
+                canCloseTab: tabState.tabs.count > 1,
+                onCloseTab: closeSelectedTab
+            )
+            .frame(width: 0, height: 0)
+            .accessibilityHidden(true)
+        }
     }
 
     private var navigation: some View {
-        NavigationSplitView(columnVisibility: $columnVisibility) {
-            SidebarView(model: model)
-                .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 320)
-        } detail: {
-            Group {
-                if model.route == .issues {
-                    IssueCenterView(model: model)
-                } else {
-                    TaskListView(model: model)
-                }
-            }
-            .frame(minWidth: 0, maxWidth: .infinity)
-            .inspector(isPresented: $model.isInspectorPresented) {
-                InspectorContentView(model: model)
-                    .onGeometryChange(for: CGFloat.self) { $0.size.width.rounded() } action: { width in
-                        if model.isInspectorPresented, (280 ... 480).contains(width) {
-                            inspectorWidth = width
-                        }
-                    }
-                    .inspectorColumnWidth(min: 280, ideal: 340, max: 480)
-            }
-        }
-        .navigationSplitViewStyle(.balanced)
-        .toolbar { canvasToolbar }
-        .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
+        navigationSplit
+            .toolbar { canvasToolbar }
+            .toolbarBackgroundVisibility(.hidden, for: .windowToolbar)
     }
 
+    private var navigationSplit: some View {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
+            SidebarView(
+                model: model,
+                onNavigate: navigate,
+                onOpenRouteInTab: openRouteInTab
+            )
+            .navigationSplitViewColumnWidth(min: 180, ideal: 220, max: 320)
+        } detail: {
+            canvas
+                .frame(minWidth: 0, maxWidth: .infinity)
+                .onGeometryChange(for: CGFloat.self) { $0.size.width.rounded() } action: { width in
+                    if width > 0, width != canvasWidth {
+                        canvasWidth = width
+                    }
+                }
+                .inspector(isPresented: $model.isInspectorPresented) {
+                    inspector
+                        .onGeometryChange(for: CGFloat.self) { $0.size.width.rounded() } action: { width in
+                            if model.isInspectorPresented, (280 ... 480).contains(width) {
+                                inspectorWidth = width
+                            }
+                        }
+                        .inspectorColumnWidth(min: 280, ideal: 340, max: 480)
+                }
+        }
+        .navigationSplitViewStyle(.balanced)
+    }
+}
+
+private extension WorkspaceView {
     @ToolbarContentBuilder
     private var canvasToolbar: some ToolbarContent {
+        if #available(macOS 26, *) {
+            workspaceTabsToolbarItem.sharedBackgroundVisibility(.hidden)
+        } else {
+            workspaceTabsToolbarItem
+        }
         ToolbarItem(placement: .automatic) {
             Spacer()
         }
@@ -110,10 +150,31 @@ struct WorkspaceView: View {
         }
     }
 
+    private var workspaceTabsToolbarItem: some ToolbarContent {
+        ToolbarItem(id: "taskmark.workspace-tabs", placement: .navigation) {
+            WorkspaceTabBar(
+                model: model,
+                tabs: tabState.tabs,
+                selection: tabState.selection,
+                onSelect: selectTab,
+                onClose: closeTab
+            )
+            .frame(width: workspaceTabBarWidth, height: 30)
+            .padding(.leading, 96)
+        }
+    }
+
+    private var workspaceTabBarWidth: CGFloat {
+        guard !tabState.isEmpty else { return 1 }
+        let preferred = tabState.tabs.reduce(CGFloat.zero) { width, tab in
+            width + (tab.isTask ? 260 : 120)
+        }
+        return min(preferred, max(120, canvasWidth - 340))
+    }
+
     private var inspectorToolbarSpace: some ToolbarContent {
-        // NSToolbar caches a custom item's minimum width. Replace only the inert space
-        // when the divider moves, so shrinking the inspector also moves the actions right.
-        ToolbarItem(id: "taskmark.inspector-space.\(inspectorWidth)", placement: .primaryAction) {
+        // Keep toolbar identity stable while the AppKit view updates its intrinsic width.
+        ToolbarItem(id: "taskmark.inspector-space", placement: .primaryAction) {
             // The trailing native control and its margin already occupy 44 points.
             InspectorToolbarSpace(width: max(0, inspectorWidth - 44))
         }
@@ -138,5 +199,96 @@ struct WorkspaceView: View {
             model.isInspectorPresented.toggle()
         }
         .help(model.isInspectorPresented ? "Hide Inspector" : "Show Inspector")
+    }
+
+    private var canvas: some View {
+        ZStack {
+            TaskListView(model: model, onOpenTaskInTab: openTaskInTab)
+                .opacity(showsTaskList ? 1 : 0)
+                .allowsHitTesting(showsTaskList)
+                .accessibilityHidden(!showsTaskList)
+            if model.route == .issues, !isTaskTab {
+                IssueCenterView(model: model)
+            }
+            if case let .task(path)? = tabState.selection {
+                if let draft = model.taskDrafts[path] {
+                    TaskTabView(model: model, draft: draft)
+                        .id(path)
+                } else {
+                    ContentUnavailableView(
+                        "Task Unavailable",
+                        systemImage: "doc.questionmark",
+                        description: Text("The task is no longer available in this vault.")
+                    )
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var inspector: some View {
+        if case let .task(path)? = tabState.selection, let draft = model.taskDrafts[path] {
+            TaskTabOptionsView(model: model, draft: draft)
+                .id(path)
+                .themeSurface("--inspector-background")
+        } else {
+            InspectorContentView(model: model)
+        }
+    }
+
+    private var isTaskTab: Bool {
+        if case .task? = tabState.selection {
+            true
+        } else {
+            false
+        }
+    }
+
+    private var showsTaskList: Bool {
+        !isTaskTab && model.route != .issues
+    }
+
+    private func navigate(to route: WorkspaceRoute) {
+        if !tabState.isEmpty {
+            tabState.navigate(to: route)
+        }
+    }
+
+    private func openRouteInTab(_ route: WorkspaceRoute) {
+        tabState.open(.route(route), preserving: .route(model.route))
+        activate(.route(route))
+    }
+
+    private func openTaskInTab(_ path: VaultPath) {
+        tabState.open(.task(path), preserving: .route(model.route))
+        model.isInspectorPresented = true
+        activate(.task(path))
+    }
+
+    private func selectTab(_ tab: WorkspaceTab) {
+        tabState.select(tab)
+        activate(tab)
+    }
+
+    private func closeTab(_ tab: WorkspaceTab) {
+        tabState.close(tab)
+        if let selection = tabState.selection {
+            activate(selection)
+        }
+    }
+
+    private func closeSelectedTab() {
+        guard let selection = tabState.selection, tabState.tabs.count > 1 else { return }
+        closeTab(selection)
+    }
+
+    private func activate(_ tab: WorkspaceTab) {
+        switch tab {
+        case let .route(route):
+            model.selectTask(nil)
+            model.route = route
+        case let .task(path):
+            model.selectTask(path)
+        }
     }
 }

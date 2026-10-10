@@ -4,7 +4,6 @@ import SwiftUI
 struct TaskChecklistView: View {
     let model: WorkspaceModel
     let draft: TaskDraft
-    @State private var newItemTitle = ""
 
     var body: some View {
         let checklist = MarkdownChecklist(draft.notes)
@@ -21,21 +20,6 @@ struct TaskChecklistView: View {
                     }
                 }
             }
-            HStack {
-                TextField("New checklist item", text: $newItemTitle)
-                    .textFieldStyle(.roundedBorder)
-                    .onSubmit(addItem)
-                Button("Add", systemImage: "plus", action: addItem)
-                    .labelStyle(.iconOnly)
-                    .help("Add checklist item")
-                    .disabled(newItemTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            }
-        }
-    }
-
-    private func addItem() {
-        if model.addChecklistItem(newItemTitle, to: draft) {
-            newItemTitle = ""
         }
     }
 }

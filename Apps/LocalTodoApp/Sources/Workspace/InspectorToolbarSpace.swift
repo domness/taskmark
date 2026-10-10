@@ -10,21 +10,21 @@ struct InspectorToolbarSpace: NSViewRepresentable {
     }
 
     func updateNSView(_ view: SpaceView, context _: Context) {
-        view.width = width
-        view.invalidateIntrinsicContentSize()
+        view.update(width: width)
     }
 
     func sizeThatFits(_: ProposedViewSize, nsView _: SpaceView, context _: Context) -> CGSize? {
-        CGSize(width: width, height: 1)
+        CGSize(width: max(1, width), height: 1)
     }
 
     final class SpaceView: NSView {
-        var width: CGFloat
+        private(set) var width: CGFloat
 
         init(width: CGFloat) {
             self.width = width
             super.init(frame: .zero)
             setAccessibilityElement(false)
+            isHidden = width == 0
         }
 
         @available(*, unavailable)
@@ -32,8 +32,17 @@ struct InspectorToolbarSpace: NSViewRepresentable {
             nil
         }
 
+        @discardableResult
+        func update(width: CGFloat) -> Bool {
+            guard width != self.width else { return false }
+            self.width = width
+            isHidden = width == 0
+            invalidateIntrinsicContentSize()
+            return true
+        }
+
         override var intrinsicContentSize: NSSize {
-            NSSize(width: width, height: 1)
+            NSSize(width: max(1, width), height: 1)
         }
     }
 }

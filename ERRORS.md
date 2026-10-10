@@ -41,8 +41,20 @@ Read this file before repeating an approach that previously required several att
 ## Native Toolbar Sizing
 
 - **Failure pattern:** Forcing SwiftUI label/outer frames and borderless styles into a native toolbar distorts symbol placement and material sizing. Replacing NavigationSplitView's sidebar toggle can leave a duplicate control. SwiftUI Spacer becomes a flexible native toolbar item regardless of its frame; custom toolbar items can retain a stale minimum width after their contents shrink. Moving an inspector outside navigation can reintroduce small-window split overflow or constraint loops.
-- **Reliable approach:** Use the full-size unified toolbar with standard buttons/menus and the automatic sidebar toggle. Keep the inspector in the detail column and reserve its measured width with an inert native space. Give that space width-dependent identity to refresh NSToolbar's cached minimum; keep interactive controls stable.
-- **Next-time rule:** Test real scene geometry against the actual panel boundary, including inspector shrink/grow, repeated open/close, narrow windows and duplicate controls. Compare full-size and compact controls on the running OS instead of assuming newer-system dimensions on older supported macOS versions. Inspect a complete window when capture is available; minimum-size assertions alone do not establish correct visual presentation.
+- **Reliable approach:** Use the full-size unified toolbar with standard buttons/menus and the automatic sidebar toggle. Keep the inspector in the detail column and reserve its measured width with a stable inert native space. Update that view's intrinsic width in place, and never invalidate it when the width is unchanged; keep toolbar item identity and interactive controls stable.
+- **Next-time rule:** Test real scene geometry against the actual panel boundary, including inspector shrink/grow, repeated open/close, narrow windows and duplicate controls. Sample any high-CPU hang before changing event handling so repeated representable invalidation is visible in the stack. Compare full-size and compact controls on the running OS instead of assuming newer-system dimensions on older supported macOS versions. Inspect a complete window when capture is available; minimum-size assertions alone do not establish correct visual presentation.
+
+## Native Toolbar Tabs
+
+- **Failure pattern:** SwiftUI scroll views or tab buttons embedded in toolbar groups introduce nested scrollbars and shared glass capsules; drawing controls beneath the titlebar blocks pointer events. Rebuilding controls during click handlers, conditionally adding/removing toolbar items, or calling Auto Layout fitting APIs from `NSViewRepresentable.sizeThatFits` can enter an AppKit layout loop.
+- **Reliable approach:** Use one AppKit-backed toolbar view with deterministic cached sizing, flat native buttons and no nested scrolling. Keep the complete SwiftUI toolbar item topology stable, changing only item content visibility, enabled state and in-place AppKit sizing. Never call `fittingSize` or `systemLayoutSizeFitting` while SwiftUI is measuring the representable. Update selection styling on existing controls and defer select/close publication until the AppKit event returns.
+- **Next-time rule:** Sample the live process during any high-CPU toolbar hang. Verify toolbar item and button identity across repeated selection cycles, final-tab closure, inspector transitions, absence of nested scroll views, title truncation and real-window placement before considering toolbar tabs complete.
+
+## Tab And List Selection
+
+- **Failure pattern:** Returning from a task tab to the same route value can bypass a route `didSet`, leaving `List(selection:)` bound to the task tab's path while SwiftUI reconstructs the route list. AppKit then loops while reflecting an unavailable or stale outline-row selection.
+- **Reliable approach:** Treat tab selection and list selection as separate presentation state. Activating every route tab explicitly clears task-list selection before publishing the route, even when the route value itself is unchanged; activating a task tab restores only that task path.
+- **Next-time rule:** Test repeated task-to-same-route switching and assert both the selected tab and model task selection after every transition. Sample `OutlineListCoordinator` hangs before changing toolbar code.
 
 ## Test Resource Lifetime
 
