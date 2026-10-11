@@ -151,16 +151,15 @@ private extension WorkspaceView {
     }
 
     private var workspaceTabsToolbarItem: some ToolbarContent {
-        ToolbarItem(id: "taskmark.workspace-tabs", placement: .navigation) {
+        ToolbarItem(id: "taskmark.workspace-tabs", placement: .primaryAction) {
             WorkspaceTabBar(
                 model: model,
+                width: workspaceTabBarWidth,
                 tabs: tabState.tabs,
                 selection: tabState.selection,
                 onSelect: selectTab,
                 onClose: closeTab
             )
-            .frame(width: workspaceTabBarWidth, height: 30)
-            .padding(.leading, 96)
         }
     }
 
@@ -169,7 +168,9 @@ private extension WorkspaceView {
         let preferred = tabState.tabs.reduce(CGFloat.zero) { width, tab in
             width + (tab.isTask ? 260 : 120)
         }
-        return min(preferred, max(120, canvasWidth - 340))
+        // The inspector toggle occupies the canvas only when its panel is closed.
+        let controlsWidth: CGFloat = model.isInspectorPresented ? 200 : 240
+        return min(preferred, max(1, canvasWidth - controlsWidth))
     }
 
     private var inspectorToolbarSpace: some ToolbarContent {
@@ -271,8 +272,7 @@ private extension WorkspaceView {
     }
 
     private func closeTab(_ tab: WorkspaceTab) {
-        tabState.close(tab)
-        if let selection = tabState.selection {
+        if let selection = tabState.close(tab) {
             activate(selection)
         }
     }

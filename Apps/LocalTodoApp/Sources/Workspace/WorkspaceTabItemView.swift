@@ -15,6 +15,7 @@ final class WorkspaceTabItemView: NSView {
     init(
         presentation: WorkspaceTabPresentation,
         selectedBackgroundColor: NSColor,
+        typography: ThemeTypography,
         onSelect: @escaping (WorkspaceTab) -> Void,
         onClose: @escaping (WorkspaceTab) -> Void
     ) {
@@ -33,6 +34,7 @@ final class WorkspaceTabItemView: NSView {
         update(
             presentation: presentation,
             selectedBackgroundColor: selectedBackgroundColor,
+            typography: typography,
             onSelect: onSelect,
             onClose: onClose
         )
@@ -51,6 +53,7 @@ final class WorkspaceTabItemView: NSView {
     func update(
         presentation: WorkspaceTabPresentation,
         selectedBackgroundColor: NSColor,
+        typography: ThemeTypography,
         onSelect: @escaping (WorkspaceTab) -> Void,
         onClose: @escaping (WorkspaceTab) -> Void
     ) {
@@ -62,8 +65,8 @@ final class WorkspaceTabItemView: NSView {
         titleButton.image = NSImage(systemSymbolName: presentation.systemImage, accessibilityDescription: nil)
         titleButton.toolTip = presentation.title
         titleButton.contentTintColor = presentation.isSelected ? .labelColor : .secondaryLabelColor
-        titleButton.font = .systemFont(
-            ofSize: NSFont.smallSystemFontSize,
+        titleButton.font = typography.nativeFont(
+            .body,
             weight: presentation.isSelected ? .medium : .regular
         )
         titleButton.setAccessibilitySelected(presentation.isSelected)
@@ -75,7 +78,6 @@ final class WorkspaceTabItemView: NSView {
 
     private func configureView() {
         wantsLayer = true
-        heightAnchor.constraint(equalToConstant: 30).isActive = true
         configureTitleButton()
         configureCloseButton()
         let stack = NSStackView(views: [titleButton, closeButton])

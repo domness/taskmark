@@ -4,10 +4,12 @@ import SwiftUI
 
 struct WorkspaceTabBar: NSViewRepresentable {
     let model: WorkspaceModel
+    let width: CGFloat
     let tabs: [WorkspaceTab]
     let selection: WorkspaceTab?
     let onSelect: (WorkspaceTab) -> Void
     let onClose: (WorkspaceTab) -> Void
+    @Environment(\.themeTypography) private var typography
     @Environment(\.vaultAppearance) private var appearance
     @Environment(\.colorScheme) private var colorScheme
 
@@ -21,7 +23,13 @@ struct WorkspaceTabBar: NSViewRepresentable {
         update(view)
     }
 
+    func sizeThatFits(_ proposal: ProposedViewSize, nsView: WorkspaceTabBarView, context _: Context) -> CGSize? {
+        // The document's intrinsic width must not become the toolbar viewport's minimum width.
+        CGSize(width: min(width, max(1, proposal.width ?? width)), height: nsView.toolbarFittingSize.height)
+    }
+
     private func update(_ view: WorkspaceTabBarView) {
+        view.updateViewportWidth(width)
         view.update(
             tabs.map { tab in
                 WorkspaceTabPresentation(
@@ -31,6 +39,7 @@ struct WorkspaceTabBar: NSViewRepresentable {
                     isSelected: selection == tab
                 )
             },
+            typography: typography,
             selectedBackgroundColor: NSColor(appearance.color(
                 "--background",
                 scheme: colorScheme,
@@ -102,25 +111,28 @@ struct WorkspaceTabPresentation: Equatable {
 }
 
 final class WorkspaceTabBarView: NSView {
+    private var typography = ThemeTypography(family: nil)
+    private var tabHeight: CGFloat {
+        let font = typography.nativeFont(.body)
+        return max(30, ceil(font.ascender - font.descender + font.leading) + 8)
+    }
+
+    private var viewportWidth: CGFloat = 1
     private let scrollView = WorkspaceTabScrollView()
-    private let stack = NSStackView()
+    private let document = NSView()
     private var presentations = [WorkspaceTabPresentation]()
     private var items = [WorkspaceTabItemView]()
     private var selectedBackgroundColor = NSColor.windowBackgroundColor
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
-        stack.orientation = .horizontal
-        stack.alignment = .centerY
-        stack.distribution = .fill
-        stack.spacing = 0
-        stack.frame = NSRect(x: 0, y: 0, width: 520, height: 30)
+        document.frame = NSRect(x: 0, y: 0, width: 520, height: tabHeight)
         scrollView.drawsBackground = false
         scrollView.hasHorizontalScroller = false
         scrollView.hasVerticalScroller = false
         scrollView.horizontalScrollElasticity = .automatic
         scrollView.verticalScrollElasticity = .none
-        scrollView.documentView = stack
+        scrollView.documentView = document
         addSubview(scrollView)
         isHidden = true
     }
@@ -131,31 +143,47 @@ final class WorkspaceTabBarView: NSView {
     }
 
     var toolbarFittingSize: CGSize {
-        guard !presentations.isEmpty else { return CGSize(width: 1, height: 30) }
-        return CGSize(width: contentWidth, height: 30)
+        guard !presentations.isEmpty else { return CGSize(width: 1, height: tabHeight) }
+        return CGSize(width: viewportWidth, height: tabHeight)
+    }
+
+    func updateViewportWidth(_ width: CGFloat) {
+        guard viewportWidth != width else { return }
+        viewportWidth = width
+        invalidateIntrinsicContentSize()
+        scrollSelectionIntoView()
     }
 
     override func layout() {
         super.layout()
         scrollView.frame = bounds
-        stack.frame = NSRect(x: 0, y: 0, width: max(contentWidth, bounds.width), height: bounds.height)
+        document.frame = NSRect(x: 0, y: 0, width: max(contentWidth, bounds.width), height: bounds.height)
+        var leading: CGFloat = 0
+        for (item, presentation) in zip(items, presentations) {
+            let width = preferredWidth(for: presentation)
+            item.frame = NSRect(x: leading, y: 0, width: width, height: tabHeight)
+            leading += width
+        }
     }
 
     func update(
         _ presentations: [WorkspaceTabPresentation],
+        typography: ThemeTypography = ThemeTypography(family: nil),
         selectedBackgroundColor: NSColor = .windowBackgroundColor,
         onSelect: @escaping (WorkspaceTab) -> Void,
         onClose: @escaping (WorkspaceTab) -> Void
     ) {
         let colorChanged = !selectedBackgroundColor.isEqual(self.selectedBackgroundColor)
-        guard presentations != self.presentations || colorChanged else { return }
-        let needsResize = presentations.count != self.presentations.count
+        let typographyChanged = typography != self.typography
+        guard presentations != self.presentations || colorChanged || typographyChanged else { return }
+        let needsResize = typographyChanged || presentations.count != self.presentations.count
             || zip(presentations, self.presentations).contains { current, previous in
                 current.tab != previous.tab
                     || current.title != previous.title
                     || current.systemImage != previous.systemImage
             }
         let reusesItems = presentations.map(\.tab) == self.presentations.map(\.tab)
+        self.typography = typography
         self.presentations = presentations
         self.selectedBackgroundColor = selectedBackgroundColor
         if reusesItems {
@@ -180,6 +208,7 @@ final class WorkspaceTabBarView: NSView {
             item.update(
                 presentation: presentation,
                 selectedBackgroundColor: selectedBackgroundColor,
+                typography: typography,
                 onSelect: onSelect,
                 onClose: onClose
             )
@@ -191,25 +220,26 @@ final class WorkspaceTabBarView: NSView {
         onSelect: @escaping (WorkspaceTab) -> Void,
         onClose: @escaping (WorkspaceTab) -> Void
     ) {
-        for arrangedSubview in stack.arrangedSubviews {
-            stack.removeArrangedSubview(arrangedSubview)
-            arrangedSubview.removeFromSuperview()
+        for item in items {
+            item.removeFromSuperview()
         }
         items = presentations.map {
             WorkspaceTabItemView(
                 presentation: $0,
                 selectedBackgroundColor: selectedBackgroundColor,
+                typography: typography,
                 onSelect: onSelect,
                 onClose: onClose
             )
         }
-        for item in items {
-            stack.addArrangedSubview(item)
+        for (item, presentation) in zip(items, presentations) {
+            item.frame = NSRect(x: 0, y: 0, width: preferredWidth(for: presentation), height: tabHeight)
+            document.addSubview(item)
         }
     }
 
     private func preferredWidth(for presentation: WorkspaceTabPresentation) -> CGFloat {
-        let font = NSFont.systemFont(ofSize: NSFont.smallSystemFontSize, weight: .medium)
+        let font = typography.nativeFont(.body, weight: .medium)
         let titleWidth = (presentation.title as NSString).size(withAttributes: [.font: font]).width
         // Icon, title/image spacing, close button, item spacing and horizontal padding.
         return min(240, max(72, ceil(titleWidth) + 58))
@@ -220,11 +250,12 @@ final class WorkspaceTabBarView: NSView {
     }
 
     private func scrollSelectionIntoView() {
-        guard let index = presentations.firstIndex(where: \.isSelected), items.indices.contains(index) else { return }
         DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
+            guard let self,
+                  let index = presentations.firstIndex(where: \.isSelected),
+                  items.indices.contains(index) else { return }
             layoutSubtreeIfNeeded()
-            stack.scrollToVisible(items[index].frame.insetBy(dx: -8, dy: 0))
+            document.scrollToVisible(items[index].frame.insetBy(dx: -8, dy: 0))
         }
     }
 
