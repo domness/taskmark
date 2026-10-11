@@ -31,14 +31,26 @@ final class TaskmarkIOSUITests: XCTestCase {
     }
 
     func testCapturePersistsThroughTheCanonicalVault() {
+        continueAfterFailure = false
         let app = launchFixtureApp()
         app.buttons["add-task"].tap()
-        let title = app.textFields["Task title"]
-        XCTAssertTrue(title.waitForExistence(timeout: 2))
+        let captureSheet = app.navigationBars["New Task"]
+        XCTAssertTrue(captureSheet.waitForExistence(timeout: 5))
+        let title = app.textFields["capture-title"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        title.tap()
         title.typeText("Captured on iPhone")
-        app.buttons["Add"].tap()
+        let titleEntered = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", "Captured on iPhone"), object: title
+        )
+        XCTAssertEqual(XCTWaiter.wait(for: [titleEntered], timeout: 5), .completed)
 
-        XCTAssertTrue(app.navigationBars["New Task"].waitForNonExistence(timeout: 10))
+        let add = captureSheet.buttons["capture-submit"]
+        XCTAssertTrue(add.wait(for: \.isEnabled, toEqual: true, timeout: 5))
+        XCTAssertTrue(add.wait(for: \.isHittable, toEqual: true, timeout: 5))
+        add.tap()
+
+        XCTAssertTrue(captureSheet.waitForNonExistence(timeout: 10))
         XCTAssertTrue(app.staticTexts["Captured on iPhone"].waitForExistence(timeout: 5))
     }
 
