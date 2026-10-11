@@ -28,6 +28,15 @@ struct ThemeTypography: Equatable {
         return font.weight(weight ?? (style == .headline ? .semibold : .regular))
     }
 
+    func nativeFont(_ style: Font.TextStyle, weight: NSFont.Weight = .regular) -> NSFont {
+        let size = nativeSize(for: style) * sizeScale
+        guard let family else { return .systemFont(ofSize: size, weight: weight) }
+        let descriptor = NSFontDescriptor(fontAttributes: [
+            .family: family, .traits: [NSFontDescriptor.TraitKey.weight: weight.rawValue],
+        ])
+        return NSFont(descriptor: descriptor, size: size) ?? .systemFont(ofSize: size, weight: weight)
+    }
+
     func scaled(toBodySize size: Double) -> Self {
         Self(family: family, sizeScale: size / 13)
     }

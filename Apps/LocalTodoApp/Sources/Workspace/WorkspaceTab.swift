@@ -34,6 +34,7 @@ struct WorkspaceTabState {
 
     mutating func open(_ tab: WorkspaceTab, preserving initialTab: WorkspaceTab) {
         if tabs.isEmpty {
+            guard tab != initialTab else { return }
             open(initialTab)
         }
         open(tab)
@@ -58,15 +59,18 @@ struct WorkspaceTabState {
         selection = tab
     }
 
-    mutating func close(_ tab: WorkspaceTab) {
-        guard let index = tabs.firstIndex(of: tab) else { return }
+    @discardableResult
+    mutating func close(_ tab: WorkspaceTab) -> WorkspaceTab? {
+        guard let index = tabs.firstIndex(of: tab) else { return nil }
         tabs.remove(at: index)
-        guard selection == tab else { return }
-        if tabs.isEmpty {
-            selection = nil
-        } else {
-            selection = tabs[min(index, tabs.count - 1)]
+        if selection == tab {
+            selection = tabs.isEmpty ? nil : tabs[min(index, tabs.count - 1)]
         }
+        let destination = selection
+        if tabs.count <= 1 {
+            removeAll()
+        }
+        return destination
     }
 
     mutating func removeAll() {

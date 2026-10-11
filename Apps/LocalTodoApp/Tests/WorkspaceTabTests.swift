@@ -28,13 +28,13 @@ import XCTest
     #expect(state.selection == .task(task))
 }
 
-@Test func commandClickingTheVisibleRouteCreatesOnlyItsInitialTab() {
+@Test func commandClickingTheVisibleRouteKeepsTheDefaultWorkspace() {
     var state = WorkspaceTabState()
 
     state.open(.route(.today), preserving: .route(.today))
 
-    #expect(state.tabs == [.route(.today)])
-    #expect(state.selection == .route(.today))
+    #expect(state.isEmpty)
+    #expect(state.selection == nil)
 }
 
 @Test func workspaceTabNavigationReusesAnExistingRouteTab() throws {
@@ -61,10 +61,26 @@ import XCTest
     state.close(.route(.upcoming))
     #expect(state.selection == .route(.inbox))
     state.close(.route(.inbox))
-    #expect(state.selection == .route(.today))
-    state.close(.route(.today))
     #expect(state.isEmpty)
     #expect(state.selection == nil)
+}
+
+@Test func closingEitherOfTwoTabsRestoresTheSurvivingDestination() throws {
+    let task = try WorkspaceTab.task(VaultPath("Tasks/notes.md"))
+    for closing in [WorkspaceTab.route(.today), task] {
+        for selected in [WorkspaceTab.route(.today), task] {
+            var state = WorkspaceTabState()
+            state.open(.route(.today))
+            state.open(task)
+            state.select(selected)
+            let survivor: WorkspaceTab = closing == task ? .route(.today) : task
+            #expect(state.close(closing) == survivor)
+            #expect(state.isEmpty)
+            #expect(state.selection == nil)
+            state.open(.route(.upcoming), preserving: survivor)
+            #expect(state.tabs == [survivor, .route(.upcoming)])
+        }
+    }
 }
 
 @Test func commandClickRequiresASingleClickWithTheCommandModifier() {
@@ -130,7 +146,7 @@ final class WorkspaceTabNativeTests: XCTestCase {
             }
             descendants(in: originalItems[1], as: NSButton.self)[1].performClick(nil)
             try await waitForTabs("closing active toolbar tab") {
-                self.descendants(in: bar, as: WorkspaceTabItemView.self).count == 1
+                bar.isHidden && self.descendants(in: bar, as: WorkspaceTabItemView.self).isEmpty
             }
             XCTAssertTrue(window.isVisible)
         }
