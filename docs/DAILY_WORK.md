@@ -8,6 +8,12 @@ Choose **File → New Vault Window** (`Command-Shift-N`) to open another indepen
 
 Appearance/calendar-display preferences belong to each vault's `.config/config.yml`; different vaults can use different themes. Settings edits the most recently active vault window. Windows/machines opening the same vault reload its shared settings. Closing a window flushes pending document and preference edits; unresolved edits or unsubmitted capture text keep it open. Quitting checks all open workspaces. The first window at launch restores the most recently opened vault; additional windows start with the vault chooser. Restoring a full set of previous vault windows is not implemented.
 
+## Workspace Tabs
+
+Vault windows begin with the normal sidebar and task canvas, without a tab strip. On the first Command-click, the currently visible route becomes the initial tab and the requested destination opens beside it in the native toolbar along the top edge of the content pane. Command-click a Focus destination, saved filter, project, area, tag or priority in the sidebar to open it in a tab. Command-click a task row to open a dedicated task tab. The same destinations also provide **Open in New Tab** in their right-click menu. Opening the same destination again selects its existing tab rather than duplicating it.
+
+A task tab uses the center pane for the task title and Markdown notes, with planning, organization and file controls in the trailing panel. Close every tab to return to the normal untabbed workspace. Tabs belong only to that open window; they are not written to the vault or restored on another device.
+
 ## Capture And Plan
 
 - **Inbox** appears above Today in the sidebar and contains incomplete tasks with Inbox status.
@@ -29,7 +35,7 @@ Task titles support inline Markdown: `**bold**`, `*italic*`, `` `code` ``, and `
 
 Notes show rendered Markdown by default: paragraphs, headings, ordered/unordered lists, blockquotes, fenced code and inline formatting with clickable links. Click the notes (or **Add notes…**) to edit their source with normal autosave. Moving focus elsewhere, clicking outside the field or pressing Escape returns to rendered text without discarding edits. Keyboard users can focus either rendered field and press Return to edit. There is no separate preview mode or duplicate title preview.
 
-Use explicit Markdown links or angle-bracket autolinks such as `<https://example.com>`. This is native text rendering, not an HTML renderer; images, tables and embedded HTML are not rendered as rich content. Checklist controls remain above Notes and change only the check marker.
+Use explicit Markdown links or angle-bracket autolinks such as `<https://example.com>`. This is native text rendering, not an HTML renderer; images, tables and embedded HTML are not rendered as rich content. Existing checklist controls appear with Notes and change only the check marker.
 
 Rendered fields use the current draft, including unsaved edits, and never rewrite Markdown. Titles remain strings in frontmatter and notes remain the file body; CLI output, copying, search and sorting continue to use the source text.
 
@@ -41,7 +47,7 @@ Project, area and **Tags** are also always visible. Use the **+** beside Tags to
 
 Fixed completion follows the existing cadence until the next occurrence is after the completion day. After-completion recurrence starts its interval on that day in the vault timezone. Monthly/yearly recurrence retains calendar clamping; see [the file contract](FILE_FORMAT.md#recurrence).
 
-Write checklist steps in Notes using Markdown checkboxes such as `- [ ] Draft outline`. Recognized steps appear as native checkboxes above Notes. Toggling a step changes only its marker. Code blocks and comments remain untouched; see [supported checklist syntax](FILE_FORMAT.md#body-checklists).
+Write and edit checklist steps in Notes source using Markdown checkboxes such as `- [ ] Draft outline`. Recognized steps appear as native checkboxes beside the rendered notes. Toggling a step changes only its marker, and its context menu can remove the line. Code blocks and comments remain untouched; see [supported checklist syntax](FILE_FORMAT.md#body-checklists).
 
 **Reset checklist on repeat** is per task and defaults off. When enabled, recurring completion unchecks recognized steps. Ordinary completion leaves notes unchanged.
 

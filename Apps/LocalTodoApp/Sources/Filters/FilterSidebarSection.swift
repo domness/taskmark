@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FilterSidebarSection: View {
     let model: WorkspaceModel
+    var onOpenRouteInTab: (WorkspaceRoute) -> Void = { _ in }
     @State private var filterPendingDeletion: String?
 
     var body: some View {
@@ -9,10 +10,13 @@ struct FilterSidebarSection: View {
             ForEach(model.filterState.record?.filters ?? [], id: \.name) { filter in
                 SidebarRouteLabel(
                     model: model, route: .savedFilter(filter.name), title: filter.name,
-                    systemImage: "line.3.horizontal.decrease.circle"
+                    systemImage: "line.3.horizontal.decrease.circle",
+                    onOpenInTab: { onOpenRouteInTab(.savedFilter(filter.name)) }
                 )
                 .tag(WorkspaceRoute.savedFilter(filter.name))
                 .contextMenu {
+                    Button("Open in New Tab") { onOpenRouteInTab(.savedFilter(filter.name)) }
+                    Divider()
                     Button("Delete Filter", systemImage: "trash", role: .destructive) {
                         filterPendingDeletion = filter.name
                     }

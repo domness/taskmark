@@ -65,7 +65,7 @@ struct TaskMarkdownField: View {
                 .foregroundStyle(.secondary)
                 .scrollContentBackground(.hidden)
                 .frame(maxWidth: .infinity, minHeight: 160, alignment: .topLeading)
-                .background(Color(nsColor: .textBackgroundColor))
+                .background(Color.clear)
         }
     }
 
@@ -100,7 +100,13 @@ struct TaskMarkdownField: View {
 struct TaskNotesView: View {
     let model: WorkspaceModel
     @Bindable var draft: TaskDraft
-    @State private var isEditing = false
+    @State private var isEditing: Bool
+
+    init(model: WorkspaceModel, draft: TaskDraft, startsEditing: Bool = false) {
+        self.model = model
+        self.draft = draft
+        _isEditing = State(initialValue: startsEditing)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {

@@ -44,6 +44,8 @@ final class WorkspaceWindowDelegate: NSObject, NSWindowDelegate {
     /// Objective-C forwarding is nonisolated and NSWindowDelegate is not Sendable.
     /// Every read/write is main-actor confined; the forwarding entry points enforce that at runtime.
     nonisolated(unsafe) weak var sceneDelegate: (any NSWindowDelegate)?
+    private var canCloseWorkspaceTab = false
+    private var closeWorkspaceTab: (() -> Void)?
 
     init(model: WorkspaceModel, windows: WorkspaceWindows) {
         self.model = model
@@ -72,6 +74,10 @@ final class WorkspaceWindowDelegate: NSObject, NSWindowDelegate {
     }
 
     func windowShouldClose(_ sender: NSWindow) -> Bool {
+        if canCloseWorkspaceTab, WorkspaceCloseCommand.matches(NSApp.currentEvent) {
+            closeWorkspaceTab?()
+            return false
+        }
         guard !model.isClosingWindow, !windows.isFlushingAll else { return false }
         guard !model.isLoading else {
             model.errorMessage = "Wait for the vault to finish opening before closing this window."
@@ -94,6 +100,11 @@ final class WorkspaceWindowDelegate: NSObject, NSWindowDelegate {
         return false
     }
 
+    func setWorkspaceTabCloseAction(canClose: Bool, action: @escaping () -> Void) {
+        canCloseWorkspaceTab = canClose
+        closeWorkspaceTab = action
+    }
+
     func windowWillClose(_ notification: Notification) {
         sceneDelegate?.windowWillClose?(notification)
         windows.remove(model)
@@ -112,5 +123,49 @@ final class WorkspaceWindowDelegate: NSObject, NSWindowDelegate {
     override nonisolated func forwardingTarget(for _: Selector!) -> Any? {
         MainActor.preconditionIsolated()
         return sceneDelegate
+    }
+}
+
+enum WorkspaceCloseCommand {
+    static func matches(_ event: NSEvent?) -> Bool {
+        guard let event, event.type == .keyDown else { return false }
+        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        return event.charactersIgnoringModifiers?.lowercased() == "w" && modifiers == .command
+    }
+}
+
+struct WorkspaceTabCloseBridge: NSViewRepresentable {
+    let canCloseTab: Bool
+    let onCloseTab: () -> Void
+
+    func makeNSView(context _: Context) -> WorkspaceTabCloseAnchor {
+        WorkspaceTabCloseAnchor()
+    }
+
+    func updateNSView(_ view: WorkspaceTabCloseAnchor, context _: Context) {
+        view.connect(canClose: canCloseTab, action: onCloseTab)
+    }
+}
+
+final class WorkspaceTabCloseAnchor: NSView {
+    private var canClose = false
+    private var action: (() -> Void)?
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        publish()
+    }
+
+    func connect(canClose: Bool, action: @escaping () -> Void) {
+        self.canClose = canClose
+        self.action = action
+        publish()
+    }
+
+    private func publish() {
+        DispatchQueue.main.async { [weak self] in
+            guard let self, let action, let delegate = window?.delegate as? WorkspaceWindowDelegate else { return }
+            delegate.setWorkspaceTabCloseAction(canClose: canClose, action: action)
+        }
     }
 }

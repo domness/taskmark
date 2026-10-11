@@ -7,6 +7,7 @@ struct TaskRow: View {
     let displayOptions: TaskListDisplayOptions
     let reorderContext: TaskReorderContext
     let onSelect: () -> Void
+    var onOpenInTab: () -> Void = {}
     @Environment(\.colorScheme) private var colorScheme
     @State private var isPerformingCompletionAction = false
     @State private var showsCompletionFeedback = false
@@ -30,8 +31,11 @@ struct TaskRow: View {
         .padding(.vertical, 6)
         .fixedSize(horizontal: false, vertical: true)
         .contentShape(Rectangle())
+        .background(CommandClickView(action: onOpenInTab))
         .modifier(TaskAssignmentDrag(model: model, task: task, context: reorderContext))
         .contextMenu {
+            Button("Open in New Tab", action: onOpenInTab)
+            Divider()
             Button("Edit Task") { model.editTask(at: task.path) }
             Button("Reschedule…") {
                 model.selectTask(task.path)
@@ -41,6 +45,7 @@ struct TaskRow: View {
             Divider()
             TaskContextActions(model: model, path: task.path)
         }
+        .accessibilityAction(named: "Open in New Tab", onOpenInTab)
     }
 
     private var taskLabel: some View {

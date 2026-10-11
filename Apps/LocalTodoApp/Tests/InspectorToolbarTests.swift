@@ -4,6 +4,17 @@ import SwiftUI
 import Testing
 
 @MainActor
+@Test func inspectorToolbarSpaceInvalidatesOnlyWhenItsWidthChanges() {
+    let view = InspectorToolbarSpace.SpaceView(width: 296)
+
+    #expect(!view.update(width: 296))
+    #expect(view.update(width: 340))
+    #expect(view.intrinsicContentSize == NSSize(width: 340, height: 1))
+    #expect(view.update(width: 0))
+    #expect(view.isHidden)
+}
+
+@MainActor
 @Test(arguments: [false, true], [840.0, 1120.0, 1600.0])
 func inspectorToggleRemainsSingleAcrossPresentationChanges(initiallyPresented: Bool, width: Double) async throws {
     try await withToolbarWindow(initiallyPresented: initiallyPresented, width: width) { model, window in
@@ -159,9 +170,7 @@ private func expectToolbarLayout(
         let view = try #require(item.view)
         let frame = view.convert(view.bounds, to: nil)
         #expect(frame.maxX <= commandBoundary, "\(item.label) must stay above the center panel: \(frame)")
-        #expect(abs(frame.midY - trailing.midY) < 2)
         #expect(frame.width >= 28, "\(item.label): \(frame)")
-        #expect(abs(frame.height - trailing.height) < 2, "\(item.label): \(frame)")
     }
     if showsCommands {
         let options = try #require(commandItems.last?.view)

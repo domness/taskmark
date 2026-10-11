@@ -18,7 +18,7 @@ Status reviewed against the repository on 2026-09-28. Implemented features below
 
 - Inbox, Today, Next, Upcoming, Waiting, Someday, Completed and All Tasks, plus project/area/tag/priority views and search. Inbox precedes Today in the sidebar; Completed groups done tasks by vault-local completion day.
 - Contextual capture, keyboard selection/editing/completion and paired-date rescheduling.
-- Fixed and after-completion recurrence; late fixed completion skips missed occurrences. Native checklist add/toggle/delete controls edit body checkboxes, with opt-in checklist reset on repeat.
+- Fixed and after-completion recurrence; late fixed completion skips missed occurrences. Native checklist toggle/delete controls edit existing body checkboxes, new items are authored in Markdown source, and checklist reset on repeat remains opt-in.
 - Project title/notes/status editing, completion/reopening and collapsed inactive-project navigation.
 - Combined filters and canonical saved filters shared with the CLI, with explicit Save/Update/Delete actions, Undo/Redo and conflict recovery.
 - Automatic sorting and **Custom** drag ordering per view/vault, persisted in shared configuration. Grouped custom moves stay within their group; hidden task positions and order across launches/sort switches are retained.
@@ -28,6 +28,7 @@ See [daily workflows and shortcuts](DAILY_WORK.md).
 ### Task Editing And Personalization
 
 - The focused canvas opens with two columns. A row click selects and opens the optional notes-first inspector without entering edit mode; the toolbar toggles it and Command-E focuses the title. Backspace deletes from the list, while inspector text editing retains normal Backspace behavior.
+- The focused canvas starts without a tab strip. Command-click opens Focus destinations, saved filters, projects, areas, tags, priorities or tasks in deduplicated window-local tabs; task tabs expand title/Markdown notes in the center and retain configurable fields in the trailing panel.
 - Incomplete tasks past their scheduled date or deadline are highlighted with semantic red and an Overdue label, using the vault-local day.
 - Placeholder-only, multiline title entry; always-visible project, area, tag and repeat controls. Tags are removable tokens with an add button and existing-tag suggestions.
 - Composed task inspector with a title-side completion control, Planning/Organization property groups, borderless aligned values and collapsed file details. Save problems and recovery remain visible independently of file details.

@@ -5,6 +5,7 @@ struct SidebarRouteLabel: View {
     let route: WorkspaceRoute
     let title: String
     let systemImage: String
+    var onOpenInTab: () -> Void = {}
 
     var body: some View {
         let count = model.sidebarTaskCount(for: route)
@@ -29,7 +30,9 @@ struct SidebarRouteLabel: View {
         }
         .foregroundStyle(.primary)
         .themedListSelection(isSelected: model.route == route)
+        .background(CommandClickView(action: onOpenInTab))
         .accessibilityElement(children: .combine)
         .accessibilityValue(count.map { "\($0) tasks" } ?? "")
+        .accessibilityAction(named: "Open in New Tab", onOpenInTab)
     }
 }

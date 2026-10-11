@@ -6,6 +6,7 @@ import UniformTypeIdentifiers
 
 struct TaskListView: View {
     @Bindable var model: WorkspaceModel
+    var onOpenTaskInTab: (VaultPath) -> Void = { _ in }
     @FocusState private var isSearchFocused: Bool
     @FocusState private var isListFocused: Bool
 
@@ -119,7 +120,8 @@ struct TaskListView: View {
             TaskRow(
                 model: model, task: task,
                 displayOptions: model.currentTaskListDisplayOptions, reorderContext: context,
-                onSelect: { openTaskDetails(task.path) }
+                onSelect: { openTaskDetails(task.path) },
+                onOpenInTab: { onOpenTaskInTab(task.path) }
             )
             .tag(task.path)
             .themedListSelection(isSelected: model.selectedTaskPath == task.path)

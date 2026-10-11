@@ -26,7 +26,9 @@ struct MobileCaptureView: View {
         NavigationStack {
             Form {
                 Section("Task") {
-                    TextField("Task title", text: $title, axis: .vertical).focused($titleFocused)
+                    TextField("Task title", text: $title, axis: .vertical)
+                        .focused($titleFocused)
+                        .accessibilityIdentifier("capture-title")
                     TextField("Notes", text: $notes, axis: .vertical)
                 }
                 Section("Planning") {
@@ -84,6 +86,7 @@ struct MobileCaptureView: View {
                         }
                     }
                     .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSubmitting)
+                    .accessibilityIdentifier("capture-submit")
                 }
             }
             .safeAreaInset(edge: .top) {
