@@ -16,7 +16,7 @@ final class SampleVaultUITests: XCTestCase {
         let firstTask = app.staticTexts["1. Make yourself at home"]
         XCTAssertTrue(firstTask.waitForExistence(timeout: 10))
         firstTask.tap()
-        XCTAssertTrue(app.buttons["Edit Markdown"].waitForExistence(timeout: 5))
+        verifySampleEditing(app)
         attachScreenshot(app, name: "Sample instructions")
         // Return to the task list on either the compact or split layout.
         if app.tabBars.buttons["Today"].exists {
@@ -61,5 +61,19 @@ final class SampleVaultUITests: XCTestCase {
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+    }
+
+    private func verifySampleEditing(_ app: XCUIApplication) {
+        // The inline action follows long notes and can be outside a lazy Form's
+        // visible rows on iPad. The toolbar action is available at every size.
+        let navigation = app.navigationBars["Task"]
+        let edit = navigation.buttons["Edit"]
+        XCTAssertTrue(edit.waitForExistence(timeout: 10))
+        XCTAssertTrue(edit.wait(for: \.isEnabled, toEqual: true, timeout: 5))
+        edit.tap()
+        let title = app.textFields.matching(NSPredicate(format: "value == %@", "1. Make yourself at home")).firstMatch
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        navigation.buttons["Save"].tap()
+        XCTAssertTrue(edit.waitForExistence(timeout: 5))
     }
 }

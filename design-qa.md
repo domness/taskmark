@@ -72,6 +72,17 @@ Command logs are under `/tmp/taskmark-onboarding-final-check.log`,
 
 ## Scope limits
 
+The first CI run exposed a test assumption on the 11-inch iPad running iOS
+18.5: the inline Edit Markdown action lies below long notes and is absent from
+the lazy Form's visible accessibility rows. The same failure was reproduced
+locally on iOS 18.6. The sample test now uses the persistent navigation-bar Edit
+action, verifies the populated title editor and returns through Save before
+continuing the capture/restoration checks.
+The corrected sample and accessibility tests pass on both the 11-inch iPad
+with iOS 18.6 and the iPhone 18 Pro with iOS 27, using Xcode 27.0. The existing
+adaptive-workspace test also passes on the iOS 18.6 iPad. The full local gate
+still encounters the protected-checkpoint access failure described above.
+
 Visual approval here covers the captured welcome layouts and sample entry
 flow. It does not certify the full release gate, real-device file-provider
 behavior, VoiceOver traversal or App Review acceptance. No submission or
