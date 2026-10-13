@@ -73,6 +73,7 @@ final class WorkspaceModel {
     @ObservationIgnored private var scopedVault: SecurityScopedVault?
     @ObservationIgnored private var refreshLoop: Task<Void, Never>?
     @ObservationIgnored private let bookmarks: VaultBookmarkStore
+    @ObservationIgnored private let sampleVault: SampleVault
     @ObservationIgnored private(set) var vaultSession = UUID()
     @ObservationIgnored private var openRequest = UUID()
     @ObservationIgnored var refreshRequest = UUID()
@@ -84,9 +85,11 @@ final class WorkspaceModel {
     init(
         bookmarks: VaultBookmarkStore = VaultBookmarkStore(),
         preferences: AppPreferences = AppPreferences(),
+        sampleVaultURL: URL = URL.applicationSupportDirectory.appendingPathComponent("Taskmark/Sample Vault"),
         clock: @escaping () -> Date = Date.init
     ) {
         self.bookmarks = bookmarks
+        sampleVault = SampleVault(root: sampleVaultURL)
         self.preferences = AppPreferences(values: preferences.values)
         self.clock = clock
         taskListDisplayOptionsByRoute = [:]
@@ -150,6 +153,21 @@ final class WorkspaceModel {
             try VaultInitializer.initialize(at: url, preferences: preferences.values)
             if try await openVault(url) {
                 try bookmarks.save(url)
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
+    func openSampleVault() async {
+        guard canChangeVault() else { return }
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            let url = try await sampleVault.prepare(now: clock(), calendar: .current)
+            if try await openVault(url) {
+                try bookmarks.save(url)
+                errorMessage = nil
             }
         } catch {
             errorMessage = error.localizedDescription
@@ -267,19 +285,5 @@ enum NewEntityKind: String, Identifiable {
 
     var id: String {
         rawValue
-    }
-}
-
-private enum VaultSwitchError: LocalizedError {
-    case unsavedTaskChanges
-    case activeQuickCapture
-    case activeMutation
-
-    var errorDescription: String? {
-        switch self {
-        case .unsavedTaskChanges: "Wait for task changes to save or fix invalid fields before switching vaults."
-        case .activeQuickCapture: "Finish or cancel quick capture before switching vaults."
-        case .activeMutation: "Wait for the current change to finish before switching vaults."
-        }
     }
 }

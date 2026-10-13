@@ -149,6 +149,9 @@ private struct MobileVaultSettingsView: View {
             }
             Button("Refresh") { Task { await workspace.refresh() } }
             Button("Switch Vault") { workspace.requestOpen() }
+            Button("Create a Vault") { workspace.requestCreate() }
+            Button("Open Sample Vault") { Task { await workspace.openSampleVault() } }
+                .disabled(workspace.isLoading)
         }
         .navigationTitle("Vault")
     }

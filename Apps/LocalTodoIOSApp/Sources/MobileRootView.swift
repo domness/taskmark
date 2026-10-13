@@ -1,3 +1,4 @@
+import LocalTodoPresentation
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -7,7 +8,12 @@ struct MobileRootView: View {
     var body: some View {
         Group {
             if workspace.snapshot == nil {
-                MobileOnboardingView(workspace: workspace)
+                TaskmarkWelcomeView(
+                    isLoading: workspace.isLoading,
+                    openSample: { Task { await workspace.openSampleVault() } },
+                    createVault: { workspace.requestCreate() },
+                    openVault: { workspace.requestOpen() }
+                )
             } else {
                 MobileWorkspaceView(workspace: workspace)
             }
@@ -32,34 +38,6 @@ struct MobileRootView: View {
             Button("OK") { workspace.errorMessage = nil }
         } message: {
             Text(workspace.errorMessage ?? "")
-        }
-    }
-}
-
-private struct MobileOnboardingView: View {
-    let workspace: MobileWorkspace
-
-    var body: some View {
-        NavigationStack {
-            ContentUnavailableView {
-                Label("Open Your Taskmark Vault", systemImage: "checkmark.circle")
-            } description: {
-                Text(
-                    "Choose the same schema-2 folder you use on your Mac, or select an empty folder to create a vault."
-                )
-            } actions: {
-                Button("Open Existing Vault") { workspace.requestOpen() }
-                    .buttonStyle(.borderedProminent)
-                    .accessibilityIdentifier("open-vault")
-                Button("Create Vault in Empty Folder") { workspace.requestCreate() }
-                    .accessibilityIdentifier("create-vault")
-            }
-            .navigationTitle("Taskmark")
-            .overlay {
-                if workspace.isLoading {
-                    ProgressView()
-                }
-            }
         }
     }
 }

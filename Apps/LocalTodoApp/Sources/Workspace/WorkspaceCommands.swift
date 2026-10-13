@@ -18,6 +18,13 @@ struct WorkspaceCommands: Commands {
             Button("New Vault Window") { openWindow(id: "vault") }
                 .keyboardShortcut("n", modifiers: [.command, .shift])
                 .disabled(windows.isFlushingAll)
+            Divider()
+            Button("Create a Vault") { Task { await model?.createVault() } }
+                .disabled(model == nil || model?.isLoading == true)
+            Button("Open Existing Vault") { Task { await model?.chooseVault() } }
+                .disabled(model == nil || model?.isLoading == true)
+            Button("Open Sample Vault") { Task { await model?.openSampleVault() } }
+                .disabled(model == nil || model?.isLoading == true)
         }
         if let model {
             DailyTaskCommands(model: model)

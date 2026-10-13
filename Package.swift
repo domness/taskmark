@@ -32,7 +32,7 @@ let package = Package(
             name: "LocalTodoWorkspace",
             dependencies: ["LocalTodoDomain", "LocalTodoMarkdown"]
         ),
-        .target(name: "LocalTodoPresentation"),
+        .target(name: "LocalTodoPresentation", resources: [.process("Resources")]),
         .executableTarget(
             name: "LocalTodoCLI",
             dependencies: [

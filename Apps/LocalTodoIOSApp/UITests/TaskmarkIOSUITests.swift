@@ -4,10 +4,13 @@ import XCTest
 final class TaskmarkIOSUITests: XCTestCase {
     func testOnboardingOffersOpenAndCreate() {
         let app = XCUIApplication()
-        app.launchArguments = ["-ApplePersistenceIgnoreState", "YES"]
+        app.launchArguments = ["--ui-testing-onboarding"]
+        app.launchEnvironment["TASKMARK_UI_TEST_SESSION"] = UUID().uuidString
         app.launch()
         XCTAssertTrue(app.buttons["open-vault"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["create-vault"].exists)
+        XCTAssertTrue(app.buttons["sample-vault"].exists)
+        XCTAssertTrue(app.staticTexts["Your tasks. Your files."].exists)
     }
 
     func testDailyNavigationAndCaptureOpenAgainstRealVault() {
