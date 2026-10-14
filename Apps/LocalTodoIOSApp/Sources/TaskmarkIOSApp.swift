@@ -3,7 +3,7 @@ import SwiftUI
 @main
 struct TaskmarkIOSApp: App {
     @Environment(\.scenePhase) private var scenePhase
-    @State private var workspace = MobileWorkspace()
+    @State private var workspace = MobileWorkspace.forAppLaunch()
 
     var body: some Scene {
         WindowGroup {

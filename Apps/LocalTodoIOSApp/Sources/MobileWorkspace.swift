@@ -18,7 +18,7 @@ final class MobileWorkspace {
         session.snapshot
     }
 
-    private(set) var vaultName: String?
+    var vaultName: String?
     private(set) var isLoading = false
     var lastSuccessfulRefresh: Date?
     var isSaving: Bool {
@@ -43,16 +43,19 @@ final class MobileWorkspace {
     @ObservationIgnored var pollingTask: Task<Void, Never>?
     @ObservationIgnored var isRefreshing = false
     @ObservationIgnored private let bookmarks: MobileVaultBookmarkStore
+    @ObservationIgnored private let sampleVault: SampleVault
 
     init(
         bookmarks: MobileVaultBookmarkStore = MobileVaultBookmarkStore(),
         session: WorkspaceSession = WorkspaceSession(),
+        sampleVaultURL: URL = URL.applicationSupportDirectory.appendingPathComponent("Taskmark/Sample Vault"),
         checkpoints: TaskDraftCheckpointStore? = nil,
         captureCheckpoints: CaptureDraftCheckpointStore? = nil,
         collectionCheckpoints: CollectionDraftCheckpointStore? = nil,
         filterCheckpoints: FilterDraftCheckpointStore? = nil
     ) {
         self.bookmarks = bookmarks
+        sampleVault = SampleVault(root: sampleVaultURL)
         self.session = session
         self.checkpoints = checkpoints ?? Self.defaultCheckpointStore()
         self.captureCheckpoints = captureCheckpoints ?? Self.defaultCaptureCheckpointStore()
@@ -138,12 +141,26 @@ final class MobileWorkspace {
         do { try await session.setCustomOrder(order, for: route) } catch { errorMessage = error.localizedDescription }
     }
 
+    func openSampleVault() async {
+        guard !isLoading else { return }
+        isLoading = true
+        defer { isLoading = false }
+        do {
+            let url = try await sampleVault.prepare(now: Date(), calendar: .current)
+            try await open(url, mode: .existing)
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+
     func requestOpen() {
+        guard !isLoading else { return }
         pendingOpenMode = .existing
         isImporterPresented = true
     }
 
     func requestCreate() {
+        guard !isLoading else { return }
         pendingOpenMode = .initializeEmptyFolder
         isImporterPresented = true
     }
@@ -155,32 +172,6 @@ final class MobileWorkspace {
         } catch {
             errorMessage = "Access to the previous vault is no longer available. "
                 + "Locate it to continue. \(error.localizedDescription)"
-        }
-    }
-
-    func prepareUITestVaultIfRequested() async -> Bool {
-        guard ProcessInfo.processInfo.arguments.contains("--ui-testing") else { return false }
-        let url = FileManager.default.temporaryDirectory.appendingPathComponent("TaskmarkUITestVault")
-        do {
-            if FileManager.default.fileExists(atPath: url.path) {
-                try FileManager.default.removeItem(at: url)
-            }
-            try VaultInitializer.initialize(at: url, timezone: "Europe/London")
-            try await session.open(root: url)
-            let todayPath = try await session.capture(title: "Today fixture", route: .today)
-            _ = try await session.capture(title: "Review **carefully** with `code`", route: .today)
-            _ = try await session.capture(title: "Inbox fixture", route: .inbox)
-            if ProcessInfo.processInfo.arguments.contains("--ui-testing-incomplete") {
-                let taskURL = url.appendingPathComponent(todayPath.value)
-                try FileManager.default.setAttributes([.posixPermissions: 0], ofItemAtPath: taskURL.path)
-                try await session.refresh()
-            }
-            vaultName = url.lastPathComponent
-            await refreshAppearance()
-            return true
-        } catch {
-            errorMessage = error.localizedDescription
-            return true
         }
     }
 

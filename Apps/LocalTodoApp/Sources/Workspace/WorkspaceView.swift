@@ -1,4 +1,5 @@
 import LocalTodoDomain
+import LocalTodoPresentation
 import SwiftUI
 
 struct WorkspaceView: View {
@@ -18,19 +19,12 @@ struct WorkspaceView: View {
     var body: some View {
         Group {
             if model.snapshot == nil {
-                ContentUnavailableView {
-                    Label("Start with a Vault", systemImage: "folder")
-                } description: {
-                    Text("Create a new folder-backed task vault, or open one you already use.")
-                } actions: {
-                    Button("Create New Vault") { Task { await model.createVault() } }
-                        .keyboardShortcut(.defaultAction)
-                    Button("Open Existing Vault") { Task { await model.chooseVault() } }
-                    if model.isLoading {
-                        ProgressView()
-                            .controlSize(.small)
-                    }
-                }
+                TaskmarkWelcomeView(
+                    isLoading: model.isLoading,
+                    openSample: { Task { await model.openSampleVault() } },
+                    createVault: { Task { await model.createVault() } },
+                    openVault: { Task { await model.chooseVault() } }
+                )
             } else {
                 navigation
             }

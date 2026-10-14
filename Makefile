@@ -36,7 +36,7 @@ check-ios-destinations:
 
 test-ios: generate check-ios-destinations
 	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoIOSApp -configuration Debug test CODE_SIGNING_ALLOWED=NO -destination '$(IOS_DESTINATION)'
-	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoIOSApp -configuration Debug test CODE_SIGNING_ALLOWED=NO -destination '$(IOS_TABLET_DESTINATION)' -only-testing:LocalTodoIOSAppUITests/TaskmarkIOSUITests/testTabletAdaptiveWorkspaceShowsSidebarListAndDetail
+	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoIOSApp -configuration Debug test CODE_SIGNING_ALLOWED=NO -destination '$(IOS_TABLET_DESTINATION)' -only-testing:LocalTodoIOSAppUITests/TaskmarkIOSUITests/testTabletAdaptiveWorkspaceShowsSidebarListAndDetail -only-testing:LocalTodoIOSAppUITests/SampleVaultUITests
 
 build-ios: generate
 	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoIOSApp -configuration Debug build CODE_SIGNING_ALLOWED=NO -destination '$(IOS_DESTINATION)'

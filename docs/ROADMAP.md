@@ -14,6 +14,11 @@ Status reviewed against the repository on 2026-09-28. Implemented features below
 - Independent vault windows through File → New Vault Window, focused-window commands and per-window Undo/Redo. Closing flushes the affected workspace; quitting checks all open workspaces. Full multi-vault session restoration remains outside the implemented behavior.
 - `taskmark` CLI entity/query/lifecycle commands, task moves, JSON output, mutation dry runs and `doctor`; portable CLI-first and direct-file agent skills. Settings → General → Command-line interface automatically registers the bundled CLI at `/usr/local/bin/taskmark` with native administrator authorization. Registration follows updates at the same app location and can be disabled from Settings.
 
+### Onboarding
+
+- Shared native welcome on Mac, iPhone and iPad, with a one-action editable sample vault, empty-folder creation and existing-vault opening.
+- The sample includes six instructional tasks, an everyday project, areas/tags/priorities, planning dates, checklists, both recurrence modes, a saved filter and completed work. Sample edits persist independently of personal vaults.
+
 ### Daily Workflows
 
 - Inbox, Today, Next, Upcoming, Waiting, Someday, Completed and All Tasks, plus project/area/tag/priority views and search. Inbox precedes Today in the sidebar; Completed groups done tasks by vault-local completion day.

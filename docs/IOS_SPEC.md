@@ -82,7 +82,7 @@ The iOS and macOS bundle identifier is `com.tinycorestudios.taskmark`. Shared so
 
 ### Onboarding and vault ownership
 
-Offer **Open Existing Vault** and **Create Vault**. Explain that choosing an iCloud Drive folder makes the vault available to other devices signed into that iCloud account; the entire folder, including hidden `.config/`, is required.
+Offer **Try a Sample Vault** as the primary welcome action, with **Create a Vault** and **Open Existing Vault** beneath it. Explain a vault as a folder that holds tasks; keep schema terminology out of onboarding. The sample opens immediately without an account, folder picker or iCloud setup. It is a persistent, editable local schema-2 vault stored separately in app Application Support; normal app features operate on its Markdown files. Preserve edits on every reopen and restore its bookmark like any other vault. Settings → Vault provides Create a Vault and Open Sample Vault alongside Switch Vault. Explain that choosing an iCloud Drive folder makes the vault available to other devices signed into that iCloud account; the entire folder, including hidden `.config/`, is required.
 
 - Open a folder through the native document picker (`UTType.folder`, open-in-place rather than copy/import). The Mac and phone must edit the same selected folder, not separate mirrored app copies.
 - Create by selecting/creating an empty folder in Files, then running the shared initializer. Support writable local Files locations as well as iCloud Drive. Never initialize an existing nonempty folder or reinterpret a temporarily unavailable manifest as a new vault.

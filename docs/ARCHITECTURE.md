@@ -40,7 +40,7 @@ Owns portable routes, recurrence editor values, vault-session snapshots and muta
 
 ### LocalTodoPresentation
 
-Owns shared SwiftUI palette, stylesheet parsing and presentation values without depending on either platform shell, Workspace or Markdown. Each app projects those values into its own native composition.
+Owns shared SwiftUI palette, stylesheet parsing, presentation values and the stateless welcome screen (including its bundled brand image), without depending on either platform shell, Workspace or Markdown. Platform shells supply welcome actions and loading state. Each app projects those values into its own native composition.
 
 ### LocalTodoCLI
 
@@ -65,6 +65,12 @@ Each `WorkspaceWindowRoot` owns a distinct `WorkspaceModel` and `AppPreferences`
 Owns the iPhone/iPad SwiftUI composition, folder picker, security-scoped bookmark lifetime, scene lifecycle, provider observation and device-local recovery stores. It targets iOS/iPadOS 18+ and opens the same schema-2 folder in place. Foreground sessions combine `NSFilePresenter` notifications with a coalesced approximately two-second refresh loop; scans request materialization for iCloud placeholders and surface partial availability instead of treating it as a complete empty vault. Backgrounding removes the presenter and stops polling.
 
 Mobile adds no canonical database or synchronization transport. The [iOS specification](IOS_SPEC.md) remains the normative behavior and acceptance contract, while [iOS acceptance](IOS_ACCEPTANCE.md) records current evidence and gaps. The implementation remains a candidate rather than released mobile support until the required physical iCloud, recovery, accessibility and distribution checks pass.
+
+## Sample Vault Onboarding
+
+Both shells compose `TaskmarkWelcomeView` and choose their device-local Application Support `Taskmark/Sample Vault` location. `SampleVault` in Markdown builds typed example entities and saved filters with the existing codecs, in a unique sibling staging directory. It publishes the complete folder using coordinated exclusive atomic rename; failure never replaces an existing vault. Ordinary failure cleanup removes only unchanged files written by that attempt and empty directories, reporting any retained staging content. A process crash can leave an unpublished staging folder; it is not reopened or treated as the sample. Existing sample manifests are validated, never reinitialized; entity errors remain visible through the normal scan.
+
+Dates are relative to the injected creation clock/calendar and the saved vault timezone. Reopening never refreshes dates, restores deleted examples or overwrites notes. App-owned location selection and bookmark/access lifetime remain in each shell; sample files remain canonical Markdown, not a separate demo data model. The shared welcome has no account or review-only branch. The Mac File menu and mobile Vault settings can reopen the sample or create a personal vault.
 
 ## Data Flow
 

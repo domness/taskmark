@@ -23,7 +23,7 @@ preferences:
 
 Settings and display/order choices are canonical vault preferences in this file. Writes use exact-file coordination, whole-file optimistic revisions and atomic replacement. Unknown root and nested preference keys survive known-field edits; formatting/comments may normalize. Selecting System time zone removes the timezone key. Invalid schemas, malformed preferences, symlink components and stale revisions fail without rewriting the file. Calendar display choices do not change stored ISO dates, CLI formatting or recurrence calculation rules.
 
-Creating a vault requires an empty directory. Opening an existing vault requires a valid manifest and never reinitializes the folder.
+Creating a vault requires an empty directory. Opening an existing vault requires a valid manifest and never reinitializes the folder. The optional sample vault uses this same schema and entity contract. It is prepared in a new staging folder and published exclusively at a separate device-local location; subsequent opens preserve all edits and deletions. It has no special entity identifiers, schema fields or demo-only mutation behavior.
 
 Typed Markdown files may live anywhere below the vault except `.config/`. Folder names do not define workflow semantics.
 
