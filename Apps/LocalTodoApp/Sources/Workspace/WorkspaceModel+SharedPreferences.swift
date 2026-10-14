@@ -38,9 +38,15 @@ extension WorkspaceModel {
         let orders = try values["custom_order"]?.decode([String: TaskCustomOrder].self) ?? [:]
         let views = try values["views"]?.decode([String: TaskListDisplayOptions].self) ?? [:]
         preferences.apply(values)
-        sidebarOrders = sidebar
-        taskCustomOrders = orders
-        taskListDisplayOptionsByRoute = views
+        if sidebarOrders != sidebar {
+            sidebarOrders = sidebar
+        }
+        if taskCustomOrders != orders {
+            taskCustomOrders = orders
+        }
+        if taskListDisplayOptionsByRoute != views {
+            taskListDisplayOptionsByRoute = views
+        }
     }
 
     func receiveConfiguration(_ record: VaultConfigurationRecord) throws {
@@ -56,16 +62,21 @@ extension WorkspaceModel {
                 preferenceConflicts.remove(key)
             }
         }
-        configurationSettings = record
+        if configurationSettings != record {
+            configurationSettings = record
+        }
         var displayed = record.value.preferences
         displayed.merge(pendingPreferenceChanges) { _, pending in pending }
         try applySharedPreferences(displayed)
-        if let snapshot {
+        if let snapshot, snapshot.configuration != record.value {
             self.snapshot = VaultSnapshot(
                 generation: snapshot.generation, configuration: record.value, tasks: snapshot.tasks,
-                projects: snapshot.projects, areas: snapshot.areas, diagnostics: snapshot.diagnostics
+                projects: snapshot.projects, areas: snapshot.areas, diagnostics: snapshot.diagnostics,
+                scanCompleteness: snapshot.scanCompleteness, availability: snapshot.availability,
+                providerConflicts: snapshot.providerConflicts
             )
         }
+        updatePresentationDay()
         if !preferenceConflicts.isEmpty {
             configurationSettingsError = VaultConfigurationError.conflict.localizedDescription
         } else if pendingPreferenceChanges.isEmpty {
@@ -116,7 +127,9 @@ extension WorkspaceModel {
         do {
             let record = try await store.configurationRecord()
             guard session == vaultSession else { return }
-            configurationSettings = record
+            if configurationSettings != record {
+                configurationSettings = record
+            }
             for key in keys where pendingPreferenceChanges[key] != nil {
                 let remote = record.value.preferences[key] ?? .null
                 pendingPreferenceChanges[key] = pendingPreferenceChanges[key]?.rebasingChanges(

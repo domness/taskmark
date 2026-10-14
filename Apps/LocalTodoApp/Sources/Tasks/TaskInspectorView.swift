@@ -140,7 +140,7 @@ struct TaskInspectorOptions: View {
                 systemImage: image,
                 text: draft[keyPath: keyPath],
                 calendar: model.planningCalendar,
-                now: model.clock,
+                now: { model.presentationNow },
                 presentation: .inspector,
                 onCalendarChange: { model.changeDraft(draft, keyPath: keyPath, to: $0, actionName: actionName) }
             )

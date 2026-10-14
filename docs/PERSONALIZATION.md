@@ -32,7 +32,7 @@ Right-click a collection for **Delete Project** or **Delete Area**, or a tag for
 
 ## Native Stylesheet
 
-Create `.config/style.css` inside the vault. The app reads it on opening and during the existing two-second refresh loop. It never writes or repairs the stylesheet. Missing files use built-in appearance; any unsupported selector, property, malformed declaration or invalid value rejects the whole stylesheet and uses built-in appearance. A warning icon appears on View Options, whose **Stylesheet Issue…** action explains the problem.
+Create `.config/style.css` inside the vault. The app reads it on opening and when the vault refreshes: macOS responds to filesystem changes with a one-minute fallback, while mobile refreshes approximately every two seconds in the foreground. It never writes or repairs the stylesheet. Missing files use built-in appearance; any unsupported selector, property, malformed declaration or invalid value rejects the whole stylesheet and uses built-in appearance. A warning icon appears on View Options, whose **Stylesheet Issue…** action explains the problem.
 
 Turn off **View Options → Appearance → Use Vault Stylesheet** or **Settings → Theme → Apply vault stylesheet** to use the selected built-in theme. This preference is stored with each vault, alongside System/Light/Dark appearance and the Taskmark, Slate, Forest, Sand, Catppuccin and Dracula palette choice. See [SETTINGS.md](SETTINGS.md) and the full [theme guide](THEMES.md).
 

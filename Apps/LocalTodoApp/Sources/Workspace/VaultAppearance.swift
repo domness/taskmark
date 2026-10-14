@@ -16,12 +16,20 @@ extension WorkspaceModel {
             let source = try await store.stylesheet()
             let appearance = try source.map(VaultAppearance.parse) ?? VaultAppearance()
             guard session == vaultSession else { return }
-            vaultAppearance = appearance
-            stylesheetDiagnostic = nil
+            if vaultAppearance != appearance {
+                vaultAppearance = appearance
+            }
+            if stylesheetDiagnostic != nil {
+                stylesheetDiagnostic = nil
+            }
         } catch {
             guard session == vaultSession else { return }
-            vaultAppearance = VaultAppearance()
-            stylesheetDiagnostic = error.localizedDescription
+            if vaultAppearance != VaultAppearance() {
+                vaultAppearance = VaultAppearance()
+            }
+            if stylesheetDiagnostic != error.localizedDescription {
+                stylesheetDiagnostic = error.localizedDescription
+            }
         }
     }
 }

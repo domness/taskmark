@@ -84,7 +84,10 @@ struct TaskRow: View {
     }
 
     private var overdue: TaskOverdueState {
-        TaskOverdueState(task: task, today: try? CalendarDate(date: model.clock(), calendar: model.vaultCalendar))
+        TaskOverdueState(
+            task: task,
+            today: try? CalendarDate(date: model.presentationNow, calendar: model.vaultCalendar)
+        )
     }
 
     private var priorityColor: Color {
@@ -213,7 +216,7 @@ private extension TaskRow {
         TaskListDisplayOptions.showsScheduledDate(
             task.scheduled,
             route: model.route,
-            today: try? CalendarDate(date: model.clock(), calendar: model.vaultCalendar)
+            today: try? CalendarDate(date: model.presentationNow, calendar: model.vaultCalendar)
         )
     }
 

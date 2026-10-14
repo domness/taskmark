@@ -74,14 +74,15 @@ Dates are relative to the injected creation clock/calendar and the saved vault t
 
 ## Data Flow
 
-`WorkspaceWindows` observes the Settings vault context, its badge preference, and its snapshot to publish the single app Dock badge through an app-composed AppKit closure. The count reuses the Domain Today query with the workspace's injected clock and vault time zone; it is independent of the visible route. The existing periodic snapshot refresh reevaluates calendar-day changes. Observation survives individual window closure and clears the badge when no bound workspace remains.
+`WorkspaceWindows` observes the Settings vault context, its badge preference, and its snapshot to publish the single app Dock badge through an app-composed AppKit closure. The count reuses the Domain Today query with the workspace's injected clock and vault time zone; it is independent of the visible route. A vault-local midnight timer updates observable presentation time without scanning files; activation, wake and clock/timezone notifications also reevaluate it. Observation survives individual window closure and clears the badge when no bound workspace remains.
 
 1. The user selects a vault containing `.config/config.yml`.
 2. The Markdown target discovers typed files and reports parse failures without dropping them.
 3. Domain queries drive Inbox, Today, Next, Upcoming, Waiting, Someday, Completed, All Tasks, collection/tag/priority views, search and saved filters. Completed includes `done` tasks and native clients group them by the vault-local `completed_at` day. The app applies the vault's Custom ordering after shared query evaluation when enabled.
 4. User actions produce explicit mutations.
 5. The Markdown target applies mutations through coordinated atomic replacement.
-6. An approximately two-second active-workspace refresh loop obtains a full vault snapshot, reconciles drafts and reloads saved filters, stylesheet and configuration. iOS additionally coalesces file-presenter callbacks and materialization requests. Successful app mutations merge their result immediately and refresh. Incremental filesystem indexing is not implemented.
+6. macOS uses a recursive FSEvents stream (including `.config/`) to invalidate the vault, coalescing bursts before a full coordinated scan. Every event, including dropped events and root changes, requests a full scan; events are not treated as authoritative file mutations. A 60-second fallback with timer tolerance and activation/wake refreshes cover missed notifications. Only one refresh runs per workspace, with requests during a scan collapsed into a follow-up. Observation ends on vault switch/window close, and stale callbacks cannot affect the new session. A scan immediately after watcher installation closes the initial scan/observation gap.
+7. Refreshes reconcile drafts and reload saved filters, stylesheet and configuration, but unchanged content is not republished. Snapshot comparisons exclude the scan generation and include diagnostics, availability and provider conflicts. iOS retains its approximately two-second foreground refresh loop with file-presenter callbacks and materialization requests. Successful app mutations merge their result immediately and refresh. Incremental filesystem indexing is not implemented.
 
 ## Persistence And Presentation
 

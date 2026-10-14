@@ -35,10 +35,10 @@ struct TaskRescheduleSheet: View {
                 label: "Choose Date",
                 systemImage: "calendar",
                 text: date,
-                calendar: model.planningCalendar
-            ) {
-                date = $0
-            }
+                calendar: model.planningCalendar,
+                now: { model.presentationNow },
+                onCalendarChange: { date = $0 }
+            )
             HStack {
                 Spacer()
                 Button("Cancel") { dismiss() }.keyboardShortcut(.cancelAction)

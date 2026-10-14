@@ -8,7 +8,7 @@ Status reviewed against the repository on 2026-09-28. Implemented features below
 
 - Swift 6 Domain, Markdown, Workspace and Presentation targets shared as appropriate by the native macOS/iOS apps and CLI, with documented [architecture](ARCHITECTURE.md) and [vault contract](FILE_FORMAT.md).
 - Vault schema 2 uses `.config/` for the manifest, saved filters, stylesheet and shared preferences. The unused earlier development format has no migration or fallback, as requested.
-- Safe empty-folder initialization, vault selection and security-scoped restoration, full-scan snapshots and periodic external-change refresh.
+- Safe empty-folder initialization, vault selection and security-scoped restoration, full-scan snapshots, event-driven macOS external-change refresh with a slow fallback, and foreground mobile refresh.
 - Revision-checked atomic updates, preservation of unknown frontmatter and Markdown bodies, visible malformed-file and missing-reference diagnostics.
 - Workspace-owned task/project autosave, non-overlapping rebases, explicit conflict resolution, task-file recovery and native Undo/Redo.
 - Independent vault windows through File → New Vault Window, focused-window commands and per-window Undo/Redo. Closing flushes the affected workspace; quitting checks all open workspaces. Full multi-vault session restoration remains outside the implemented behavior.

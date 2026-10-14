@@ -8,7 +8,7 @@ extension WorkspaceModel {
     }
 
     var visibleTasks: [TodoTask] {
-        guard let snapshot, let today = try? today(configuration: snapshot.configuration, now: clock()) else {
+        guard let snapshot, let today = try? today(configuration: snapshot.configuration, now: presentationNow) else {
             return []
         }
         if route == .search, !hasActiveSearch {

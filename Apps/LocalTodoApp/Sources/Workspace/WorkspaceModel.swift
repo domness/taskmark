@@ -71,7 +71,14 @@ final class WorkspaceModel {
     @ObservationIgnored var autosaveTasks = [VaultPath: Task<Void, Never>]()
     @ObservationIgnored var modelEpoch: UInt64 = 0
     @ObservationIgnored private var scopedVault: SecurityScopedVault?
-    @ObservationIgnored private var refreshLoop: Task<Void, Never>?
+    @ObservationIgnored var refreshLoop: Task<Void, Never>?
+    @ObservationIgnored var externalRefreshTask: Task<Void, Never>?
+    @ObservationIgnored var dayChangeTask: Task<Void, Never>?
+    @ObservationIgnored var observationID = UUID()
+    @ObservationIgnored var vaultObserver: VaultChangeObserver?
+    @ObservationIgnored var lifecycleObserver: WorkspaceLifecycleObserver?
+    @ObservationIgnored let refreshQueue = VaultRefreshQueue()
+    var presentationDay: Date?
     @ObservationIgnored private let bookmarks: VaultBookmarkStore
     @ObservationIgnored private let sampleVault: SampleVault
     @ObservationIgnored private(set) var vaultSession = UUID()
@@ -98,6 +105,8 @@ final class WorkspaceModel {
 
     deinit {
         refreshLoop?.cancel()
+        externalRefreshTask?.cancel()
+        dayChangeTask?.cancel()
         preferenceSaveTask?.cancel()
         for task in autosaveTasks.values {
             task.cancel()
@@ -215,7 +224,7 @@ extension WorkspaceModel {
         guard !isQuickCapturePresented else {
             throw VaultSwitchError.activeQuickCapture
         }
-        refreshLoop?.cancel()
+        stopVaultObservation()
         for task in autosaveTasks.values {
             task.cancel()
         }
@@ -230,8 +239,9 @@ extension WorkspaceModel {
         try applySharedPreferences(snapshot.configuration.preferences)
         route = preferences.initialView.route
         selectedTaskPath = nil
-        startRefreshLoop()
-        await refreshVaultPreferences()
+        startVaultObservation()
+        // Rescan after installing the watcher so changes during the initial scan are not missed.
+        await refresh()
         return true
     }
 
@@ -244,23 +254,12 @@ extension WorkspaceModel {
         completedTaskStatuses.removeAll()
         filterState.reset()
     }
-
-    private func startRefreshLoop() {
-        refreshLoop = Task { [weak self] in
-            while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(2))
-                guard !Task.isCancelled else { return }
-                await self?.refresh()
-            }
-        }
-    }
 }
 
 extension WorkspaceModel {
     func releaseWindowResources() {
         openRequest = UUID()
-        refreshLoop?.cancel()
-        refreshLoop = nil
+        stopVaultObservation()
         preferenceSaveTask?.cancel()
         preferenceSaveTask = nil
         for task in autosaveTasks.values {

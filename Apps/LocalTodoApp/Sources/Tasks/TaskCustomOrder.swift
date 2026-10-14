@@ -6,7 +6,7 @@ enum TaskListSort: Hashable {
     case custom
 }
 
-struct TaskCustomOrder: Codable {
+struct TaskCustomOrder: Codable, Equatable {
     var isEnabled = false
     var paths: [String] = []
 

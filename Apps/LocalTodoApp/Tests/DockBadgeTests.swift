@@ -71,8 +71,7 @@ struct DockBadgeTests {
         windows.startDockBadgeUpdates { label = $0 }
         #expect(label == nil)
         now = now.addingTimeInterval(1)
-        // The existing refresh loop republishes the vault snapshot every two seconds.
-        model.snapshot = snapshot(tasks, timezone: "America/Los_Angeles", generation: 2)
+        model.updatePresentationDay()
         try await waitForBadge("1", reading: { label })
         model.snapshot = snapshot(tasks, timezone: "Pacific/Honolulu", generation: 3)
         try await waitForBadge(nil, reading: { label })
