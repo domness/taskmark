@@ -7,7 +7,7 @@ extension WorkspaceWindows {
         let model = settingsWorkspace
         guard model.preferences.showsDockBadge, let snapshot = model.snapshot else { return nil }
         do {
-            let today = try model.today(configuration: snapshot.configuration, now: model.clock())
+            let today = try model.today(configuration: snapshot.configuration, now: model.presentationNow)
             let query = TaskQuery(scope: .today)
             let count = snapshot.tasks.values.count { query.matches($0.value, today: today) }
             return count == 0 ? nil : String(count)

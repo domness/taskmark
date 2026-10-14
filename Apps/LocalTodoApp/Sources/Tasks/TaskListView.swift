@@ -177,7 +177,7 @@ private extension TaskListView {
     }
 
     func completedSectionTitle(_ date: CalendarDate) -> String {
-        guard let today = try? CalendarDate(date: model.clock(), calendar: model.vaultCalendar) else {
+        guard let today = try? CalendarDate(date: model.presentationNow, calendar: model.vaultCalendar) else {
             return model.preferences.dateFormat.string(date, calendar: model.vaultCalendar)
         }
         if date == today {

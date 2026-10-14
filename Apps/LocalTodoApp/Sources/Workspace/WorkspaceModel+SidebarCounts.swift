@@ -21,7 +21,7 @@ extension WorkspaceModel {
         }
         guard let snapshot else { return nil }
         do {
-            let today = try today(configuration: snapshot.configuration, now: clock())
+            let today = try today(configuration: snapshot.configuration, now: presentationNow)
             return snapshot.tasks.values.count { query.matches($0.value, today: today) }
         } catch {
             // An unrepresentable vault-local day cannot produce a trustworthy count.

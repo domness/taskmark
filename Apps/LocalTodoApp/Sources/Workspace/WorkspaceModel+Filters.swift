@@ -67,8 +67,12 @@ extension WorkspaceModel {
             if let previous = filterState.record, previous.revision != record.revision {
                 clearHistory()
             }
-            filterState.record = record
-            filterState.loadError = nil
+            if filterState.record != record {
+                filterState.record = record
+            }
+            if filterState.loadError != nil {
+                filterState.loadError = nil
+            }
         } catch {
             guard session == vaultSession, generation == filterState.readGeneration else { return }
             filterState.loadError = error.localizedDescription

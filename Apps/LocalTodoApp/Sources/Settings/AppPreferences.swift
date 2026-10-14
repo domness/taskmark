@@ -60,14 +60,20 @@ final class AppPreferences {
     func apply(_ values: [String: ConfigurationValue]) {
         isApplying = true
         defer { isApplying = false }
-        weekStart = WeekStart(rawValue: (try? values["week_start"]?.decode(Int.self)) ?? 2) ?? .monday
-        dateFormat = DisplayDateFormat(rawValue: string("date_format", in: values)) ?? .system
-        timeFormat = DisplayTimeFormat(rawValue: string("time_format", in: values)) ?? .system
-        initialView = InitialView(rawValue: string("initial_view", in: values)) ?? .today
-        appearance = AppAppearance(rawValue: string("appearance", in: values)) ?? .system
-        theme = AppTheme(rawValue: string("theme", in: values)) ?? .standard
-        usesVaultStylesheet = (try? values["vault_stylesheet"]?.decode(Bool.self)) ?? true
-        showsDockBadge = (try? values["dock_badge"]?.decode(Bool.self)) ?? false
+        assign(\.weekStart, WeekStart(rawValue: (try? values["week_start"]?.decode(Int.self)) ?? 2) ?? .monday)
+        assign(\.dateFormat, DisplayDateFormat(rawValue: string("date_format", in: values)) ?? .system)
+        assign(\.timeFormat, DisplayTimeFormat(rawValue: string("time_format", in: values)) ?? .system)
+        assign(\.initialView, InitialView(rawValue: string("initial_view", in: values)) ?? .today)
+        assign(\.appearance, AppAppearance(rawValue: string("appearance", in: values)) ?? .system)
+        assign(\.theme, AppTheme(rawValue: string("theme", in: values)) ?? .standard)
+        assign(\.usesVaultStylesheet, (try? values["vault_stylesheet"]?.decode(Bool.self)) ?? true)
+        assign(\.showsDockBadge, (try? values["dock_badge"]?.decode(Bool.self)) ?? false)
+    }
+
+    private func assign<Value: Equatable>(_ keyPath: ReferenceWritableKeyPath<AppPreferences, Value>, _ value: Value) {
+        if self[keyPath: keyPath] != value {
+            self[keyPath: keyPath] = value
+        }
     }
 
     private func changed(_ key: String, _ value: ConfigurationValue) {

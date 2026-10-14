@@ -109,7 +109,7 @@ Selectors are exactly `:root`, `:root[data-appearance=light]` and `:root[data-ap
 ### Reload And Recovery
 
 - The entry point is case-sensitive UTF-8, no more than 64 KiB; symlink components below the root are rejected. `.config/` is reserved for configuration, styles and saved filters, not task entities.
-- Reads happen on opening the vault and its existing approximately two-second refresh, or through Reload Stylesheet. No app action writes or repairs the stylesheet.
+- Reads happen on opening the vault, macOS filesystem-change notifications (with a one-minute fallback), the approximately two-second mobile foreground refresh, or through Reload Stylesheet. No app action writes or repairs the stylesheet.
 - Any invalid or unsupported declaration rejects the whole file. The selected built-in theme stays usable; Theme Settings and the task-list View Options warning expose the diagnostic. A missing stylesheet simply uses the built-in theme.
 - Disabling Apply vault stylesheet persists in the vault's `.config/config.yml` and applies on every machine that opens that vault. It does not delete the file. Each vault retains independent appearance choices; app/CLI task semantics and vault timezone remain unaffected.
 - Custom colors are user-controlled. Provide paired light/dark values, keep native text legible, test selected and disabled states and Increase Contrast, and preserve at least 4.5:1 body-text contrast. There is no automatic contrast certification or silent palette rewriting.

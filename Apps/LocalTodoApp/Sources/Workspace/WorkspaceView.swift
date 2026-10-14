@@ -8,7 +8,6 @@ struct WorkspaceView: View {
     @State private var inspectorWidth: CGFloat = 340
     @State private var canvasWidth: CGFloat = 840
     @State private var tabState = WorkspaceTabState()
-    @Environment(\.scenePhase) private var scenePhase
     @Environment(\.undoManager) private var undoManager
 
     init(model: WorkspaceModel, initialTabState: WorkspaceTabState = WorkspaceTabState()) {
@@ -45,11 +44,6 @@ struct WorkspaceView: View {
             Button("OK") { model.errorMessage = nil }
         } message: {
             Text(model.errorMessage ?? "Unknown error")
-        }
-        .onChange(of: scenePhase) { _, phase in
-            if phase == .active {
-                Task { await model.refresh() }
-            }
         }
         .onAppear { model.setUndoManager(undoManager) }
         .onChange(of: model.rootURL) { _, _ in
