@@ -33,10 +33,19 @@ func inspectorToggleRemainsSingleAcrossPresentationChanges(initiallyPresented: B
 }
 
 @MainActor
-@Test func toolbarActionsFollowInspectorAndWindowResizing() async throws {
-    try await withToolbarWindow(initiallyPresented: true, width: 1600) { model, window in
+@Test(arguments: [false, true])
+func toolbarActionsFollowInspectorAndWindowResizing(initiallyPresented: Bool) async throws {
+    try await withToolbarWindow(initiallyPresented: initiallyPresented, width: 1600) { model, window in
+        if !initiallyPresented {
+            try await waitForInspector(false, in: window)
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) { model.isInspectorPresented = true }
+        }
         try await waitForInspector(true, in: window)
         let toolbar = try #require(window.toolbar)
+        try await settleToolbar(toolbar)
+        try expectToolbarLayout(toolbar, window: window, inspectorPresented: true)
         let root = try #require(window.contentView)
         let panel = try #require(inspectorPanel(in: root, window: window))
         let split = try #require(splitViews(in: root).first { $0.arrangedSubviews.last === panel })
@@ -175,7 +184,8 @@ private func expectToolbarLayout(
     if showsCommands {
         let options = try #require(commandItems.last?.view)
         let frame = options.convert(options.bounds, to: nil)
-        #expect(commandBoundary - frame.maxX < 40, "Actions must hug the center panel's trailing edge: \(frame)")
+        let gap = commandBoundary - frame.maxX
+        #expect(gap < 40, "Actions must hug the center panel's trailing edge: gap=\(gap), open=\(inspectorPresented)")
     }
 }
 
