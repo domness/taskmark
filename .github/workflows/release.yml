@@ -69,6 +69,7 @@ jobs:
           make check \
             XCODEBUILD_ARGS="-destination 'platform=macOS' -derivedDataPath '$output/DerivedData'" \
             XCODE_TEST_ARGS="-resultBundlePath '$output/LocalTodoApp.xcresult'" \
+            IOS_TEST_RESULT_DIR="$output" \
             2>&1 | tee "$output/check.log"
       - name: Upload validation results
         if: always()
@@ -78,6 +79,7 @@ jobs:
           path: |
             ${{ runner.temp }}/release-check/check.log
             ${{ runner.temp }}/release-check/LocalTodoApp.xcresult
+            ${{ runner.temp }}/release-check/LocalTodoIOSApp-*.xcresult
           if-no-files-found: ignore
           retention-days: 14
 

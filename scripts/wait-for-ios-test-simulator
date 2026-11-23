@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Use the actual destination, not the default ID, so Make overrides stay aligned.
+destination=${1:?Pass the xcodebuild destination}
+if [[ ",$destination," =~ ,id=([[:xdigit:]-]+), ]]; then
+  xcrun simctl bootstatus "${BASH_REMATCH[1]}" -b
+else
+  # Name-based overrides still let xcodebuild resolve and boot the simulator.
+  printf 'No simulator ID in destination; xcodebuild will boot it: %s\n' "$destination"
+fi
