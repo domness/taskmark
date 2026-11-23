@@ -5,7 +5,9 @@ import SwiftUI
 struct WorkspaceView: View {
     @Bindable var model: WorkspaceModel
     @State private var columnVisibility: NavigationSplitViewVisibility = .all
-    @State private var inspectorWidth: CGFloat = 340
+    // Seed the toolbar space at the minimum until the inspector has been measured.
+    // AppKit can retain the space's initial minimum width on the first presentation.
+    @State private var inspectorWidth: CGFloat = 280
     @State private var canvasWidth: CGFloat = 840
     @State private var tabState = WorkspaceTabState()
     @Environment(\.undoManager) private var undoManager
