@@ -159,10 +159,9 @@ public struct TaskmarkAppearance: Equatable, Sendable {
         if colors.contains(token), value.range(of: #"^#[0-9a-fA-F]{6}$"#, options: .regularExpression) != nil {
             return
         }
-        if let range = numbers[token], value.hasSuffix("px") {
-            if let number = Double(value.dropLast(2)), range.contains(number) {
-                return
-            }
+        if let range = numbers[token], value.hasSuffix("px"), let number = Double(value.dropLast(2)),
+           range.contains(number) {
+            return
         }
         throw TaskmarkAppearanceError.invalid("Unsupported token or value: \(token): \(value)")
     }

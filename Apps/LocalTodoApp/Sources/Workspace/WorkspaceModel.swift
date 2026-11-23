@@ -123,10 +123,8 @@ final class WorkspaceModel {
 
     func restoreVault() async {
         do {
-            if let url = try bookmarks.restore() {
-                if try await openVault(url) {
-                    try bookmarks.save(url)
-                }
+            if let url = try bookmarks.restore(), try await openVault(url) {
+                try bookmarks.save(url)
             }
         } catch {
             errorMessage = error.localizedDescription

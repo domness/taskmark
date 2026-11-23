@@ -66,10 +66,9 @@ extension WorkspaceModel {
         guard intentSession == vaultSession,
               let store,
               let record = snapshot?.tasks[path],
-              let draft = organizationDraft(at: path)
-        else { return }
-        guard let updated = organizationUpdate(patch, task: record.value) else { return }
-        guard updated != record.value, beginMutation(at: path) else { return }
+              let draft = organizationDraft(at: path),
+              let updated = organizationUpdate(patch, task: record.value),
+              updated != record.value, beginMutation(at: path) else { return }
         let generation = draft.generation
         do {
             let saved = try await store.update(.task(updated), expectedRevision: record.revision)

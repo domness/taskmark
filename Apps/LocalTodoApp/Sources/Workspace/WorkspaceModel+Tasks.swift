@@ -72,8 +72,8 @@ extension WorkspaceModel {
             errorMessage = "The task changed before completion. Taskmark refreshed it; try again."
             return false
         }
-        guard let record = await prepareCompletion(record, session: intentSession) else { return false }
-        guard beginMutation(at: path) else { return false }
+        guard let record = await prepareCompletion(record, session: intentSession),
+              beginMutation(at: path) else { return false }
         do {
             let now = clock()
             let task = record.value
@@ -204,8 +204,8 @@ extension WorkspaceModel {
             } catch {
                 return
             }
-            guard let self, let draft, session == vaultSession else { return }
-            guard draft.isDirty,
+            guard let self, let draft, session == vaultSession,
+                  draft.isDirty,
                   !draft.hasConflicts,
                   draft.sourceUnavailableMessage == nil,
                   draft.validationError == nil

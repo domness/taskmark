@@ -49,10 +49,7 @@ public struct VaultScanner: Sendable {
     }
 
     private func scan(_ url: URL, into results: inout ScanResults) {
-        guard let path = try? vaultPath(for: url) else {
-            return
-        }
-        guard recordAvailability(at: url, path: path, results: &results) else {
+        guard let path = try? vaultPath(for: url), recordAvailability(at: url, path: path, results: &results) else {
             return
         }
         do {

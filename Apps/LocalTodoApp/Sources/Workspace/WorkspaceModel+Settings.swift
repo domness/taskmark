@@ -44,8 +44,7 @@ extension WorkspaceModel {
     }
 
     func setVaultTimezone(_ identifier: String?) async {
-        guard await flushPreferences() else { return }
-        guard let store, let configurationSettings, !isSavingConfiguration else { return }
+        guard await flushPreferences(), let store, let configurationSettings, !isSavingConfiguration else { return }
         guard pendingMutationPaths.isEmpty, !isHistoryBusy, !hasDirtyDrafts, !filterState.isSaving else {
             configurationSettingsError = "Finish saving or resolving pending changes before changing the time zone."
             return
