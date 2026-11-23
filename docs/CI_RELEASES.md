@@ -21,7 +21,7 @@ Versioning includes the iOS implementation candidate even while mobile acceptanc
 
 ### Quality — `.github/workflows/quality.yml`
 
-PRs, pushes to `main` and manual runs execute `make check` on `macos-15`, selecting `/Applications/Xcode_26.3.app/Contents/Developer` explicitly. Homebrew supplies SwiftFormat, SwiftLint and XcodeGen. PR Conventional Commit checks run on Ubuntu. Tool versions are printed; the hosted image and Homebrew tools can update, so diagnose tool drift from each run's logs.
+PRs, pushes to `main` and manual runs execute `make check` on `macos-15`, selecting `/Applications/Xcode_26.3.app/Contents/Developer` explicitly. Homebrew supplies SwiftLint and XcodeGen. `scripts/install-ci-swiftformat` installs the pinned SwiftFormat version and verifies its SHA-256 before use. Release validation uses the pin from the release source when available; older tags retain the Homebrew setup. Use the same version locally when running `make format`. PR Conventional Commit checks run on Ubuntu. The workflows log tool versions for diagnosing drift.
 
 Conventional Commit subject format and the 72-character limit apply to ordinary commits. Actual merge commits are exempt in both the optional local `commit-msg` hook and the CI range check, allowing Git-generated messages such as `Merge branch 'develop'`. The range check still validates ordinary commits brought in by merges; writing a merge-like subject on a single-parent commit does not bypass validation. `make check` tests these rules using temporary Git repositories.
 

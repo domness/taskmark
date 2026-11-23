@@ -53,7 +53,13 @@ jobs:
           ref: ${{ steps.source.outputs.sha }}
           persist-credentials: false
       - name: Install quality tools
-        run: brew install swiftformat swiftlint xcodegen
+        run: |
+          brew install swiftlint xcodegen
+          if [[ -f scripts/install-ci-swiftformat ]]; then
+            bash scripts/install-ci-swiftformat
+          else
+            brew install swiftformat
+          fi
       - name: Check Mac toolchain
         run: bash scripts/check-macos-runner
       - name: Run full quality gate

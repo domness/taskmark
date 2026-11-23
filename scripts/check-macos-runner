@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+export PATH="$PATH:/opt/homebrew/bin:/usr/local/bin"
 [[ "$(uname -s)" == Darwin ]] || { echo "A macOS runner is required." >&2; exit 1; }
 
 for tool in make python3 swift xcodebuild xcodegen swiftformat swiftlint; do
