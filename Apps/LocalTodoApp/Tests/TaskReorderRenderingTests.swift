@@ -36,6 +36,13 @@ import Testing
         #expect(model.selectedTaskDraft?.title == "First")
         #expect(model.isInspectorPresented)
         #expect(model.titleEditingPath == nil)
+
+        model.isInspectorPresented = false
+        try clickTaskTitle(in: host, window: window)
+        try await waitForNativeUI("same-row click reopens task details", in: window) {
+            model.isInspectorPresented
+        }
+        #expect(model.selectedTaskDraft?.title == "First")
     }
 }
 

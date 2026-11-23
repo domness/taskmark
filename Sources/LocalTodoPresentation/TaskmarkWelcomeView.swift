@@ -91,7 +91,7 @@ public struct TaskmarkWelcomeView: View {
         }
     }
 
-    @ViewBuilder private var secondaryActions: some View {
+    private var secondaryActions: some View {
         #if os(macOS)
             HStack(spacing: 12) {
                 createButton

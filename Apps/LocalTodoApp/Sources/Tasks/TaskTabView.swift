@@ -6,7 +6,7 @@ struct TaskTabView: View {
 
     var body: some View {
         ScrollView {
-            TaskContentFields(model: model, draft: draft, startsNotesEditing: true)
+            TaskContentFields(model: model, draft: draft)
                 .padding(.horizontal, 28)
                 .padding(.vertical, 24)
                 .frame(maxWidth: .infinity, alignment: .leading)

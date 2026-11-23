@@ -161,8 +161,7 @@ extension WorkspaceModel {
     private func performHistory(replacingWith replacement: LocalTodoEntity?, at path: VaultPath, actionName: String) {
         guard !isHistoryBusy, pendingMutationPaths.isEmpty else { return }
         let inverse = entityRecord(at: path)?.value
-        guard replacement != nil || inverse != nil else { return }
-        guard beginMutation(at: path) else { return }
+        guard replacement != nil || inverse != nil, beginMutation(at: path) else { return }
         registerHistory(replacingWith: inverse, at: path, actionName: actionName)
         isHistoryBusy = true
         let session = vaultSession
@@ -175,9 +174,8 @@ extension WorkspaceModel {
         actionName: String
     ) {
         guard !isHistoryBusy, pendingMutationPaths.isEmpty,
-              let current = snapshot?.tasks[task.path]?.value
-        else { return }
-        guard beginMutation(at: task.path) else { return }
+              let current = snapshot?.tasks[task.path]?.value,
+              beginMutation(at: task.path) else { return }
         registerTaskTransitionHistory(restoring: current, fields: fields, actionName: actionName)
         isHistoryBusy = true
         let session = vaultSession

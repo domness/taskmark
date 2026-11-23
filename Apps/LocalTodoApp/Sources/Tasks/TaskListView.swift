@@ -153,7 +153,17 @@ private extension TaskListView {
             ).map { group in
                 TaskListSection(
                     id: group.date.description,
-                    title: completedSectionTitle(group.date),
+                    title: dateSectionTitle(group.date),
+                    tasks: group.tasks
+                )
+            }
+        }
+        if model.route.usesPlanningDateSections {
+            let today = try? CalendarDate(date: model.presentationNow, calendar: model.vaultCalendar)
+            return PlanningTaskGrouping.groups(model.visibleTasks, route: model.route, today: today).map { group in
+                TaskListSection(
+                    id: group.date?.description ?? "undated",
+                    title: group.date.map(dateSectionTitle) ?? "No Date",
                     tasks: group.tasks
                 )
             }
@@ -176,7 +186,7 @@ private extension TaskListView {
         }
     }
 
-    func completedSectionTitle(_ date: CalendarDate) -> String {
+    func dateSectionTitle(_ date: CalendarDate) -> String {
         guard let today = try? CalendarDate(date: model.presentationNow, calendar: model.vaultCalendar) else {
             return model.preferences.dateFormat.string(date, calendar: model.vaultCalendar)
         }
@@ -185,6 +195,9 @@ private extension TaskListView {
         }
         if date == (try? today.adding(DateComponents(day: -1), calendar: model.vaultCalendar)) {
             return "Yesterday"
+        }
+        if date == (try? today.adding(DateComponents(day: 1), calendar: model.vaultCalendar)) {
+            return "Tomorrow"
         }
         return model.preferences.dateFormat.string(date, calendar: model.vaultCalendar)
     }

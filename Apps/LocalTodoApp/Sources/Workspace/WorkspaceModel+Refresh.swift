@@ -45,10 +45,9 @@ extension WorkspaceModel {
         guard session == vaultSession, epoch == modelEpoch else { return }
         await refreshConfigurationSettings()
         guard session == vaultSession, epoch == modelEpoch else { return }
-        if let selectedTaskPath, nextSnapshot.tasks[selectedTaskPath] == nil {
-            if taskDrafts[selectedTaskPath]?.isDirty != true {
-                self.selectedTaskPath = nil
-            }
+        if let selectedTaskPath, nextSnapshot.tasks[selectedTaskPath] == nil,
+           taskDrafts[selectedTaskPath]?.isDirty != true {
+            self.selectedTaskPath = nil
         }
     }
 }

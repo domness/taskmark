@@ -1,3 +1,4 @@
+import LocalTodoDomain
 import SwiftUI
 
 /// Render the draft until editing is explicitly requested; never convert rendered text back to source.
@@ -14,6 +15,10 @@ struct TaskMarkdownField: View {
     let kind: Kind
     let subject: String
     @Binding var isEditing: Bool
+    var checklist: MarkdownChecklist?
+    var imageContext: TaskMarkdownImageContext?
+    var setChecked: (MarkdownChecklist.Item, Bool) -> Void = { _, _ in }
+    var deleteItem: (MarkdownChecklist.Item) -> Void = { _ in }
     @FocusState private var isSourceFocused: Bool
 
     private var label: String {
@@ -40,7 +45,6 @@ struct TaskMarkdownField: View {
             rendered
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
-                .onTapGesture { isEditing = true }
                 .focusable()
                 .onKeyPress(.return) {
                     isEditing = true
@@ -75,19 +79,21 @@ struct TaskMarkdownField: View {
             Text(kind.placeholder)
                 .foregroundStyle(.secondary)
                 .themeFont(kind == .title ? .headline : .body)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+                .onTapGesture { isEditing = true }
         } else if kind == .title {
             Text(TaskMarkdown.inline(text))
                 .themeFont(.headline)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+                .onTapGesture { isEditing = true }
         } else {
-            let previewSource = TaskMarkdown.notesPreviewSource(text)
-            if previewSource.allSatisfy(\.isWhitespace) {
-                Text(kind.placeholder)
-                    .foregroundStyle(.secondary)
-                    .themeFont(.body)
-            } else {
-                TaskMarkdownPreview(source: previewSource)
-                    .foregroundStyle(.secondary)
-            }
+            TaskMarkdownPreview(
+                source: text, checklist: checklist, imageContext: imageContext,
+                setChecked: setChecked, deleteItem: deleteItem, edit: { isEditing = true }
+            )
+            .foregroundStyle(.secondary)
         }
     }
 
@@ -100,21 +106,22 @@ struct TaskMarkdownField: View {
 struct TaskNotesView: View {
     let model: WorkspaceModel
     @Bindable var draft: TaskDraft
-    @State private var isEditing: Bool
-
-    init(model: WorkspaceModel, draft: TaskDraft, startsEditing: Bool = false) {
-        self.model = model
-        self.draft = draft
-        _isEditing = State(initialValue: startsEditing)
-    }
+    @State private var isEditing = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            TaskMarkdownField(text: $draft.notes, kind: .notes, subject: "Task", isEditing: $isEditing)
-            if !isEditing {
-                TaskChecklistView(model: model, draft: draft)
+        let checklist = isEditing ? nil : MarkdownChecklist(draft.notes)
+        TaskMarkdownField(
+            text: $draft.notes, kind: .notes, subject: "Task", isEditing: $isEditing,
+            checklist: checklist,
+            imageContext: model.rootURL.map { TaskMarkdownImageContext(vault: $0, taskPath: draft.path.value) },
+            setChecked: { item, checked in
+                guard let checklist else { return }
+                model.setChecklistItem(item, checked: checked, in: draft, projection: checklist)
+            },
+            deleteItem: { item in
+                guard let checklist else { return }
+                model.removeChecklistItem(item, from: draft, projection: checklist)
             }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
+        )
     }
 }

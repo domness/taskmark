@@ -23,13 +23,12 @@ struct TaskInspectorView: View {
 struct TaskContentFields: View {
     let model: WorkspaceModel
     @Bindable var draft: TaskDraft
-    var startsNotesEditing = false
     @State private var isTitleEditing = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             TaskInspectorHeader(model: model, draft: draft, isTitleEditing: $isTitleEditing)
-            TaskNotesView(model: model, draft: draft, startsEditing: startsNotesEditing)
+            TaskNotesView(model: model, draft: draft)
         }
         .onAppear { focusTitleIfRequested() }
         .onChange(of: model.titleEditRequest) { _, _ in focusTitleIfRequested() }

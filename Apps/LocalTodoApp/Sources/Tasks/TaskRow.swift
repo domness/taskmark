@@ -25,7 +25,8 @@ struct TaskRow: View {
             .accessibilityLabel(completionAccessibilityLabel)
 
             taskLabel
-                .onTapGesture(perform: onSelect)
+                // A competing tap gesture on the label prevents native drag tracking on macOS 27.
+                .simultaneousGesture(TapGesture().onEnded { onSelect() })
                 .accessibilityAction(named: "Show Details", onSelect)
         }
         .padding(.vertical, 6)
@@ -230,11 +231,11 @@ private extension TaskRow {
     }
 
     private var showsProject: Bool {
-        displayOptions.showsProject && displayOptions.grouping != .project
+        displayOptions.showsProject && (model.route.usesPlanningDateSections || displayOptions.grouping != .project)
     }
 
     private var showsArea: Bool {
-        displayOptions.showsArea && displayOptions.grouping != .area
+        displayOptions.showsArea && (model.route.usesPlanningDateSections || displayOptions.grouping != .area)
     }
 
     @ViewBuilder

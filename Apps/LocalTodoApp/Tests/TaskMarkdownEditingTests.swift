@@ -97,6 +97,29 @@ struct TaskMarkdownEditingTests {
         }
     }
 
+    @Test func taskTabOpensInNotesPreview() async throws {
+        try await withWorkspace { model, _ in
+            await model.createTask(title: "Task with notes", vaultSession: model.vaultSession)
+            let draft = try #require(model.selectedTaskDraft)
+            draft.notes = "# Plan\n\n- [ ] Draft **notes**"
+            let window = NativeInputTestWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 500, height: 400),
+                styleMask: [.titled], backing: .buffered, defer: false
+            )
+            window.isReleasedWhenClosed = false
+            window.contentViewController = NSHostingController(rootView: TaskTabView(model: model, draft: draft))
+            defer { window.close() }
+            try await presentForNativeInput(window)
+            let host = try #require(window.contentView)
+            try await waitForNativeUI("task tab displayed", in: window) {
+                descendant(in: host, as: NSScrollView.self) != nil
+            }
+            #expect(descendant(in: host, as: MarkdownEditingBoundaryView.self) == nil)
+            #expect(editableTextView(in: host) == nil)
+            #expect(await model.flushTaskChanges())
+        }
+    }
+
     private func checkOutsideClick(state: MarkdownFieldTestState, window: NSWindow, host: NSView) async throws {
         // Finish the competing field's native editing session before starting the next scenario.
         #expect(window.makeFirstResponder(nil))

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${RUNNER_TEMP:?GitHub Actions runner temporary directory is required}"
+: "${GITHUB_PATH:?GitHub Actions path file is required}"
+
+version=0.64.7
+sha256=e82e224325cbd3403fc7b68caf6c917926dc106de3af875fca4b87e3c4634038
+install_dir=$(mktemp -d "$RUNNER_TEMP/taskmark-swiftformat.XXXXXXXX")
+cd "$install_dir"
+curl --fail --silent --show-error --location --retry 3 \
+  --output swiftformat.zip \
+  "https://github.com/nicklockwood/SwiftFormat/releases/download/$version/swiftformat.zip"
+printf '%s  swiftformat.zip\n' "$sha256" | shasum -a 256 -c -
+unzip -q swiftformat.zip swiftformat
+[[ "$(./swiftformat --version)" == "$version" ]]
+printf '%s\n' "$install_dir" >> "$GITHUB_PATH"

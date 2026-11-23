@@ -15,7 +15,7 @@ struct TaskViewOptionsMenu: View {
                 Toggle("Tags", isOn: metadataBinding(.tags))
             }
             AppearanceMenu(model: model)
-            if model.route != .completed {
+            if model.route != .completed, !model.route.usesPlanningDateSections {
                 Picker("Group By", selection: groupingBinding) {
                     ForEach(TaskListGrouping.allCases) { grouping in
                         Text(grouping.title).tag(grouping)

@@ -7,6 +7,8 @@ IOS_SIMULATOR_ID := $(shell xcrun simctl list devices available | sed -nE 's/^[[
 IOS_DESTINATION ?= platform=iOS Simulator,id=$(IOS_SIMULATOR_ID)
 IOS_TABLET_SIMULATOR_ID := $(shell xcrun simctl list devices available | sed -nE 's/^[[:space:]]+iPad.* \(([0-9A-F-]+)\) \((Booted|Shutdown)\).*/\1/p' | head -n 1)
 IOS_TABLET_DESTINATION ?= platform=iOS Simulator,id=$(IOS_TABLET_SIMULATOR_ID)
+IOS_TEST_RESULT_DIR ?=
+IOS_TEST_RESULT_ARGS = $(if $(IOS_TEST_RESULT_DIR),-resultBundlePath '$(IOS_TEST_RESULT_DIR)/LocalTodoIOSApp-$(1).xcresult')
 
 bootstrap:
 	swift package resolve
@@ -35,8 +37,13 @@ check-ios-destinations:
 	@if [ -z "$(IOS_TABLET_SIMULATOR_ID)" ]; then echo "No available iPad simulator found."; exit 1; fi
 
 test-ios: generate check-ios-destinations
-	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoIOSApp -configuration Debug test CODE_SIGNING_ALLOWED=NO -destination '$(IOS_DESTINATION)'
-	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoIOSApp -configuration Debug test CODE_SIGNING_ALLOWED=NO -destination '$(IOS_TABLET_DESTINATION)' -only-testing:LocalTodoIOSAppUITests/TaskmarkIOSUITests/testTabletAdaptiveWorkspaceShowsSidebarListAndDetail -only-testing:LocalTodoIOSAppUITests/SampleVaultUITests
+ifneq ($(IOS_TEST_RESULT_DIR),)
+	mkdir -p '$(IOS_TEST_RESULT_DIR)'
+endif
+	bash scripts/wait-for-ios-test-simulator '$(IOS_DESTINATION)'
+	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoIOSApp -configuration Debug test CODE_SIGNING_ALLOWED=NO -destination '$(IOS_DESTINATION)' $(call IOS_TEST_RESULT_ARGS,Phone)
+	bash scripts/wait-for-ios-test-simulator '$(IOS_TABLET_DESTINATION)'
+	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoIOSApp -configuration Debug test CODE_SIGNING_ALLOWED=NO -destination '$(IOS_TABLET_DESTINATION)' -parallel-testing-enabled NO $(call IOS_TEST_RESULT_ARGS,Tablet) -only-testing:LocalTodoIOSAppUITests/TaskmarkIOSUITests/testTabletAdaptiveWorkspaceShowsSidebarListAndDetail -only-testing:LocalTodoIOSAppUITests/SampleVaultUITests
 
 build-ios: generate
 	xcodebuild -project LocalTodo.xcodeproj -scheme LocalTodoIOSApp -configuration Debug build CODE_SIGNING_ALLOWED=NO -destination '$(IOS_DESTINATION)'
@@ -48,7 +55,10 @@ test-release-scripts:
 	python3 scripts/test-release-source.py
 	python3 scripts/test-ci-signing.py
 	python3 -B scripts/test-github-actions-config.py
+	python3 -B scripts/test-ios-test-simulator.py
 	bash -n scripts/check-macos-runner
+	bash -n scripts/install-ci-swiftformat
+	bash -n scripts/wait-for-ios-test-simulator
 	bash -n scripts/package-macos-release
 	bash -n scripts/notarytool-with-keychain
 	bash -n scripts/resolve-release-source

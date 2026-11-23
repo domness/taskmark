@@ -1,5 +1,6 @@
 import Foundation
 @testable import LocalTodoApp
+import LocalTodoDomain
 import Testing
 
 @Test func taskTitleMarkdownPreservesInlineStylesAndLinks() throws {
@@ -53,11 +54,83 @@ import Testing
     #expect(TaskMarkdown.blocks("").isEmpty)
 }
 
-@Test func taskNotesPreviewLeavesChecklistsToNativeControls() {
-    let source = "Intro\n\n- [ ] First step\n- Keep this ordinary item\n1. [x] Second step\n"
+@Test func taskNotesPreviewKeepsInteractiveChecklistsInDocumentOrder() throws {
+    let source = "Résumé 🧪\r\n\r\n- [ ] **First** step\r\n- Ordinary item\r\n1. [X] Second step\r\n"
+        + "\r\n```md\r\n- [ ] Literal\r\n```\r\n"
+    let checklist = MarkdownChecklist(source)
+    let blocks = TaskMarkdown.blocks(source, checklist: checklist)
 
-    #expect(TaskMarkdown.notesPreviewSource(source) == "Intro\n\n- Keep this ordinary item\n")
-    #expect(TaskMarkdown.notesPreviewSource("- [ ] Only step\n").isEmpty)
+    #expect(blocks.compactMap(\.checklistItem) == checklist.items)
+    #expect(blocks.map { String($0.text.characters).trimmingCharacters(in: .newlines) } == [
+        "Résumé 🧪", "First step", "Ordinary item", "Second step", "- [ ] Literal",
+    ])
+    #expect(blocks[1].text.runs.contains { $0.inlinePresentationIntent?.contains(.stronglyEmphasized) == true })
+    let first = try #require(blocks[1].checklistItem)
+    #expect(try checklist.settingChecked(true, item: first) == source.replacingOccurrences(
+        of: "[ ] **",
+        with: "[x] **"
+    ))
+}
+
+@Test func taskNotesKeepChecklistMarkersSeparateFromReferenceLinks() {
+    let source = "Intro\n3. [X] **Third**\n\n- [x] [Reference][x]\n\n[x]: https://example.com\n"
+    let checklist = MarkdownChecklist(source)
+    let blocks = TaskMarkdown.blocks(source, checklist: checklist)
+    #expect(blocks.map { String($0.text.characters) } == ["Intro", "Third", "Reference"])
+    #expect(blocks.compactMap(\.checklistItem) == checklist.items)
+    #expect(blocks.last?.text.runs.first?.link?.absoluteString == "https://example.com")
+}
+
+@Test func taskNotesPreviewRendersTablesRulesAndImages() throws {
+    let source = """
+    ## Plan
+
+    ![Diagram](figures/plan.png)
+
+    ---
+
+    | Phase | Time |
+    | :---- | ---: |
+    | **Draft** | 10m |
+    | Review | |
+    """
+    let blocks = TaskMarkdown.blocks(source)
+    let elements = TaskMarkdown.elements(in: blocks)
+    #expect(blocks[0].headingLevel == 2)
+    #expect(blocks[1].text.runs.first?.imageURL?.relativeString == "figures/plan.png")
+    #expect(blocks[2].isThematicBreak)
+    #expect(elements.count == 4)
+    let last = try #require(elements.last)
+    guard case let .table(table) = last else {
+        Issue.record("Expected a table after the rule")
+        return
+    }
+    #expect(table.columns.map(\.alignment) == [.left, .right])
+    #expect(table.rows.map(\.isHeader) == [true, false, false])
+    #expect(table.rows[1].cells[0]?.runs.first?.inlinePresentationIntent?.contains(.stronglyEmphasized) == true)
+    #expect(table.rows[2].cells[1]?.characters.isEmpty ?? true)
+}
+
+@Test func taskNotesResolveRelativeImagesOnlyInsideTheVault() throws {
+    let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: root) }
+    try FileManager.default.createSymbolicLink(
+        at: root.appendingPathComponent("escape"),
+        withDestinationURL: root.deletingLastPathComponent()
+    )
+    let context = TaskMarkdownImageContext(vault: root, taskPath: "Tasks/Example.md")
+    let image = try #require(URL(string: "../Images/a%20b.png"))
+    let resolved = try #require(context.localImageURL(image))
+    #expect(resolved.path == root.resolvingSymlinksInPath().appendingPathComponent("Images/a b.png").path)
+    for destination in [
+        "../../outside.png",
+        "../.config/icon.png",
+        "../escape/picture.png",
+        "file:///tmp/outside.png",
+    ] {
+        #expect(try context.localImageURL(#require(URL(string: destination))) == nil, "\(destination)")
+    }
 }
 
 @Test func taskListRowsUseTheHeaderContentInset() {

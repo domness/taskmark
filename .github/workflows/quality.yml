@@ -46,7 +46,9 @@ jobs:
           echo /opt/homebrew/bin >> "$GITHUB_PATH"
           echo /usr/local/bin >> "$GITHUB_PATH"
       - name: Install quality tools
-        run: brew install swiftformat swiftlint xcodegen
+        run: |
+          brew install swiftlint xcodegen
+          bash scripts/install-ci-swiftformat
       - name: Check Mac toolchain
         run: bash scripts/check-macos-runner
       - name: Run full quality gate
@@ -56,6 +58,7 @@ jobs:
           make check \
             XCODEBUILD_ARGS="-destination 'platform=macOS' -derivedDataPath '$output/DerivedData'" \
             XCODE_TEST_ARGS="-resultBundlePath '$output/LocalTodoApp.xcresult'" \
+            IOS_TEST_RESULT_DIR="$output" \
             2>&1 | tee "$output/check.log"
       - name: Upload validation results
         if: always()
@@ -65,6 +68,7 @@ jobs:
           path: |
             ${{ runner.temp }}/local-todo-quality-${{ github.run_id }}-${{ github.run_attempt }}/check.log
             ${{ runner.temp }}/local-todo-quality-${{ github.run_id }}-${{ github.run_attempt }}/LocalTodoApp.xcresult
+            ${{ runner.temp }}/local-todo-quality-${{ github.run_id }}-${{ github.run_attempt }}/LocalTodoIOSApp-*.xcresult
           if-no-files-found: ignore
           retention-days: 7
       - name: Clean this run's build products

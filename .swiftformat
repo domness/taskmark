@@ -4,3 +4,4 @@
 --swiftversion 6.0
 --wraparguments before-first
 --wrapcollections before-first
+--disable wrapMultilineStatementBraces

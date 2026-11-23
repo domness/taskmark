@@ -61,4 +61,31 @@ struct TaskDropInsertionTests {
             #expect(!model.insertDraggedTask(valid, at: 2, context: context))
         }
     }
+
+    @Test func customInsertionStaysInsideThePlanningDay() async throws {
+        try await withWorkspace { model, _ in
+            model.route = .next
+            for (title, date) in [("First", "2026-11-24"), ("Other day", "2026-11-26"), ("Second", "2026-11-24")] {
+                await model.createTask(title: title, vaultSession: model.vaultSession, captureRoute: .next)
+                let draft = try #require(model.selectedTaskDraft)
+                draft.scheduled = date
+                #expect(await model.flushTaskChanges())
+            }
+            model.setTaskListSort(.custom)
+            let sections = PlanningTaskGrouping.groups(model.visibleTasks, route: .next, today: nil)
+            let firstDay = model.taskReorderContext(for: sections[0].tasks)
+            let otherDay = model.taskReorderContext(for: sections[1].tasks)
+            let path = try #require(firstDay.sectionPaths.first)
+            let item = TaskDragItem(
+                path: path.value,
+                vaultSession: model.vaultSession,
+                reorder: TaskDragOrder(context: firstDay)
+            )
+            #expect(!model.insertDraggedTask(item, at: 1, context: otherDay))
+            #expect(model.insertDraggedTask(item, at: 2, context: firstDay))
+            let updated = PlanningTaskGrouping.groups(model.visibleTasks, route: .next, today: nil)
+            #expect(updated[0].tasks.map(\.path) == Array(firstDay.sectionPaths.reversed()))
+            #expect(updated[1].tasks.map(\.path) == otherDay.sectionPaths)
+        }
+    }
 }

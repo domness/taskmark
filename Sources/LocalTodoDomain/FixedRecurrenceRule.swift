@@ -13,13 +13,9 @@ public struct FixedRecurrenceRule: Equatable, Sendable {
     public let weekdays: [Weekday]
 
     public init(frequency: Frequency, interval: Int = 1, weekdays: [Weekday] = []) throws {
-        guard (1 ... 999).contains(interval) else {
-            throw DomainValidationError.invalidRecurrenceRule
-        }
-        guard frequency == .weekly || weekdays.isEmpty else {
-            throw DomainValidationError.invalidRecurrenceRule
-        }
-        guard Set(weekdays).count == weekdays.count else {
+        guard (1 ... 999).contains(interval), frequency == .weekly || weekdays.isEmpty,
+              Set(weekdays).count == weekdays.count
+        else {
             throw DomainValidationError.invalidRecurrenceRule
         }
 
@@ -53,10 +49,10 @@ public struct FixedRecurrenceRule: Equatable, Sendable {
             let candidate = try date.adding(DateComponents(day: offset), calendar: calendar)
             let candidateDate = try candidate.date(in: calendar)
             let weekday = try Weekday(calendarValue: calendar.component(.weekday, from: candidateDate))
-            guard acceptedWeekdays.contains(weekday) else {
-                continue
-            }
-            guard let candidateWeek = calendar.dateInterval(of: .weekOfYear, for: candidateDate)?.start else {
+            guard acceptedWeekdays.contains(weekday), let candidateWeek = calendar.dateInterval(
+                of: .weekOfYear,
+                for: candidateDate
+            )?.start else {
                 continue
             }
             let dayDifference = calendar.dateComponents([.day], from: anchorWeek, to: candidateWeek).day ?? 0

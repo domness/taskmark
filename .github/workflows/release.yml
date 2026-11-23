@@ -53,7 +53,13 @@ jobs:
           ref: ${{ steps.source.outputs.sha }}
           persist-credentials: false
       - name: Install quality tools
-        run: brew install swiftformat swiftlint xcodegen
+        run: |
+          brew install swiftlint xcodegen
+          if [[ -f scripts/install-ci-swiftformat ]]; then
+            bash scripts/install-ci-swiftformat
+          else
+            brew install swiftformat
+          fi
       - name: Check Mac toolchain
         run: bash scripts/check-macos-runner
       - name: Run full quality gate
@@ -63,6 +69,7 @@ jobs:
           make check \
             XCODEBUILD_ARGS="-destination 'platform=macOS' -derivedDataPath '$output/DerivedData'" \
             XCODE_TEST_ARGS="-resultBundlePath '$output/LocalTodoApp.xcresult'" \
+            IOS_TEST_RESULT_DIR="$output" \
             2>&1 | tee "$output/check.log"
       - name: Upload validation results
         if: always()
@@ -72,6 +79,7 @@ jobs:
           path: |
             ${{ runner.temp }}/release-check/check.log
             ${{ runner.temp }}/release-check/LocalTodoApp.xcresult
+            ${{ runner.temp }}/release-check/LocalTodoIOSApp-*.xcresult
           if-no-files-found: ignore
           retention-days: 14
 
