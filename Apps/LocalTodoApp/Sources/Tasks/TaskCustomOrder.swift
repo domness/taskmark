@@ -95,6 +95,13 @@ extension WorkspaceModel {
     private func reorderSection(containing path: VaultPath?) -> [VaultPath] {
         let tasks = visibleTasks
         guard let task = tasks.first(where: { $0.path == path }) else { return [] }
+        if route.usesPlanningDateSections {
+            let today = try? CalendarDate(date: presentationNow, calendar: vaultCalendar)
+            let date = PlanningTaskGrouping.date(for: task, route: route, today: today)
+            return tasks.filter {
+                PlanningTaskGrouping.date(for: $0, route: route, today: today) == date
+            }.map(\.path)
+        }
         return tasks.filter {
             switch currentTaskListDisplayOptions.grouping {
             case .none: true

@@ -21,7 +21,7 @@ Status reviewed against the repository on 2026-09-28. Implemented features below
 
 ### Daily Workflows
 
-- Inbox, Today, Next, Upcoming, Waiting, Someday, Completed and All Tasks, plus project/area/tag/priority views and search. Inbox precedes Today in the sidebar; Completed groups done tasks by vault-local completion day.
+- Inbox, Today, Next, Upcoming, Waiting, Someday, Completed and All Tasks, plus project/area/tag/priority views and search. Inbox precedes Today in the sidebar; Completed groups done tasks by vault-local completion day, and macOS Next and Upcoming group by planning day.
 - Contextual capture, keyboard selection/editing/completion and paired-date rescheduling.
 - Fixed and after-completion recurrence; late fixed completion skips missed occurrences. Native checklist toggle/delete controls edit existing body checkboxes, new items are authored in Markdown source, and checklist reset on repeat remains opt-in.
 - Project title/notes/status editing, completion/reopening and collapsed inactive-project navigation.
@@ -37,7 +37,7 @@ See [daily workflows and shortcuts](DAILY_WORK.md).
 - Incomplete tasks past their scheduled date or deadline are highlighted with semantic red and an Overdue label, using the vault-local day.
 - Placeholder-only, multiline title entry; always-visible project, area, tag and repeat controls. Tags are removable tokens with an add button and existing-tag suggestions.
 - Composed task inspector with a title-side completion control, Planning/Organization property groups, borderless aligned values and collapsed file details. Save problems and recovery remain visible independently of file details.
-- Rendered-first Markdown task and project titles and notes, with click-to-edit source and return to rendering on focus loss; includes inspector links, headings, lists, quotes and code. Source text remains canonical.
+- Rendered-first Markdown task and project titles and notes, with click-to-edit source and return to rendering on focus loss. Task notes also render checklist controls in place, tables, horizontal rules and vault-local images. Source text remains canonical.
 - Task rows resize as planning metadata appears or disappears. Search/list headers stay top-aligned; Switch Vault has its own footer; the inspector toggle is at the trailing window toolbar.
 - Task Duplicate/Delete/Copy actions; project/area/tag context-menu removal with automatic assignment cleanup, including completed tasks and saved filters. Session-local Undo/Redo restores deleted collection bytes and affected assignments; interrupted cleanup reports reversible partial progress.
 - Independent native Projects/Areas sidebar ordering, with Move Up/Move Down/Restore Default Order actions.

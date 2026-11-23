@@ -19,7 +19,9 @@ A task tab uses the center pane for the task title and Markdown notes, with plan
 - **Inbox** appears above Today in the sidebar and contains incomplete tasks with Inbox status.
 - **Today** shows tasks scheduled or due today or earlier.
 - Incomplete tasks with a scheduled date or deadline **before today in the vault timezone** have a red title, red overdue date and an **Overdue** warning label. Dates today are not overdue; done/canceled tasks are not highlighted. Priority indicators retain their own colors.
-- **Upcoming** shows future scheduled dates or deadlines. A task with an overdue scheduled date and a future deadline can appear in both views.
+- **Next** groups tasks by their earliest scheduled date or deadline, with **No Date** at the end.
+- **Upcoming** groups tasks by their earliest future scheduled date or deadline. A task with an overdue scheduled date and a future deadline can appear in both Today and Upcoming.
+- Both date-grouped views put the earliest day first. Headers use the vault's date format, with Yesterday, Today and Tomorrow when applicable. View Options sort tasks within each day; Custom drag reordering stays within the section and does not reschedule tasks.
 - **Waiting** and **Someday** follow the task's status, including undated tasks.
 - **All Tasks** shows incomplete tasks across the vault, excluding done and canceled tasks. Use **Search** or a filter with **Include completed and canceled tasks** enabled to review finished work.
 - Capture in Today schedules today; Upcoming schedules tomorrow; Next, Waiting and Someday use their respective status. Project/area capture assigns that collection. Capture from search or filters goes to Inbox. The destination shown when capture opens is retained if you navigate before submitting.
@@ -33,9 +35,9 @@ A task tab uses the center pane for the task title and Markdown notes, with plan
 
 Task titles support inline Markdown: `**bold**`, `*italic*`, `` `code` ``, and `[label](https://example.com)` links. Rows and the inspector display the formatted title. Click the inspector title to edit its Markdown source, or use **Command-E**. Leaving the field returns it to rendered text. Rows retain their selection and reorder gestures.
 
-Notes show rendered Markdown by default: paragraphs, headings, ordered/unordered lists, blockquotes, fenced code and inline formatting with clickable links. Click the notes (or **Add notes…**) to edit their source with normal autosave. Moving focus elsewhere, clicking outside the field or pressing Escape returns to rendered text without discarding edits. Keyboard users can focus either rendered field and press Return to edit. There is no separate preview mode or duplicate title preview.
+Task notes show rendered Markdown by default: paragraphs, headings, nested ordered/unordered lists, blockquotes, code, tables, horizontal rules, images, and inline formatting with clickable links. Click the prose (or **Add notes…**) to edit the source with normal autosave. In sections with interactive content, use the **Edit Notes** context menu or focus the field and press Return. Moving focus elsewhere, clicking outside the field or pressing Escape returns to the preview without discarding edits.
 
-Use explicit Markdown links or angle-bracket autolinks such as `<https://example.com>`. This is native text rendering, not an HTML renderer; images, tables and embedded HTML are not rendered as rich content. Existing checklist controls appear with Notes and change only the check marker.
+Use explicit Markdown links or angle-bracket autolinks such as `<https://example.com>`. Relative images resolve from the task file and preview only supported files within the vault. Remote images are links you can open in your browser, not automatic network requests. Embedded HTML is not interpreted.
 
 Rendered fields use the current draft, including unsaved edits, and never rewrite Markdown. Titles remain strings in frontmatter and notes remain the file body; CLI output, copying, search and sorting continue to use the source text.
 
@@ -47,7 +49,7 @@ Project, area and **Tags** are also always visible. Use the **+** beside Tags to
 
 Fixed completion follows the existing cadence until the next occurrence is after the completion day. After-completion recurrence starts its interval on that day in the vault timezone. Monthly/yearly recurrence retains calendar clamping; see [the file contract](FILE_FORMAT.md#recurrence).
 
-Write and edit checklist steps in Notes source using Markdown checkboxes such as `- [ ] Draft outline`. Recognized steps appear as native checkboxes beside the rendered notes. Toggling a step changes only its marker, and its context menu can remove the line. Code blocks and comments remain untouched; see [supported checklist syntax](FILE_FORMAT.md#body-checklists).
+Write and edit checklist steps in Notes source using Markdown checkboxes such as `- [ ] Draft outline`. Recognized steps appear in place as native checkboxes, with Markdown formatting in their labels. Toggling a step changes only its marker, and its context menu can remove the line. Code blocks and comments remain untouched; see [supported checklist syntax](FILE_FORMAT.md#body-checklists).
 
 **Reset checklist on repeat** is per task and defaults off. When enabled, recurring completion unchecks recognized steps. Ordinary completion leaves notes unchanged.
 
