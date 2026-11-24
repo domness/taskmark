@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: quality-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   commits:
@@ -29,11 +29,17 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: scripts/validate-commit-range "$BASE_SHA" "$HEAD_SHA"
 
-  swift:
+  platform:
+    name: ${{ matrix.lane }}
     runs-on: macos-15
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: [macOS, iPhone, iPad]
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.3.app/Contents/Developer
+      LANE: ${{ matrix.lane }}
     defaults:
       run:
         shell: bash
@@ -46,31 +52,70 @@ jobs:
           echo /opt/homebrew/bin >> "$GITHUB_PATH"
           echo /usr/local/bin >> "$GITHUB_PATH"
       - name: Install quality tools
+        if: matrix.lane == 'macOS'
         run: |
           brew install swiftlint xcodegen
           bash scripts/install-ci-swiftformat
+      - name: Install simulator build tools
+        if: matrix.lane != 'macOS'
+        run: brew install xcodegen
       - name: Check Mac toolchain
+        if: matrix.lane == 'macOS'
         run: bash scripts/check-macos-runner
-      - name: Run full quality gate
+      - name: Check simulator toolchain
+        if: matrix.lane != 'macOS'
         run: |
-          output="$RUNNER_TEMP/local-todo-quality-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+          xcodebuild -version
+          xcodegen --version
+          xcrun simctl list devices available
+      - name: Create validation results directory
+        run: |
+          output="$RUNNER_TEMP/local-todo-quality-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT-$LANE"
           mkdir -p "$output"
-          make check \
-            XCODEBUILD_ARGS="-destination 'platform=macOS' -derivedDataPath '$output/DerivedData'" \
-            XCODE_TEST_ARGS="-resultBundlePath '$output/LocalTodoApp.xcresult'" \
-            IOS_TEST_RESULT_DIR="$output" \
-            2>&1 | tee "$output/check.log"
+          echo "OUTPUT_DIR=$output" >> "$GITHUB_ENV"
+      - name: Lint and test release scripts
+        if: matrix.lane == 'macOS'
+        run: make lint test-release-scripts 2>&1 | tee "$OUTPUT_DIR/lint-and-scripts.log"
+      - name: Run Swift package tests
+        if: matrix.lane == 'macOS'
+        run: make test-unit 2>&1 | tee "$OUTPUT_DIR/unit.log"
+      - name: Run macOS app tests and Debug build
+        if: matrix.lane == 'macOS'
+        run: |
+          make test-macos build \
+            XCODEBUILD_ARGS="-destination 'platform=macOS' -derivedDataPath '$OUTPUT_DIR/DerivedData'" \
+            XCODE_TEST_ARGS="-resultBundlePath '$OUTPUT_DIR/LocalTodoApp.xcresult'" \
+            2>&1 | tee "$OUTPUT_DIR/macos.log"
+      - name: Run iOS hosted tests
+        if: matrix.lane == 'iPhone'
+        run: make test-ios-unit IOS_TEST_RESULT_DIR="$OUTPUT_DIR" 2>&1 | tee "$OUTPUT_DIR/ios-unit.log"
+      - name: Run iPhone UI tests and iOS Debug build
+        if: matrix.lane == 'iPhone'
+        run: make test-ios-phone build-ios IOS_TEST_RESULT_DIR="$OUTPUT_DIR" 2>&1 | tee "$OUTPUT_DIR/iphone.log"
+      - name: Run iPad UI tests
+        if: matrix.lane == 'iPad'
+        run: make test-ios-tablet IOS_TEST_RESULT_DIR="$OUTPUT_DIR" 2>&1 | tee "$OUTPUT_DIR/ipad.log"
       - name: Upload validation results
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: local-todo-quality-${{ github.run_id }}-${{ github.run_attempt }}
+          name: local-todo-quality-${{ github.run_id }}-${{ github.run_attempt }}-${{ matrix.lane }}
           path: |
-            ${{ runner.temp }}/local-todo-quality-${{ github.run_id }}-${{ github.run_attempt }}/check.log
-            ${{ runner.temp }}/local-todo-quality-${{ github.run_id }}-${{ github.run_attempt }}/LocalTodoApp.xcresult
-            ${{ runner.temp }}/local-todo-quality-${{ github.run_id }}-${{ github.run_attempt }}/LocalTodoIOSApp-*.xcresult
+            ${{ env.OUTPUT_DIR }}/*.log
+            ${{ env.OUTPUT_DIR }}/*.xcresult
           if-no-files-found: ignore
           retention-days: 7
-      - name: Clean this run's build products
-        if: always()
-        run: rm -rf -- "$RUNNER_TEMP/local-todo-quality-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+
+  swift:
+    runs-on: ubuntu-latest
+    needs: platform
+    if: always()
+    steps:
+      - name: Require all platform lanes to pass
+        env:
+          PLATFORM_RESULT: ${{ needs.platform.result }}
+        run: |
+          if [[ "$PLATFORM_RESULT" != success ]]; then
+            echo "::error::Platform quality checks did not all pass ($PLATFORM_RESULT)."
+            exit 1
+          fi
