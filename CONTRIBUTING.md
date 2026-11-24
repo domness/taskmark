@@ -29,7 +29,19 @@ make check
 
 `make bootstrap` resolves Swift packages, generates `LocalTodo.xcodeproj`, and opts this clone into the repository's Git hooks. `make check` runs formatting/strict lint, release-script checks, package, macOS app, shared iOS and phone/tablet UI tests, then builds both unsigned Debug apps. The generated project is ignored; change `project.yml` and run `make generate` after pulling source additions or changing project settings.
 
-Use `make build` for a focused unsigned macOS build and `make build-ios` for a focused unsigned simulator build. `make test-ios` runs the configured phone suite and adaptive iPad check. Package-only `swift build` or `swift test` does not compile either app. For a macOS Xcode Build/Run failure, also validate the normal signed path:
+Use the smallest suite that exercises the change while developing:
+
+| Command | Runs |
+| --- | --- |
+| `make test-unit` | Swift package tests: domain rules, file behavior, workspace, presentation and CLI. No app or simulator. Use `swift test --filter <name>` for a focused case. |
+| `make test-macos` | macOS app-hosted tests, including native window, toolbar and keyboard scenarios. |
+| `make test-ios-unit` | Shared package and mobile app-hosted tests on the configured iPhone simulator. No UI automation or simulator clones. |
+| `make test-ios-phone` | iPhone UI automation only. |
+| `make test-ios-tablet` | iPad onboarding, accessibility text and adaptive navigation UI automation only. |
+
+`make test` combines the package and macOS suites; `make test-ios` combines all three iOS suites. The phone-only commands do not require an iPad, and the tablet-only command does not require an iPhone. If your local simulators differ from the defaults, set `IOS_SIMULATOR_NAME` and/or `IOS_TABLET_SIMULATOR_ID` on the `make` command line. Run `make check` before handing off a code change.
+
+Use `make build` for a focused unsigned macOS build and `make build-ios` for a focused unsigned simulator build. For a macOS Xcode Build/Run failure, also validate the normal signed path:
 
 ```bash
 make generate
@@ -45,6 +57,7 @@ Record the Xcode version, commands/results and any skipped checks at handoff. Di
 - Update `docs/FILE_FORMAT.md` and fixtures before changing persisted semantics.
 - Include tests for behavior changes and regressions.
 - Add platform-shell behavior tests under `Apps/LocalTodoApp/Tests` or `Apps/LocalTodoIOSApp/Tests` and UI automation under `Apps/LocalTodoIOSApp/UITests`. Keep portable Domain, Markdown, Workspace, Presentation and CLI tests under `Tests/`; the shared suites must remain runnable on iOS where configured.
+- Test rules and file mutations in the package where possible. Use hosted tests for platform integration and real UI scenarios for behavior that needs a window or simulator, such as focus, toolbar geometry, navigation, and accessibility settings. Avoid repeating every model edge case through UI automation.
 - Run `make format` before `make check`.
 - Keep current behavior in the user guides and implementation status in [ROADMAP.md](docs/ROADMAP.md). Keep `MEMORY.md` to current durable decisions; use Git history for chronology and avoid duplicating test counts in multiple guides.
 

@@ -109,7 +109,7 @@ make check
 
 - `make check` regenerates the Xcode project, checks formatting/lint and release scripts, runs Swift package, macOS app, shared iOS and phone/tablet UI tests, then builds both app schemes. All stages must pass; `swift build` or `swift test` alone does not compile the apps.
 - Run `make build` for a focused unsigned app-build check. The generated `LocalTodo.xcodeproj` is ignored by Git; change `project.yml` for project settings and regenerate with `make generate` after pulling source changes.
-- Run `make build-ios` for a focused unsigned iOS Simulator build. `make test-ios` runs the shared/mobile suites on the configured phone simulator and the adaptive-workspace UI check on an available iPad simulator.
+- For focused testing, use `make test-unit` for package tests, `make test-macos` for macOS app tests, `make test-ios-unit` for iOS hosted tests, and `make test-ios-phone` or `make test-ios-tablet` for UI scenarios on that device. `make test-ios` runs all iOS suites. Run `make build-ios` for a focused unsigned iOS Simulator build.
 - When investigating Xcode Build/Run failures, also validate the normal signed build used by Xcode, without `CODE_SIGNING_ALLOWED=NO`:
 
   ```bash
